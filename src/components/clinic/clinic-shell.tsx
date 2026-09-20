@@ -12,6 +12,7 @@ import {
   Stethoscope,
   Leaf,
   LogOut,
+  MessageSquare,
 } from "lucide-react";
 
 const receptionLinks = [
@@ -22,6 +23,7 @@ const receptionLinks = [
 
 const managementLinks = [
   { href: "/clinic", label: "داشبورد", icon: LayoutDashboard, short: "مدیریت" },
+  { href: "/clinic/reminders", label: "پیامک یادآوری", icon: MessageSquare, short: "پیامک" },
   { href: "/clinic/finance", label: "مالی", icon: Wallet, short: "مالی" },
   { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },
 ];

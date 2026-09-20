@@ -111,6 +111,46 @@ export interface ClinicProfile {
   visitSlotMinutes: number;
   /** مدت پیش‌فرض پکیج/دستگاه به دقیقه */
   packageSlotMinutes: number;
+  /** تنظیمات پیامک یادآوری نوبت */
+  reminderSettings: ReminderSettings;
+}
+
+export type ReminderKind = "morning" | "hours_before";
+
+export interface ReminderSettings {
+  /** روشن/خاموش بودن کل سیستم یادآوری */
+  enabled: boolean;
+  /** پیام صبح روز نوبت */
+  morningEnabled: boolean;
+  /** ساعت ارسال پیام صبح (۰–۲۳، به‌وقت ایران) */
+  morningHour: number;
+  /** پیام چند ساعت قبل از نوبت */
+  hoursBeforeEnabled: boolean;
+  /** چند ساعت قبل از شروع نوبت */
+  hoursBefore: number;
+  /**
+   * متن پیامک. متغیرها:
+   * {name} {date} {time} {clinic} {type}
+   */
+  template: string;
+}
+
+export type SmsDeliveryStatus = "sent" | "mock" | "failed";
+
+export interface SmsLogEntry {
+  id: string;
+  visitId: string;
+  patientId: string;
+  patientName: string;
+  phone: string;
+  kind: ReminderKind;
+  body: string;
+  status: SmsDeliveryStatus;
+  provider: "mock" | "kavenegar";
+  error?: string;
+  /** کلید یکتا برای جلوگیری از ارسال تکراری */
+  dedupeKey: string;
+  createdAt: string;
 }
 
 export interface AppData {
@@ -120,7 +160,18 @@ export interface AppData {
   payments: Payment[];
   appointments: AppointmentRequest[];
   measurements: ProgressMeasurement[];
+  smsLogs: SmsLogEntry[];
 }
+
+export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
+  enabled: true,
+  morningEnabled: true,
+  morningHour: 8,
+  hoursBeforeEnabled: true,
+  hoursBefore: 3,
+  template:
+    "{name} عزیز، نوبت شما در {clinic} روز {date} ساعت {time} ({type}) است. منتظر دیدارتان هستیم.",
+};
 
 export const DEFAULT_CLINIC: ClinicProfile = {
   name: "تندیس",
@@ -135,6 +186,7 @@ export const DEFAULT_CLINIC: ClinicProfile = {
   gridSlotMinutes: 15,
   visitSlotMinutes: 30,
   packageSlotMinutes: 60,
+  reminderSettings: DEFAULT_REMINDER_SETTINGS,
 };
 
 export function patientFullName(patient: Pick<Patient, "firstName" | "lastName">) {

@@ -4,11 +4,14 @@ import {
   AppData,
   AppointmentRequest,
   DEFAULT_CLINIC,
+  DEFAULT_REMINDER_SETTINGS,
   Patient,
   Payment,
   ProgressMeasurement,
+  SmsLogEntry,
   Visit,
 } from "@/lib/types";
+import { mergeReminderSettings } from "@/lib/sms";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
 const DATA_FILE = path.join(DATA_DIR, "clinic-app.json");
@@ -20,6 +23,7 @@ const emptyData = (): AppData => ({
   payments: [],
   appointments: [],
   measurements: [],
+  smsLogs: [],
 });
 
 async function ensureStore(): Promise<AppData> {
@@ -28,12 +32,19 @@ async function ensureStore(): Promise<AppData> {
     const raw = await fs.readFile(DATA_FILE, "utf8");
     const parsed = JSON.parse(raw) as AppData;
     return {
-      clinic: { ...DEFAULT_CLINIC, ...parsed.clinic },
+      clinic: {
+        ...DEFAULT_CLINIC,
+        ...parsed.clinic,
+        reminderSettings: mergeReminderSettings(
+          parsed.clinic?.reminderSettings ?? DEFAULT_REMINDER_SETTINGS
+        ),
+      },
       patients: parsed.patients ?? [],
       visits: parsed.visits ?? [],
       payments: parsed.payments ?? [],
       appointments: parsed.appointments ?? [],
       measurements: parsed.measurements ?? [],
+      smsLogs: parsed.smsLogs ?? [],
     };
   } catch {
     const data = emptyData();
@@ -53,9 +64,43 @@ export async function getAppData() {
 
 export async function updateClinic(patch: Partial<AppData["clinic"]>) {
   const data = await ensureStore();
-  data.clinic = { ...data.clinic, ...patch };
+  data.clinic = {
+    ...data.clinic,
+    ...patch,
+    reminderSettings: mergeReminderSettings({
+      ...data.clinic.reminderSettings,
+      ...(patch.reminderSettings ?? {}),
+    }),
+  };
   await writeStore(data);
   return data.clinic;
+}
+
+export async function listSmsLogs(limit = 100) {
+  const logs = (await ensureStore()).smsLogs;
+  return logs.slice(0, limit);
+}
+
+export async function hasSmsDedupe(dedupeKey: string) {
+  return (await ensureStore()).smsLogs.some(
+    (l) => l.dedupeKey === dedupeKey && l.status !== "failed"
+  );
+}
+
+export async function createSmsLog(
+  input: Omit<SmsLogEntry, "id" | "createdAt">
+) {
+  const data = await ensureStore();
+  const entry: SmsLogEntry = {
+    ...input,
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+  };
+  data.smsLogs.unshift(entry);
+  // نگه داشتن حداکثر ۵۰۰ پیام اخیر
+  data.smsLogs = data.smsLogs.slice(0, 500);
+  await writeStore(data);
+  return entry;
 }
 
 export async function listPatients() {
