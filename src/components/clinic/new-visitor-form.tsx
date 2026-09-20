@@ -181,8 +181,7 @@ export function NewVisitorForm({
       });
 
       if (!visitRes.ok) throw new Error("visit");
-      const visitData = await visitRes.json();
-      router.push(`/clinic/reception/admission/${visitData.visit.id}`);
+      router.push(`/clinic/reception`);
       router.refresh();
     } catch {
       setError("ثبت اطلاعات انجام نشد. لطفاً فیلدها را بررسی و دوباره تلاش کنید.");
