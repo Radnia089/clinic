@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import {
   getReminderDashboard,
   processDueReminders,
+  sendBulkPromo,
   sendTestReminder,
+  type PromoAudience,
 } from "@/lib/reminders";
 import { updateClinic } from "@/lib/store";
 import { mergeReminderSettings } from "@/lib/sms";
@@ -30,6 +32,9 @@ export async function POST(request: Request) {
     action?: string;
     phone?: string;
     secret?: string;
+    message?: string;
+    audience?: PromoAudience;
+    patientIds?: string[];
   };
 
   const cronSecret = process.env.REMINDER_CRON_SECRET?.trim();
@@ -49,6 +54,18 @@ export async function POST(request: Request) {
     const result = await sendTestReminder(body.phone);
     if (!result.ok && result.error === "invalid_phone") {
       return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
+    }
+    return NextResponse.json(result);
+  }
+
+  if (body.action === "promo") {
+    const result = await sendBulkPromo({
+      message: body.message ?? "",
+      audience: body.audience ?? "all",
+      patientIds: body.patientIds,
+    });
+    if (!result.ok) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
     return NextResponse.json(result);
   }

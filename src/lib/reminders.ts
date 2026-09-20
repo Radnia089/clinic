@@ -170,7 +170,7 @@ export async function sendTestReminder(phoneRaw: string) {
     patientId: "test",
     patientName: "مشتری آزمایشی",
     phone,
-    kind: "morning",
+    kind: "test",
     body,
     status: send.status,
     provider: send.provider,
@@ -181,13 +181,110 @@ export async function sendTestReminder(phoneRaw: string) {
   return { ok: send.ok, entry, error: send.error };
 }
 
+export type PromoAudience = "all" | "with_visits" | "selected";
+
+export async function sendBulkPromo(input: {
+  message: string;
+  audience: PromoAudience;
+  patientIds?: string[];
+}) {
+  const data = await getAppData();
+  const raw = input.message?.trim() ?? "";
+  if (!raw) {
+    return { ok: false as const, error: "empty_message" as const };
+  }
+  if (raw.length > 500) {
+    return { ok: false as const, error: "too_long" as const };
+  }
+
+  const [patients, visits] = await Promise.all([listPatients(), listVisits()]);
+  const visitPatientIds = new Set(visits.map((v) => v.patientId));
+
+  let targets = patients;
+  if (input.audience === "with_visits") {
+    targets = patients.filter((p) => visitPatientIds.has(p.id));
+  } else if (input.audience === "selected") {
+    const ids = new Set(input.patientIds ?? []);
+    if (ids.size === 0) {
+      return { ok: false as const, error: "no_selection" as const };
+    }
+    targets = patients.filter((p) => ids.has(p.id));
+  }
+
+  const campaignId = crypto.randomUUID();
+  let sent = 0;
+  let failed = 0;
+  let skipped = 0;
+  const items: SmsLogEntry[] = [];
+
+  for (const patient of targets) {
+    const phone = normalizeIranPhone(patient.phone);
+    if (!phone) {
+      skipped += 1;
+      continue;
+    }
+    const name = patientFullName(patient);
+    const body = renderReminderTemplate(raw, {
+      name,
+      clinic: data.clinic.name,
+      phone,
+    });
+    const send = await sendSms(phone, body);
+    const entry = await createSmsLog({
+      visitId: `promo:${campaignId}`,
+      patientId: patient.id,
+      patientName: name,
+      phone,
+      kind: "promo",
+      body,
+      status: send.status,
+      provider: send.provider,
+      error: send.error,
+      dedupeKey: `promo:${campaignId}:${patient.id}`,
+    });
+    items.push(entry);
+    if (send.ok) sent += 1;
+    else failed += 1;
+  }
+
+  return {
+    ok: true as const,
+    campaignId,
+    total: targets.length,
+    sent,
+    failed,
+    skipped,
+    provider: getActiveSmsProvider(),
+    items,
+  };
+}
+
 export async function getReminderDashboard() {
   const data = await getAppData();
-  const logs = await listSmsLogs();
+  const [logs, patients, visits] = await Promise.all([
+    listSmsLogs(),
+    listPatients(),
+    listVisits(),
+  ]);
+  const visitPatientIds = new Set(visits.map((v) => v.patientId));
+  const withVisits = patients.filter((p) => visitPatientIds.has(p.id)).length;
+  const validPhones = patients.filter((p) => normalizeIranPhone(p.phone)).length;
+
   return {
     settings: mergeReminderSettings(data.clinic.reminderSettings),
     provider: getActiveSmsProvider(),
     logs,
     hasKavenegarKey: Boolean(process.env.KAVENEGAR_API_KEY?.trim()),
+    audience: {
+      all: patients.length,
+      withVisits,
+      validPhones,
+      patients: patients.map((p) => ({
+        id: p.id,
+        name: patientFullName(p),
+        phone: p.phone,
+        hasVisit: visitPatientIds.has(p.id),
+      })),
+    },
   };
 }

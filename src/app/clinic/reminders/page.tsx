@@ -11,14 +11,15 @@ export default async function RemindersPage() {
     <div>
       <PageHeader
         eyebrow="اطلاع‌رسانی"
-        title="پیامک یادآوری نوبت"
-        description="صبح روز نوبت یا چند ساعت قبل، برای مشتری پیامک بفرستید. بدون کلید پنل، در حالت آزمایشی کار می‌کند."
+        title="پیامک یادآوری و تبلیغاتی"
+        description="یادآوری نوبت، پیامک انبوه و آفرهای تبلیغاتی برای مشتریان سیستم."
       />
       <RemindersPanel
         initialSettings={dashboard.settings}
         initialLogs={dashboard.logs}
         provider={dashboard.provider}
         hasKavenegarKey={dashboard.hasKavenegarKey}
+        audience={dashboard.audience}
       />
     </div>
   );

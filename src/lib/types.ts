@@ -115,7 +115,7 @@ export interface ClinicProfile {
   reminderSettings: ReminderSettings;
 }
 
-export type ReminderKind = "morning" | "hours_before";
+export type ReminderKind = "morning" | "hours_before" | "promo" | "test";
 
 export interface ReminderSettings {
   /** روشن/خاموش بودن کل سیستم یادآوری */
