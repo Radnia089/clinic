@@ -11,6 +11,7 @@ export default async function NewVisitorPage({
     time?: string;
     type?: string;
     duration?: string;
+    channel?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -24,13 +25,18 @@ export default async function NewVisitorPage({
     parsedDuration && Number.isFinite(parsedDuration) && parsedDuration > 0
       ? parsedDuration
       : undefined;
+  const initialChannel = params.channel === "phone" ? "phone" : "clinic";
 
   return (
     <div>
       <PageHeader
         eyebrow="جریان پذیرش"
-        title="ثبت مراجعه‌کننده"
-        description="اطلاعات مشتری، نوع نوبت و بازه زمانی شناور (ربع‌ساعتی) را مشخص کنید."
+        title={initialChannel === "phone" ? "ثبت نوبت تلفنی" : "ثبت مراجعه‌کننده"}
+        description={
+          initialChannel === "phone"
+            ? "نوبت تلفنی هم ویزیت است؛ نام‌خانوادگی و موبایل کافی است و ساعت اختیاری است."
+            : "اطلاعات مشتری، نوع نوبت و بازه زمانی شناور (ربع‌ساعتی) را مشخص کنید."
+        }
       />
       <NewVisitorForm
         clinic={data.clinic}
@@ -38,6 +44,7 @@ export default async function NewVisitorPage({
         initialTime={params.time}
         initialType={initialType}
         initialDuration={initialDuration}
+        initialChannel={initialChannel}
       />
     </div>
   );

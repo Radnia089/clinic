@@ -51,6 +51,8 @@ export interface Visit {
   /** مدت نوبت به دقیقه (مثلاً ۳۰ یا ۶۰) */
   durationMinutes?: number;
   visitType: VisitType;
+  /** حضوری در کلینیک یا نوبت تلفنی (هر دو ویزیت/خدمت‌اند) */
+  channel?: "clinic" | "phone";
   status: VisitStatus;
   packageName?: string;
   admission?: AdmissionForm;
@@ -207,6 +209,10 @@ export function genderLabel(gender: Gender) {
 
 export function visitTypeLabel(type: VisitType) {
   return type === "consultation" ? "ویزیت" : "پکیج لاغری";
+}
+
+export function visitChannelLabel(channel?: Visit["channel"]) {
+  return channel === "phone" ? "تلفنی" : "حضوری";
 }
 
 export function visitStatusLabel(status: VisitStatus) {

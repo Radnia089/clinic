@@ -58,6 +58,7 @@ export async function POST(request: Request) {
     visitType,
     visitTime: body.visitTime ? String(body.visitTime) : undefined,
     durationMinutes,
+    channel: body.channel === "phone" ? "phone" : "clinic",
     packageName:
       visitType === "package" ? packageName || "پکیج لاغری" : undefined,
     status,

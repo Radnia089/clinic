@@ -50,12 +50,14 @@ export function NewVisitorForm({
   initialTime,
   initialType,
   initialDuration,
+  initialChannel,
 }: {
   clinic: ClinicProfile;
   initialDate?: string;
   initialTime?: string;
   initialType?: VisitType;
   initialDuration?: number;
+  initialChannel?: "clinic" | "phone";
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -71,7 +73,11 @@ export function NewVisitorForm({
     () => initialDate || jalaliPartsToIsoDate(todayJalaliParts())
   );
   const [visitType, setVisitType] = useState<VisitType>(
-    initialType === "package" ? "package" : "consultation"
+    initialChannel === "phone"
+      ? "consultation"
+      : initialType === "package"
+        ? "package"
+        : "consultation"
   );
   const [visitTime, setVisitTime] = useState(initialTime || "");
   const [durationMinutes, setDurationMinutes] = useState(() => {
@@ -82,6 +88,9 @@ export function NewVisitorForm({
     );
   });
   const [packageName, setPackageName] = useState("پکیج لاغری استاندارد");
+  const [channel, setChannel] = useState<"clinic" | "phone">(
+    initialChannel === "phone" ? "phone" : "clinic"
+  );
 
   const gridMinutes = clinic.gridSlotMinutes || 15;
   const slots = useMemo(
@@ -124,11 +133,11 @@ export function NewVisitorForm({
       setError("شماره موبایل معتبر (۱۱ رقم، شروع با ۰۹) الزامی است.");
       return;
     }
-    if (!visitTime) {
+    if (channel === "clinic" && !visitTime) {
       setError("لطفاً ساعت شروع نوبت را انتخاب کنید.");
       return;
     }
-    if (!durationMinutes || durationMinutes < gridMinutes) {
+    if (channel === "clinic" && (!durationMinutes || durationMinutes < gridMinutes)) {
       setError("مدت نوبت را مشخص کنید.");
       return;
     }
@@ -169,11 +178,17 @@ export function NewVisitorForm({
         body: JSON.stringify({
           patientId,
           visitDate,
-          visitTime,
-          durationMinutes,
-          visitType,
+          visitTime: channel === "clinic" ? visitTime : visitTime || undefined,
+          durationMinutes:
+            channel === "clinic"
+              ? durationMinutes
+              : visitTime
+                ? durationMinutes
+                : undefined,
+          visitType: channel === "phone" ? "consultation" : visitType,
+          channel,
           packageName:
-            visitType === "package"
+            visitType === "package" && channel === "clinic"
               ? packageName.trim() || "پکیج لاغری"
               : undefined,
           status: "visitor",
@@ -273,30 +288,82 @@ export function NewVisitorForm({
         <div className="mb-4 rounded-2xl bg-[#F6E6E1] px-4 py-3">
           <p className="text-sm font-bold text-[#9A4E42]">۲ · تاریخ، نوع و بازه زمانی</p>
           <p className="mt-1 text-xs text-[#9A4E42]/80">
-            بازه شناور {formatTimeFa(clinic.workStart)} تا {formatTimeFa(clinic.workEnd)} · واحد{" "}
-            {toFaNumber(gridMinutes)} دقیقه · ویزیت معمولاً {toFaNumber(clinic.visitSlotMinutes)} دقیقه ·
-            دستگاه/پکیج معمولاً {toFaNumber(clinic.packageSlotMinutes)} دقیقه
+            نوبت تلفنی هم ویزیت است؛ فقط می‌توانید بدون ساعت تقویم ثبتش کنید.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2 sm:col-span-2">
+            <FieldLabel required>نحوه مراجعه</FieldLabel>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setChannel("clinic")}
+                className={`h-11 rounded-2xl text-sm font-bold transition ${
+                  channel === "clinic"
+                    ? "bg-brand text-white"
+                    : "bg-[#F7F8F6] text-brand"
+                }`}
+              >
+                حضوری
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setChannel("phone");
+                  setVisitType("consultation");
+                }}
+                className={`h-11 rounded-2xl text-sm font-bold transition ${
+                  channel === "phone"
+                    ? "bg-[#3B5BDB] text-white"
+                    : "bg-[#F7F8F6] text-brand"
+                }`}
+              >
+                تلفنی (ویزیت)
+              </button>
+            </div>
+          </div>
           <div className="space-y-2">
             <FieldLabel required>تاریخ مراجعه (شمسی)</FieldLabel>
             <ShamsiDateInput value={visitDate} onChange={setVisitDate} required />
           </div>
-          <div className="space-y-2">
-            <FieldLabel required>نوع مراجعه</FieldLabel>
-            <select
-              className={`w-full ${fieldClass}`}
-              value={visitType}
-              onChange={(e) => changeVisitType(e.target.value as VisitType)}
-            >
-              <option value="consultation">ویزیت</option>
-              <option value="package">پکیج / دستگاه</option>
-            </select>
-          </div>
+          {channel === "clinic" ? (
+            <div className="space-y-2">
+              <FieldLabel required>نوع مراجعه</FieldLabel>
+              <select
+                className={`w-full ${fieldClass}`}
+                value={visitType}
+                onChange={(e) => changeVisitType(e.target.value as VisitType)}
+              >
+                <option value="consultation">ویزیت</option>
+                <option value="package">پکیج / دستگاه</option>
+              </select>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <FieldLabel>نوع</FieldLabel>
+              <div className={`flex items-center ${fieldClass} text-sm font-semibold text-brand`}>
+                ویزیت تلفنی
+              </div>
+            </div>
+          )}
           <div className="space-y-2 sm:col-span-2">
-            <FieldLabel required>ساعت شروع</FieldLabel>
+            <FieldLabel required={channel === "clinic"}>
+              ساعت شروع{channel === "phone" ? " (اگر مشخص است)" : ""}
+            </FieldLabel>
             <div className="grid max-h-56 grid-cols-4 gap-2 overflow-y-auto rounded-2xl bg-[#F7F8F6] p-2 sm:grid-cols-6">
+              {channel === "phone" ? (
+                <button
+                  type="button"
+                  onClick={() => setVisitTime("")}
+                  className={`h-10 rounded-xl text-sm font-semibold transition ${
+                    !visitTime
+                      ? "bg-[#3B5BDB] text-white"
+                      : "bg-white text-brand hover:bg-[#E8F2EA]"
+                  }`}
+                >
+                  بدون ساعت
+                </button>
+              ) : null}
               {slots.map((slot) => (
                 <button
                   key={slot}
@@ -304,7 +371,9 @@ export function NewVisitorForm({
                   onClick={() => setVisitTime(slot)}
                   className={`h-10 rounded-xl text-sm font-semibold transition ${
                     visitTime === slot
-                      ? "bg-brand text-white"
+                      ? channel === "phone"
+                        ? "bg-[#3B5BDB] text-white"
+                        : "bg-brand text-white"
                       : "bg-white text-brand hover:bg-[#E8F2EA]"
                   }`}
                 >
@@ -313,32 +382,34 @@ export function NewVisitorForm({
               ))}
             </div>
           </div>
-          <div className="space-y-2 sm:col-span-2">
-            <FieldLabel required>مدت نوبت</FieldLabel>
-            <div className="flex flex-wrap gap-2">
-              {durationOptions.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setDurationMinutes(m)}
-                  className={`h-10 rounded-xl px-3 text-sm font-semibold transition ${
-                    durationMinutes === m
-                      ? "bg-[#D86B5C] text-white"
-                      : "bg-[#F7F8F6] text-brand hover:bg-[#E8F2EA]"
-                  }`}
-                >
-                  {toFaNumber(m)} دقیقه
-                </button>
-              ))}
+          {channel === "clinic" || visitTime ? (
+            <div className="space-y-2 sm:col-span-2">
+              <FieldLabel required={channel === "clinic"}>مدت نوبت</FieldLabel>
+              <div className="flex flex-wrap gap-2">
+                {durationOptions.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setDurationMinutes(m)}
+                    className={`h-10 rounded-xl px-3 text-sm font-semibold transition ${
+                      durationMinutes === m
+                        ? "bg-[#D86B5C] text-white"
+                        : "bg-[#F7F8F6] text-brand hover:bg-[#E8F2EA]"
+                    }`}
+                  >
+                    {toFaNumber(m)} دقیقه
+                  </button>
+                ))}
+              </div>
+              {visitTime && endPreview ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  از {formatTimeFa(visitTime)} تا {formatTimeFa(endPreview)} (
+                  {toFaNumber(durationMinutes)} دقیقه)
+                </p>
+              ) : null}
             </div>
-            {visitTime && endPreview ? (
-              <p className="mt-2 text-xs text-muted-foreground">
-                از {formatTimeFa(visitTime)} تا {formatTimeFa(endPreview)} (
-                {toFaNumber(durationMinutes)} دقیقه)
-              </p>
-            ) : null}
-          </div>
-          {visitType === "package" ? (
+          ) : null}
+          {visitType === "package" && channel === "clinic" ? (
             <div className="space-y-2 sm:col-span-2">
               <FieldLabel>نام پکیج / دستگاه</FieldLabel>
               <Input

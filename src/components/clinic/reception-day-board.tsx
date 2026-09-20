@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, UserPlus, Users, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, UserPlus, Users } from "lucide-react";
+import {
+  AttendanceButtons,
+  AttendanceMark,
+} from "@/components/clinic/attendance-buttons";
 import {
   formatJalaliDate,
   jalaliPartsToIsoDate,
@@ -377,6 +381,13 @@ export function ReceptionDayBoard({
             لیست مشتریان
           </Link>
           <Link
+            href={`/clinic/reception/new?date=${day}&channel=phone`}
+            className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#3B5BDB] px-4 text-sm font-semibold text-white"
+          >
+            <Phone className="size-4" />
+            نوبت تلفنی
+          </Link>
+          <Link
             href={`/clinic/reception/new?date=${day}`}
             className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#D86B5C] px-4 text-sm font-semibold text-white"
           >
@@ -497,17 +508,32 @@ export function ReceptionDayBoard({
 
       {untimed.length > 0 ? (
         <section className="rounded-[28px] bg-[#FFF8F5] p-4">
-          <h2 className="text-sm font-bold text-[#9A4E42]">بدون ساعت مشخص</h2>
+          <h2 className="text-sm font-bold text-[#9A4E42]">
+            نوبت‌های بدون ساعت / تلفنی
+          </h2>
           <ul className="mt-3 space-y-2">
             {untimed.map((visit) => {
               const n = visitNumberForPatient(visits, visit.patientId, visit.id);
               return (
                 <li
                   key={visit.id}
-                  className="flex items-center justify-between rounded-2xl bg-white px-3 py-2 text-sm"
+                  className={cn(
+                    "flex flex-wrap items-center justify-between gap-3 rounded-2xl px-3 py-2 text-sm",
+                    visit.status === "cancelled"
+                      ? "bg-[#F3F3F3]"
+                      : visit.status === "completed" || visit.status === "admitted"
+                        ? "bg-[#F2FBF4]"
+                        : "bg-white"
+                  )}
                 >
                   <span className="flex flex-wrap items-center gap-2">
+                    <AttendanceMark status={visit.status} />
                     <VisitBadge n={n} />
+                    {visit.channel === "phone" ? (
+                      <span className="rounded-full bg-[#EEF2FF] px-2 py-0.5 text-[10px] font-bold text-[#3B5BDB]">
+                        تلفنی
+                      </span>
+                    ) : null}
                     {visit.patient ? patientFullName(visit.patient) : "بدون نام"} ·{" "}
                     {visit.visitType === "package" ? "پکیج" : "ویزیت"}
                     {visit.patient?.phone ? (
@@ -520,6 +546,11 @@ export function ReceptionDayBoard({
                       </a>
                     ) : null}
                   </span>
+                  <AttendanceButtons
+                    status={visit.status}
+                    size="sm"
+                    onChange={(status) => setAttendance(visit.id, status)}
+                  />
                 </li>
               );
             })}
@@ -662,20 +693,10 @@ function LaneColumn({
                 {visit.patient ? patientFullName(visit.patient) : "بدون نام"}
               </p>
               <div className="flex shrink-0 items-center gap-1">
-                {attended ? (
-                  <span
-                    className="inline-flex size-5 items-center justify-center rounded-full bg-[#2F9E5A] text-white"
-                    title="مراجعه کرد"
-                  >
-                    <Check className="size-3.5 stroke-[3]" />
-                  </span>
-                ) : null}
-                {cancelled ? (
-                  <span
-                    className="inline-flex size-5 items-center justify-center rounded-full bg-[#C45C5C] text-white"
-                    title="لغو / نیامد"
-                  >
-                    <X className="size-3.5 stroke-[3]" />
+                <AttendanceMark status={visit.status} />
+                {visit.channel === "phone" ? (
+                  <span className="rounded-full bg-[#EEF2FF] px-1.5 py-0.5 text-[9px] font-bold text-[#3B5BDB]">
+                    تلفنی
                   </span>
                 ) : null}
                 <VisitBadge n={n} />
@@ -702,38 +723,11 @@ function LaneColumn({
               className="mt-1 flex items-center gap-1"
               onMouseDown={(e) => e.stopPropagation()}
             >
-              <button
-                type="button"
-                title="مراجعه کرد"
-                className={cn(
-                  "inline-flex size-6 items-center justify-center rounded-lg transition",
-                  attended
-                    ? "bg-[#2F9E5A] text-white"
-                    : "bg-white/80 text-[#2F9E5A] ring-1 ring-[#2F9E5A]/30 hover:bg-[#2F9E5A] hover:text-white"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAttendance(visit.id, "completed");
-                }}
-              >
-                <Check className="size-3.5 stroke-[3]" />
-              </button>
-              <button
-                type="button"
-                title="لغو / نیامد"
-                className={cn(
-                  "inline-flex size-6 items-center justify-center rounded-lg transition",
-                  cancelled
-                    ? "bg-[#C45C5C] text-white"
-                    : "bg-white/80 text-[#C45C5C] ring-1 ring-[#C45C5C]/30 hover:bg-[#C45C5C] hover:text-white"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAttendance(visit.id, "cancelled");
-                }}
-              >
-                <X className="size-3.5 stroke-[3]" />
-              </button>
+              <AttendanceButtons
+                status={visit.status}
+                size="sm"
+                onChange={(status) => onAttendance(visit.id, status)}
+              />
               {visit.patient ? (
                 <Link
                   href={`/clinic/reception/customers/${visit.patient.id}`}
