@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { VisitsTable } from "@/components/clinic/visits-table";
 import { PageHeader } from "@/components/clinic/page-header";
-import { listPatients, listVisits } from "@/lib/store";
+import { getAppData, listPatients, listVisits } from "@/lib/store";
 
 export default async function VisitorsPage() {
-  const [visits, patients] = await Promise.all([listVisits(), listPatients()]);
+  const [visits, patients, data] = await Promise.all([
+    listVisits(),
+    listPatients(),
+    getAppData(),
+  ]);
   const patientMap = Object.fromEntries(patients.map((p) => [p.id, p]));
   const rows = visits
     .filter((v) => v.status === "visitor")
@@ -25,7 +29,13 @@ export default async function VisitorsPage() {
           </Link>
         }
       />
-      <VisitsTable visits={rows} emptyTitle="مراجعه‌کننده‌ای در صف نیست" showAdmissionAction />
+      <VisitsTable
+        visits={rows}
+        allVisits={visits}
+        clinic={data.clinic}
+        emptyTitle="مراجعه‌کننده‌ای در صف نیست"
+        showAdmissionAction
+      />
     </div>
   );
 }

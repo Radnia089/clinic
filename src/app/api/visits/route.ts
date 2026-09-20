@@ -46,11 +46,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "patient_not_found" }, { status: 404 });
   }
 
+  const rawDuration = body.durationMinutes != null ? Number(body.durationMinutes) : undefined;
+  const durationMinutes =
+    rawDuration != null && Number.isFinite(rawDuration) && rawDuration > 0
+      ? Math.round(rawDuration)
+      : undefined;
+
   const visit = await createVisit({
     patientId,
     visitDate,
     visitType,
     visitTime: body.visitTime ? String(body.visitTime) : undefined,
+    durationMinutes,
     packageName:
       visitType === "package" ? packageName || "پکیج لاغری" : undefined,
     status,
@@ -73,6 +80,7 @@ export async function PATCH(request: Request) {
     visitType?: VisitType;
     visitDate?: string;
     visitTime?: string;
+    durationMinutes?: number;
   } = {};
 
   if (body.status) patch.status = body.status;
@@ -81,6 +89,10 @@ export async function PATCH(request: Request) {
   if (body.visitType) patch.visitType = body.visitType;
   if (body.visitDate) patch.visitDate = body.visitDate;
   if (body.visitTime !== undefined) patch.visitTime = body.visitTime;
+  if (body.durationMinutes != null) {
+    const d = Number(body.durationMinutes);
+    if (Number.isFinite(d) && d > 0) patch.durationMinutes = Math.round(d);
+  }
 
   const visit = await updateVisit(id, patch);
   if (!visit) {

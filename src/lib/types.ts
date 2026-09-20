@@ -47,6 +47,8 @@ export interface Visit {
   visitDate: string;
   /** ساعت شروع نوبت به صورت HH:mm مثلاً 17:30 */
   visitTime?: string;
+  /** مدت نوبت به دقیقه (مثلاً ۳۰ یا ۶۰) */
+  durationMinutes?: number;
   visitType: VisitType;
   status: VisitStatus;
   packageName?: string;
@@ -99,13 +101,15 @@ export interface ClinicProfile {
   address: string;
   hours: string;
   version: string;
-  /** شروع ساعت کاری HH:mm */
+  /** شروع بازه قابل انتخاب HH:mm */
   workStart: string;
-  /** پایان ساعت کاری HH:mm */
+  /** پایان بازه قابل انتخاب HH:mm */
   workEnd: string;
-  /** فاصله نوبت ویزیت به دقیقه */
+  /** واحد پایه تقویم (ربع ساعت) */
+  gridSlotMinutes: number;
+  /** مدت پیش‌فرض ویزیت به دقیقه */
   visitSlotMinutes: number;
-  /** فاصله نوبت پکیج/دستگاه به دقیقه */
+  /** مدت پیش‌فرض پکیج/دستگاه به دقیقه */
   packageSlotMinutes: number;
 }
 
@@ -124,10 +128,11 @@ export const DEFAULT_CLINIC: ClinicProfile = {
   tagline: "مراقبت شخصی برای مسیر سلامت و کاهش وزن",
   phone: "035-31234567",
   address: "یزد، بلوار جمهوری، نزدیک میدان امام",
-  hours: "شنبه تا پنج‌شنبه، ۱۷ تا ۲۱",
+  hours: "شنبه تا پنج‌شنبه، ۸ تا ۲۱ (شناور)",
   version: "1.0.0",
-  workStart: "17:00",
+  workStart: "08:00",
   workEnd: "21:00",
+  gridSlotMinutes: 15,
   visitSlotMinutes: 30,
   packageSlotMinutes: 60,
 };

@@ -9,7 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
 import { DigitsInput } from "@/components/ui/digits-input";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
-import { formatTimeFa, slotsForType } from "@/lib/schedule";
+import {
+  buildGridSlots,
+  endTimeFromStart,
+  formatTimeFa,
+  slotDurationForType,
+  toFaNumber,
+} from "@/lib/schedule";
 import type { ClinicProfile, Gender, VisitType } from "@/lib/types";
 
 const fieldClass =
@@ -20,11 +26,13 @@ export function NewVisitorForm({
   initialDate,
   initialTime,
   initialType,
+  initialDuration,
 }: {
   clinic: ClinicProfile;
   initialDate?: string;
   initialTime?: string;
   initialType?: VisitType;
+  initialDuration?: number;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -43,18 +51,54 @@ export function NewVisitorForm({
     initialType === "package" ? "package" : "consultation"
   );
   const [visitTime, setVisitTime] = useState(initialTime || "");
+  const [durationMinutes, setDurationMinutes] = useState(() => {
+    if (initialDuration && initialDuration > 0) return initialDuration;
+    return slotDurationForType(
+      clinic,
+      initialType === "package" ? "package" : "consultation"
+    );
+  });
   const [packageName, setPackageName] = useState("پکیج لاغری استاندارد");
 
+  const gridMinutes = clinic.gridSlotMinutes || 15;
   const slots = useMemo(
-    () => slotsForType(clinic, visitType),
-    [clinic, visitType]
+    () => buildGridSlots(clinic.workStart, clinic.workEnd, gridMinutes),
+    [clinic.workStart, clinic.workEnd, gridMinutes]
   );
+
+  const durationOptions = useMemo(() => {
+    const max = Math.max(
+      clinic.packageSlotMinutes,
+      clinic.visitSlotMinutes,
+      120
+    );
+    const opts: number[] = [];
+    for (let m = gridMinutes; m <= max; m += gridMinutes) opts.push(m);
+    return opts;
+  }, [clinic.packageSlotMinutes, clinic.visitSlotMinutes, gridMinutes]);
+
+  const endPreview =
+    visitTime && durationMinutes
+      ? endTimeFromStart(visitTime, durationMinutes)
+      : null;
+
+  function changeVisitType(next: VisitType) {
+    setVisitType(next);
+    // اگر مدت از تقویم آمده، دست نزن؛ وگرنه پیش‌فرض نوع را بگذار
+    if (!initialDuration) {
+      setDurationMinutes(slotDurationForType(clinic, next));
+    }
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError("");
     if (!visitTime) {
-      setError("لطفاً ساعت نوبت را انتخاب کنید.");
+      setError("لطفاً ساعت شروع نوبت را انتخاب کنید.");
+      return;
+    }
+    if (!durationMinutes || durationMinutes < gridMinutes) {
+      setError("مدت نوبت را مشخص کنید.");
       return;
     }
     setLoading(true);
@@ -95,6 +139,7 @@ export function NewVisitorForm({
           patientId,
           visitDate,
           visitTime,
+          durationMinutes,
           visitType,
           packageName: visitType === "package" ? packageName : undefined,
           status: "visitor",
@@ -178,9 +223,11 @@ export function NewVisitorForm({
 
       <section className="rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-6">
         <div className="mb-4 rounded-2xl bg-[#F6E6E1] px-4 py-3">
-          <p className="text-sm font-bold text-[#9A4E42]">۲ · تاریخ، نوع و ساعت نوبت</p>
+          <p className="text-sm font-bold text-[#9A4E42]">۲ · تاریخ، نوع و بازه زمانی</p>
           <p className="mt-1 text-xs text-[#9A4E42]/80">
-            ویزیت: هر {clinic.visitSlotMinutes} دقیقه · پکیج/دستگاه: هر {clinic.packageSlotMinutes} دقیقه
+            بازه شناور {formatTimeFa(clinic.workStart)} تا {formatTimeFa(clinic.workEnd)} · واحد{" "}
+            {toFaNumber(gridMinutes)} دقیقه · ویزیت معمولاً {toFaNumber(clinic.visitSlotMinutes)} دقیقه ·
+            دستگاه/پکیج معمولاً {toFaNumber(clinic.packageSlotMinutes)} دقیقه
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -193,35 +240,55 @@ export function NewVisitorForm({
             <select
               className={`w-full ${fieldClass}`}
               value={visitType}
-              onChange={(e) => {
-                const next = e.target.value as VisitType;
-                setVisitType(next);
-                const nextSlots = slotsForType(clinic, next);
-                if (!nextSlots.includes(visitTime)) setVisitTime(nextSlots[0] || "");
-              }}
+              onChange={(e) => changeVisitType(e.target.value as VisitType)}
             >
               <option value="consultation">ویزیت</option>
               <option value="package">پکیج / دستگاه</option>
             </select>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label>ساعت نوبت</Label>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+            <Label>ساعت شروع</Label>
+            <div className="grid max-h-56 grid-cols-4 gap-2 overflow-y-auto rounded-2xl bg-[#F7F8F6] p-2 sm:grid-cols-6">
               {slots.map((slot) => (
                 <button
                   key={slot}
                   type="button"
                   onClick={() => setVisitTime(slot)}
-                  className={`h-11 rounded-2xl text-sm font-semibold transition ${
+                  className={`h-10 rounded-xl text-sm font-semibold transition ${
                     visitTime === slot
                       ? "bg-brand text-white"
-                      : "bg-[#F7F8F6] text-brand hover:bg-[#E8F2EA]"
+                      : "bg-white text-brand hover:bg-[#E8F2EA]"
                   }`}
                 >
                   {formatTimeFa(slot)}
                 </button>
               ))}
             </div>
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label>مدت نوبت</Label>
+            <div className="flex flex-wrap gap-2">
+              {durationOptions.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setDurationMinutes(m)}
+                  className={`h-10 rounded-xl px-3 text-sm font-semibold transition ${
+                    durationMinutes === m
+                      ? "bg-[#D86B5C] text-white"
+                      : "bg-[#F7F8F6] text-brand hover:bg-[#E8F2EA]"
+                  }`}
+                >
+                  {toFaNumber(m)} دقیقه
+                </button>
+              ))}
+            </div>
+            {visitTime && endPreview ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                از {formatTimeFa(visitTime)} تا {formatTimeFa(endPreview)} (
+                {toFaNumber(durationMinutes)} دقیقه)
+              </p>
+            ) : null}
           </div>
           {visitType === "package" ? (
             <div className="space-y-2 sm:col-span-2">
