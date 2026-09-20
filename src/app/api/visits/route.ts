@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     patientId,
     visitDate,
     visitType,
+    visitTime: body.visitTime ? String(body.visitTime) : undefined,
     packageName:
       visitType === "package" ? packageName || "پکیج لاغری" : undefined,
     status,
@@ -71,6 +72,7 @@ export async function PATCH(request: Request) {
     packageName?: string;
     visitType?: VisitType;
     visitDate?: string;
+    visitTime?: string;
   } = {};
 
   if (body.status) patch.status = body.status;
@@ -78,6 +80,7 @@ export async function PATCH(request: Request) {
   if (body.packageName !== undefined) patch.packageName = body.packageName;
   if (body.visitType) patch.visitType = body.visitType;
   if (body.visitDate) patch.visitDate = body.visitDate;
+  if (body.visitTime !== undefined) patch.visitTime = body.visitTime;
 
   const visit = await updateVisit(id, patch);
   if (!visit) {

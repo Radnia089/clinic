@@ -10,10 +10,11 @@ import {
   todayJalaliParts,
   isSameIsoDay,
 } from "@/lib/jalali";
+import { formatTimeFa, slotsForType } from "@/lib/schedule";
 import {
   patientFullName,
   visitStatusLabel,
-  visitTypeLabel,
+  type ClinicProfile,
   type Patient,
   type Visit,
 } from "@/lib/types";
@@ -21,7 +22,13 @@ import { cn } from "@/lib/utils";
 
 type VisitRow = Visit & { patient: Patient | null };
 
-export function ReceptionDayBoard({ visits }: { visits: VisitRow[] }) {
+export function ReceptionDayBoard({
+  visits,
+  clinic,
+}: {
+  visits: VisitRow[];
+  clinic: ClinicProfile;
+}) {
   const [day, setDay] = useState(() => jalaliPartsToIsoDate(todayJalaliParts()));
   const todayIso = jalaliPartsToIsoDate(todayJalaliParts());
 
@@ -30,8 +37,30 @@ export function ReceptionDayBoard({ visits }: { visits: VisitRow[] }) {
     [visits, day]
   );
 
-  const visitsOnly = dayVisits.filter((v) => v.visitType === "consultation");
-  const packagesOnly = dayVisits.filter((v) => v.visitType === "package");
+  const visitSlots = slotsForType(clinic, "consultation");
+  const packageSlots = slotsForType(clinic, "package");
+
+  const visitByTime = useMemo(() => {
+    const map = new Map<string, VisitRow>();
+    for (const visit of dayVisits) {
+      if (visit.visitType === "consultation" && visit.visitTime) {
+        map.set(visit.visitTime, visit);
+      }
+    }
+    return map;
+  }, [dayVisits]);
+
+  const packageByTime = useMemo(() => {
+    const map = new Map<string, VisitRow>();
+    for (const visit of dayVisits) {
+      if (visit.visitType === "package" && visit.visitTime) {
+        map.set(visit.visitTime, visit);
+      }
+    }
+    return map;
+  }, [dayVisits]);
+
+  const untimed = dayVisits.filter((v) => !v.visitTime);
 
   const dayLabel = formatJalaliDate(day, { withMonthName: true });
   const isToday = day === todayIso;
@@ -40,8 +69,13 @@ export function ReceptionDayBoard({ visits }: { visits: VisitRow[] }) {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-medium text-muted-foreground">میز پذیرش</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-brand">مراجعه‌کنندگان روز</h1>
+          <p className="text-xs font-medium text-muted-foreground">تقویم روزانه پذیرش</p>
+          <h1 className="mt-1 text-2xl font-extrabold text-brand">نوبت‌های ساعتی</h1>
+          <p className="mt-1 text-xs text-muted-foreground">
+            ویزیت هر {new Intl.NumberFormat("fa-IR").format(clinic.visitSlotMinutes)} دقیقه ·
+            پکیج/دستگاه هر {new Intl.NumberFormat("fa-IR").format(clinic.packageSlotMinutes)} دقیقه ·
+            از {formatTimeFa(clinic.workStart)} تا {formatTimeFa(clinic.workEnd)}
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -52,7 +86,7 @@ export function ReceptionDayBoard({ visits }: { visits: VisitRow[] }) {
             لیست مشتریان
           </Link>
           <Link
-            href="/clinic/reception/new"
+            href={`/clinic/reception/new?date=${day}`}
             className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#D86B5C] px-4 text-sm font-semibold text-white"
           >
             <UserPlus className="size-4" />
@@ -74,7 +108,7 @@ export function ReceptionDayBoard({ visits }: { visits: VisitRow[] }) {
           <p className="text-base font-extrabold text-brand">{dayLabel}</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
             {isToday ? "امروز" : "تاریخ انتخاب‌شده"} ·{" "}
-            {new Intl.NumberFormat("fa-IR").format(dayVisits.length)} مراجعه
+            {new Intl.NumberFormat("fa-IR").format(dayVisits.length)} نوبت
           </p>
           {!isToday ? (
             <button
@@ -96,94 +130,154 @@ export function ReceptionDayBoard({ visits }: { visits: VisitRow[] }) {
         </button>
       </div>
 
-      {dayVisits.length === 0 ? (
-        <div className="rounded-[28px] bg-white px-6 py-14 text-center shadow-[0_6px_18px_rgba(35,70,55,0.06)]">
-          <p className="font-semibold text-brand">برای این روز مراجعه‌ای ثبت نشده</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            می‌توانید روز را عوض کنید یا مراجعه‌کننده جدید ثبت کنید.
+      <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_6px_18px_rgba(35,70,55,0.06)]">
+        <div className="grid grid-cols-[4.5rem_1fr_1fr] border-b border-black/5 bg-[#F7F8F6] text-center text-xs font-bold text-brand">
+          <div className="px-2 py-3">ساعت</div>
+          <div className="border-r border-black/5 px-2 py-3">
+            ویزیت
+            <span className="mt-0.5 block font-medium text-muted-foreground">
+              هر {new Intl.NumberFormat("fa-IR").format(clinic.visitSlotMinutes)} دقیقه
+            </span>
+          </div>
+          <div className="px-2 py-3">
+            پکیج / دستگاه
+            <span className="mt-0.5 block font-medium text-muted-foreground">
+              هر {new Intl.NumberFormat("fa-IR").format(clinic.packageSlotMinutes)} دقیقه
+            </span>
+          </div>
+        </div>
+
+        <div className="divide-y divide-black/5">
+          {visitSlots.map((time) => {
+            const visit = visitByTime.get(time);
+            // package column: show package slot only on package slot times
+            const isPackageSlot = packageSlots.includes(time);
+            const pkg = isPackageSlot ? packageByTime.get(time) : undefined;
+
+            return (
+              <div
+                key={time}
+                className="grid min-h-[64px] grid-cols-[4.5rem_1fr_1fr]"
+              >
+                <div className="flex items-start justify-center bg-[#FAFBFA] px-1 pt-3 text-xs font-semibold text-muted-foreground">
+                  {formatTimeFa(time)}
+                </div>
+
+                <div className="border-r border-black/5 p-1.5">
+                  {visit ? (
+                    <BookedBlock visit={visit} tone="visit" />
+                  ) : (
+                    <EmptySlot
+                      href={`/clinic/reception/new?date=${day}&time=${time}&type=consultation`}
+                      label="نوبت ویزیت خالی"
+                    />
+                  )}
+                </div>
+
+                <div className="p-1.5">
+                  {isPackageSlot ? (
+                    pkg ? (
+                      <BookedBlock visit={pkg} tone="package" />
+                    ) : (
+                      <EmptySlot
+                        href={`/clinic/reception/new?date=${day}&time=${time}&type=package`}
+                        label="نوبت دستگاه/پکیج خالی"
+                      />
+                    )
+                  ) : (
+                    <div className="h-full rounded-xl bg-[#F3F5F3]/70" aria-hidden />
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {untimed.length > 0 ? (
+        <section className="rounded-[28px] bg-[#FFF8F5] p-4">
+          <h2 className="text-sm font-bold text-[#9A4E42]">بدون ساعت مشخص</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            این مراجعه‌ها هنوز در تقویم ساعتی جاگذاری نشده‌اند.
           </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <DayGroup
-            title="ویزیت"
-            tone="bg-[#E8F2EA] text-[#2F6B4F]"
-            items={visitsOnly}
-          />
-          <DayGroup
-            title="پکیج لاغری"
-            tone="bg-[#F6E6E1] text-[#9A4E42]"
-            items={packagesOnly}
-          />
-        </div>
-      )}
+          <ul className="mt-3 space-y-2">
+            {untimed.map((visit) => (
+              <li
+                key={visit.id}
+                className="flex items-center justify-between rounded-2xl bg-white px-3 py-2 text-sm"
+              >
+                <span>
+                  {visit.patient ? patientFullName(visit.patient) : "بدون نام"} ·{" "}
+                  {visit.visitType === "package" ? "پکیج" : "ویزیت"}
+                </span>
+                {visit.patient ? (
+                  <Link
+                    href={`/clinic/reception/customers/${visit.patient.id}`}
+                    className="text-xs font-semibold text-brand"
+                  >
+                    پرونده
+                  </Link>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }
 
-function DayGroup({
-  title,
+function BookedBlock({
+  visit,
   tone,
-  items,
 }: {
-  title: string;
-  tone: string;
-  items: VisitRow[];
+  visit: VisitRow;
+  tone: "visit" | "package";
 }) {
-  if (items.length === 0) return null;
-
   return (
-    <section className="rounded-[28px] bg-white p-4 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <span className={cn("rounded-full px-3 py-1 text-xs font-bold", tone)}>
-          {title}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {new Intl.NumberFormat("fa-IR").format(items.length)} نفر
-        </span>
+    <div
+      className={cn(
+        "flex h-full min-h-[52px] flex-col justify-between rounded-xl px-2.5 py-2",
+        tone === "visit" ? "bg-[#E8F2EA] text-[#2F6B4F]" : "bg-[#F6E6E1] text-[#9A4E42]"
+      )}
+    >
+      <div>
+        <p className="text-xs font-extrabold">
+          {visit.patient ? patientFullName(visit.patient) : "بدون نام"}
+        </p>
+        <p className="mt-0.5 text-[10px] opacity-80">
+          {visit.visitTime ? formatTimeFa(visit.visitTime) : ""} · {visitStatusLabel(visit.status)}
+        </p>
       </div>
-      <ul className="space-y-2">
-        {items.map((visit) => (
-          <li
-            key={visit.id}
-            className="flex items-center justify-between gap-3 rounded-2xl bg-[#F7F8F6] px-3 py-3"
+      <div className="mt-1 flex gap-2">
+        {visit.patient ? (
+          <Link
+            href={`/clinic/reception/customers/${visit.patient.id}`}
+            className="text-[10px] font-bold underline-offset-2 hover:underline"
           >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-foreground">
-                {visit.patient ? patientFullName(visit.patient) : "بدون نام"}
-              </p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {visitTypeLabel(visit.visitType)}
-                {visit.packageName ? ` · ${visit.packageName}` : ""} ·{" "}
-                {visitStatusLabel(visit.status)}
-              </p>
-              {visit.patient?.phone ? (
-                <p className="mt-0.5 text-xs text-muted-foreground" dir="ltr">
-                  {visit.patient.phone}
-                </p>
-              ) : null}
-            </div>
-            <div className="flex shrink-0 flex-col items-end gap-1">
-              {visit.patient ? (
-                <Link
-                  href={`/clinic/reception/customers/${visit.patient.id}`}
-                  className="text-xs font-semibold text-brand"
-                >
-                  پرونده
-                </Link>
-              ) : null}
-              {visit.status === "visitor" ? (
-                <Link
-                  href={`/clinic/reception/admission/${visit.id}`}
-                  className="text-xs text-muted-foreground"
-                >
-                  پذیرش
-                </Link>
-              ) : null}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
+            پرونده
+          </Link>
+        ) : null}
+        {visit.status === "visitor" ? (
+          <Link
+            href={`/clinic/reception/admission/${visit.id}`}
+            className="text-[10px] font-bold underline-offset-2 hover:underline"
+          >
+            پذیرش
+          </Link>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function EmptySlot({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex h-full min-h-[52px] items-center justify-center rounded-xl border border-dashed border-[#D7E2D9] bg-[#FCFDFC] text-[11px] text-muted-foreground transition hover:border-brand/40 hover:bg-[#E8F2EA]/40 hover:text-brand"
+    >
+      {label}
+    </Link>
   );
 }
