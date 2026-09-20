@@ -193,5 +193,5 @@ export function formatMoney(amount: number) {
 }
 
 export function formatDateFa(iso: string) {
-  return formatJalaliDate(iso, { withMonthName: true });
+  return formatJalaliDate(iso, { withMonthName: true, withWeekday: true });
 }

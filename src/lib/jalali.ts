@@ -19,6 +19,17 @@ const JALALI_MONTHS = [
   "اسفند",
 ];
 
+/** ترتیب مطابق Date#getDay: ۰=یکشنبه … ۶=شنبه */
+const WEEKDAYS_FA = [
+  "یکشنبه",
+  "دوشنبه",
+  "سه‌شنبه",
+  "چهارشنبه",
+  "پنج‌شنبه",
+  "جمعه",
+  "شنبه",
+];
+
 export type JalaliParts = { jy: number; jm: number; jd: number };
 
 export function toJalaliParts(date: Date | string): JalaliParts {
@@ -66,21 +77,35 @@ export function daysInJalaliMonth(jy: number, jm: number) {
   return jalaaliMonthLength(jy, jm);
 }
 
+export function weekdayFa(input: string | Date): string {
+  const date = typeof input === "string" ? new Date(input.includes("T") ? input : `${input}T12:00:00`) : input;
+  if (Number.isNaN(date.getTime())) return "";
+  return WEEKDAYS_FA[date.getDay()] ?? "";
+}
+
 export function formatJalaliDate(
   input?: string | Date | null,
-  options?: { withMonthName?: boolean; withTime?: boolean }
+  options?: { withMonthName?: boolean; withTime?: boolean; withWeekday?: boolean }
 ) {
   if (!input) return "—";
-  const date = typeof input === "string" ? new Date(input) : input;
+  const date =
+    typeof input === "string"
+      ? new Date(input.includes("T") ? input : `${input}T12:00:00`)
+      : input;
   if (Number.isNaN(date.getTime())) return "—";
 
   const { jy, jm, jd } = toJalaliParts(date);
   const day = new Intl.NumberFormat("fa-IR").format(jd);
   const year = new Intl.NumberFormat("fa-IR", { useGrouping: false }).format(jy);
 
-  const datePart = options?.withMonthName
+  let datePart = options?.withMonthName
     ? `${day} ${JALALI_MONTHS[jm - 1]} ${year}`
     : `${year}/${new Intl.NumberFormat("fa-IR").format(jm)}/${day}`;
+
+  if (options?.withWeekday) {
+    const weekday = weekdayFa(date);
+    if (weekday) datePart = `${datePart} — ${weekday}`;
+  }
 
   if (!options?.withTime) return datePart;
 

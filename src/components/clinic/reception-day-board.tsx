@@ -62,7 +62,7 @@ export function ReceptionDayBoard({
 
   const untimed = dayVisits.filter((v) => !v.visitTime);
 
-  const dayLabel = formatJalaliDate(day, { withMonthName: true });
+  const dayLabel = formatJalaliDate(day, { withMonthName: true, withWeekday: true });
   const isToday = day === todayIso;
 
   return (
