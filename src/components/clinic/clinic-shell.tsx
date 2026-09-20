@@ -4,23 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
-  ClipboardList,
   LayoutDashboard,
   Users,
   UserPlus,
   Wallet,
   CalendarCheck,
   Stethoscope,
-  LineChart,
   Leaf,
 } from "lucide-react";
 
 const receptionLinks = [
   { href: "/clinic/reception", label: "میز پذیرش", icon: Stethoscope, short: "پذیرش" },
   { href: "/clinic/reception/new", label: "ثبت جدید", icon: UserPlus, short: "ثبت" },
-  { href: "/clinic/reception/visitors", label: "مراجعه‌کنندگان", icon: Users, short: "صف" },
-  { href: "/clinic/reception/admitted", label: "پذیرش‌شده‌ها", icon: ClipboardList, short: "پرونده" },
-  { href: "/clinic/progress", label: "وزن و سایز", icon: LineChart, short: "اندازه" },
+  { href: "/clinic/reception/customers", label: "لیست مشتریان", icon: Users, short: "مشتریان" },
 ];
 
 const managementLinks = [

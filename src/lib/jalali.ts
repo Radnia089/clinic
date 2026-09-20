@@ -49,6 +49,19 @@ export function todayJalaliParts(): JalaliParts {
   return toJalaliParts(new Date());
 }
 
+/** جابه‌جایی روز شمسی به‌اندازه delta روز */
+export function shiftIsoDateByDays(isoDate: string, delta: number): string {
+  const d = jalaliPartsToDate(isoDateToJalaliParts(isoDate));
+  d.setDate(d.getDate() + delta);
+  return jalaliPartsToIsoDate(toJalaliParts(d));
+}
+
+export function isSameIsoDay(a: string, b: string): boolean {
+  const left = a.includes("T") ? a.slice(0, 10) : a;
+  const right = b.includes("T") ? b.slice(0, 10) : b;
+  return left === right;
+}
+
 export function daysInJalaliMonth(jy: number, jm: number) {
   return jalaaliMonthLength(jy, jm);
 }
