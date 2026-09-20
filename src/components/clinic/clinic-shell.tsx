@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
@@ -11,6 +11,7 @@ import {
   CalendarCheck,
   Stethoscope,
   Leaf,
+  LogOut,
 } from "lucide-react";
 
 const receptionLinks = [
@@ -38,13 +39,22 @@ function isActive(pathname: string, href: string) {
 export function ClinicShell({
   children,
   version,
+  userName,
 }: {
   children: React.ReactNode;
   version: string;
+  userName?: string;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isReceptionArea =
     pathname.startsWith("/clinic/reception") || pathname.startsWith("/clinic/progress");
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+    router.refresh();
+  }
 
   return (
     <div className="min-h-screen bg-[#EEF1EE] text-foreground">
@@ -61,7 +71,7 @@ export function ClinicShell({
           </div>
 
           <div className="mt-6 rounded-[24px] bg-[#E8F2EA] p-4">
-            <p className="text-sm font-bold text-brand">سلام منشی 👋</p>
+            <p className="text-sm font-bold text-brand">سلام {userName || "کاربر"} 👋</p>
             <p className="mt-1 text-xs leading-6 text-muted-foreground">
               امروز مراجعه‌ها را سریع ثبت و پذیرش کن.
             </p>
@@ -124,12 +134,14 @@ export function ClinicShell({
             </div>
           </nav>
 
-          <Link
-            href="/"
-            className="mt-4 rounded-2xl bg-white px-3 py-2.5 text-sm text-muted-foreground transition hover:text-brand"
+          <button
+            type="button"
+            onClick={logout}
+            className="mt-4 flex items-center gap-2 rounded-2xl bg-white px-3 py-2.5 text-sm text-muted-foreground transition hover:text-brand"
           >
-            بازگشت به انتخاب اپ
-          </Link>
+            <LogOut className="size-4" />
+            خروج از حساب
+          </button>
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -142,7 +154,7 @@ export function ClinicShell({
                 <div>
                   <p className="text-sm font-extrabold text-brand">تندیس</p>
                   <p className="text-[11px] text-muted-foreground">
-                    {isReceptionArea ? "بخش پذیرش" : "پنل کلینیک"}
+                    {userName || (isReceptionArea ? "بخش پذیرش" : "پنل کلینیک")}
                   </p>
                 </div>
               </div>
@@ -152,9 +164,18 @@ export function ClinicShell({
                 </p>
                 <h1 className="text-lg font-extrabold text-brand">کلینیک رژیم درمانی تندیس</h1>
               </div>
-              <span className="rounded-full bg-[#E8F2EA] px-3 py-1 text-xs font-medium text-brand">
-                نسخه {version}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-[#E8F2EA] px-3 py-1 text-xs font-medium text-brand">
+                  نسخه {version}
+                </span>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="rounded-full bg-white px-3 py-1 text-xs font-medium text-muted-foreground md:hidden"
+                >
+                  خروج
+                </button>
+              </div>
             </div>
 
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1 md:hidden">
