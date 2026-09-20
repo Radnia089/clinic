@@ -52,34 +52,34 @@
 }
 
 :root {
-  /* Soft mist + deep teal wellness — light, clinical, desert-city calm */
-  --background: oklch(0.975 0.012 185);
-  --foreground: oklch(0.24 0.035 200);
-  --card: oklch(0.995 0.006 185);
-  --card-foreground: oklch(0.24 0.035 200);
-  --popover: oklch(0.995 0.006 185);
-  --popover-foreground: oklch(0.24 0.035 200);
-  --primary: oklch(0.4 0.075 195);
-  --primary-foreground: oklch(0.98 0.01 185);
-  --secondary: oklch(0.93 0.025 185);
-  --secondary-foreground: oklch(0.3 0.05 195);
-  --muted: oklch(0.94 0.018 185);
-  --muted-foreground: oklch(0.48 0.03 200);
-  --accent: oklch(0.93 0.03 175);
-  --accent-foreground: oklch(0.28 0.05 195);
-  --destructive: oklch(0.55 0.2 25);
-  --border: oklch(0.88 0.02 190);
-  --input: oklch(0.88 0.02 190);
-  --ring: oklch(0.5 0.07 195);
-  --brand: oklch(0.38 0.08 195);
-  --brand-soft: oklch(0.92 0.04 185);
-  --cta: oklch(0.62 0.14 55);
-  --cta-foreground: oklch(0.99 0.01 85);
-  --chart-1: oklch(0.4 0.075 195);
-  --chart-2: oklch(0.62 0.14 55);
-  --chart-3: oklch(0.55 0.06 175);
-  --chart-4: oklch(0.7 0.05 200);
-  --chart-5: oklch(0.48 0.04 210);
+  /* Forest green + soft coral — matching patient app mockup */
+  --background: oklch(0.975 0.008 145);
+  --foreground: oklch(0.28 0.03 155);
+  --card: oklch(0.995 0.004 145);
+  --card-foreground: oklch(0.28 0.03 155);
+  --popover: oklch(0.995 0.004 145);
+  --popover-foreground: oklch(0.28 0.03 155);
+  --primary: oklch(0.42 0.08 155);
+  --primary-foreground: oklch(0.98 0.01 145);
+  --secondary: oklch(0.94 0.02 150);
+  --secondary-foreground: oklch(0.32 0.05 155);
+  --muted: oklch(0.95 0.012 150);
+  --muted-foreground: oklch(0.5 0.025 155);
+  --accent: oklch(0.94 0.02 150);
+  --accent-foreground: oklch(0.32 0.05 155);
+  --destructive: oklch(0.55 0.18 25);
+  --border: oklch(0.9 0.015 150);
+  --input: oklch(0.9 0.015 150);
+  --ring: oklch(0.48 0.07 155);
+  --brand: oklch(0.42 0.08 155);
+  --brand-soft: oklch(0.93 0.03 150);
+  --cta: oklch(0.65 0.12 35);
+  --cta-foreground: oklch(0.99 0.01 40);
+  --chart-1: oklch(0.42 0.08 155);
+  --chart-2: oklch(0.65 0.12 35);
+  --chart-3: oklch(0.55 0.06 160);
+  --chart-4: oklch(0.7 0.04 150);
+  --chart-5: oklch(0.48 0.04 170);
   --radius: 0.75rem;
   --sidebar: oklch(0.97 0.012 185);
   --sidebar-foreground: oklch(0.24 0.035 200);
