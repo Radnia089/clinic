@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
+import { DigitsInput } from "@/components/ui/digits-input";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
@@ -87,13 +88,13 @@ export function PatientBookingForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="pphone">موبایل</Label>
-        <Input
+        <DigitsInput
           id="pphone"
-          dir="ltr"
-          className="h-11 rounded-xl text-left"
+          mode="phone"
+          className="h-11 rounded-xl"
           placeholder="0913xxxxxxx"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onValueChange={setPhone}
           required
         />
       </div>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAppointment, listAppointments, updateAppointment } from "@/lib/store";
+import { normalizeIntegerInput } from "@/lib/digits";
 
 export async function GET() {
   const appointments = await listAppointments();
@@ -9,7 +10,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const body = await request.json();
   const name = String(body.name ?? "").trim();
-  const phone = String(body.phone ?? "").replace(/\s|-/g, "");
+  const phone = normalizeIntegerInput(String(body.phone ?? ""));
   const service = String(body.service ?? "").trim();
   const preferredDate = body.preferredDate
     ? String(body.preferredDate)

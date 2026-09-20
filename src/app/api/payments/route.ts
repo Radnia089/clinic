@@ -6,6 +6,7 @@ import {
   listVisits,
   updatePayment,
 } from "@/lib/store";
+import { parseNormalizedNumber } from "@/lib/digits";
 import type { PaymentMethod, PaymentStatus } from "@/lib/types";
 
 export async function GET() {
@@ -30,8 +31,8 @@ export async function POST(request: Request) {
   const body = await request.json();
   const patientId = String(body.patientId ?? "");
   const title = String(body.title ?? "").trim();
-  const amount = Number(body.amount);
-  const paidAmount = Number(body.paidAmount ?? 0);
+  const amount = parseNormalizedNumber(String(body.amount ?? ""));
+  const paidAmount = parseNormalizedNumber(String(body.paidAmount ?? "0"));
   const method = body.method as PaymentMethod;
   const visitId = body.visitId ? String(body.visitId) : undefined;
   const note = body.note ? String(body.note).trim() : undefined;

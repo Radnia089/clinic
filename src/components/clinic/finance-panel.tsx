@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DigitsInput } from "@/components/ui/digits-input";
 import { Label } from "@/components/ui/label";
 import {
   Table,
@@ -134,21 +135,21 @@ export function FinancePanel({ initialPayments }: { initialPayments: PaymentRow[
         </div>
         <div className="space-y-2">
           <Label>مبلغ کل (تومان)</Label>
-          <Input
-            type="number"
+          <DigitsInput
+            mode="integer"
             className="h-11 rounded-xl"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onValueChange={setAmount}
             required
           />
         </div>
         <div className="space-y-2">
           <Label>مبلغ پرداخت‌شده</Label>
-          <Input
-            type="number"
+          <DigitsInput
+            mode="integer"
             className="h-11 rounded-xl"
             value={paidAmount}
-            onChange={(e) => setPaidAmount(e.target.value)}
+            onValueChange={setPaidAmount}
           />
         </div>
         <div className="space-y-2 sm:col-span-2">

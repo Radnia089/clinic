@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createPatient, findPatientByPhone, listPatients } from "@/lib/store";
+import { normalizeIntegerInput, parseNormalizedNumber } from "@/lib/digits";
 import type { Gender } from "@/lib/types";
 
 export async function GET() {
@@ -11,9 +12,9 @@ export async function POST(request: Request) {
   const body = await request.json();
   const firstName = String(body.firstName ?? "").trim();
   const lastName = String(body.lastName ?? "").trim();
-  const age = Number(body.age);
+  const age = parseNormalizedNumber(String(body.age ?? ""));
   const gender = body.gender as Gender;
-  const phone = String(body.phone ?? "").replace(/\s|-/g, "");
+  const phone = normalizeIntegerInput(String(body.phone ?? ""));
   const address = String(body.address ?? "").trim();
   const notes = String(body.notes ?? "").trim();
 

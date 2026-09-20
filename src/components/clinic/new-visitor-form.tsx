@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
+import { DigitsInput } from "@/components/ui/digits-input";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 import type { Gender, VisitType } from "@/lib/types";
 
@@ -104,7 +105,13 @@ export function NewVisitorForm() {
           </div>
           <div className="space-y-2">
             <Label>سن</Label>
-            <Input className={fieldClass} type="number" min={1} max={120} value={age} onChange={(e) => setAge(e.target.value)} required />
+            <DigitsInput
+              mode="integer"
+              className={fieldClass}
+              value={age}
+              onValueChange={setAge}
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label>جنسیت</Label>
@@ -120,12 +127,12 @@ export function NewVisitorForm() {
           </div>
           <div className="space-y-2">
             <Label>شماره موبایل</Label>
-            <Input
-              dir="ltr"
-              className={`${fieldClass} text-left`}
+            <DigitsInput
+              mode="phone"
+              className={fieldClass}
               placeholder="0913xxxxxxx"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onValueChange={setPhone}
               required
             />
           </div>

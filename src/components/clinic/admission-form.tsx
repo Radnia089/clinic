@@ -4,14 +4,26 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DigitsInput } from "@/components/ui/digits-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { parseNormalizedNumber } from "@/lib/digits";
 import type { AdmissionForm, Visit } from "@/lib/types";
 
 const fieldClass =
   "h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] px-3 text-base focus-visible:border-brand focus-visible:ring-brand/20";
 const areaClass =
   "min-h-20 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] focus-visible:border-brand focus-visible:ring-brand/20";
+
+function numToStr(value?: number) {
+  return value === undefined || value === null || Number.isNaN(value) ? "" : String(value);
+}
+
+function strToNum(value: string): number | undefined {
+  if (!value.trim()) return undefined;
+  const n = parseNormalizedNumber(value);
+  return Number.isFinite(n) ? n : undefined;
+}
 
 export function AdmissionFormEditor({
   visit,
@@ -88,57 +100,47 @@ export function AdmissionFormEditor({
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <Label>قد (سانتی‌متر)</Label>
-            <Input
-              type="number"
+            <DigitsInput
+              mode="decimal"
               className={fieldClass}
-              value={form.heightCm ?? ""}
-              onChange={(e) =>
-                setField("heightCm", e.target.value ? Number(e.target.value) : undefined)
-              }
+              value={numToStr(form.heightCm)}
+              onValueChange={(v) => setField("heightCm", strToNum(v))}
             />
           </div>
           <div className="space-y-2">
             <Label>وزن فعلی</Label>
-            <Input
-              type="number"
+            <DigitsInput
+              mode="decimal"
               className={fieldClass}
-              value={form.weightKg ?? ""}
-              onChange={(e) =>
-                setField("weightKg", e.target.value ? Number(e.target.value) : undefined)
-              }
+              value={numToStr(form.weightKg)}
+              onValueChange={(v) => setField("weightKg", strToNum(v))}
             />
           </div>
           <div className="space-y-2">
             <Label>وزن هدف</Label>
-            <Input
-              type="number"
+            <DigitsInput
+              mode="decimal"
               className={fieldClass}
-              value={form.goalWeightKg ?? ""}
-              onChange={(e) =>
-                setField("goalWeightKg", e.target.value ? Number(e.target.value) : undefined)
-              }
+              value={numToStr(form.goalWeightKg)}
+              onValueChange={(v) => setField("goalWeightKg", strToNum(v))}
             />
           </div>
           <div className="space-y-2">
             <Label>دور کمر</Label>
-            <Input
-              type="number"
+            <DigitsInput
+              mode="decimal"
               className={fieldClass}
-              value={form.waistCm ?? ""}
-              onChange={(e) =>
-                setField("waistCm", e.target.value ? Number(e.target.value) : undefined)
-              }
+              value={numToStr(form.waistCm)}
+              onValueChange={(v) => setField("waistCm", strToNum(v))}
             />
           </div>
           <div className="space-y-2">
             <Label>دور باسن</Label>
-            <Input
-              type="number"
+            <DigitsInput
+              mode="decimal"
               className={fieldClass}
-              value={form.hipCm ?? ""}
-              onChange={(e) =>
-                setField("hipCm", e.target.value ? Number(e.target.value) : undefined)
-              }
+              value={numToStr(form.hipCm)}
+              onValueChange={(v) => setField("hipCm", strToNum(v))}
             />
           </div>
           <div className="space-y-2">

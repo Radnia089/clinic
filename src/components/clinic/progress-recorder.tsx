@@ -21,6 +21,7 @@ import {
   type ProgressMeasurement,
 } from "@/lib/types";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
+import { DigitsInput } from "@/components/ui/digits-input";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 
 type Row = ProgressMeasurement & { patient: Patient | null };
@@ -122,34 +123,31 @@ export function ProgressRecorder() {
         </div>
         <div className="space-y-2">
           <Label>وزن (کیلوگرم)</Label>
-          <Input
-            type="number"
-            step="0.1"
+          <DigitsInput
+            mode="decimal"
             className="h-11 rounded-xl"
             value={weightKg}
-            onChange={(e) => setWeightKg(e.target.value)}
+            onValueChange={setWeightKg}
             required
           />
         </div>
         <div className="space-y-2">
           <Label>دور کمر (سانتی‌متر)</Label>
-          <Input
-            type="number"
-            step="0.1"
+          <DigitsInput
+            mode="decimal"
             className="h-11 rounded-xl"
             value={waistCm}
-            onChange={(e) => setWaistCm(e.target.value)}
+            onValueChange={setWaistCm}
             required
           />
         </div>
         <div className="space-y-2">
           <Label>دور باسن (اختیاری)</Label>
-          <Input
-            type="number"
-            step="0.1"
+          <DigitsInput
+            mode="decimal"
             className="h-11 rounded-xl"
             value={hipCm}
-            onChange={(e) => setHipCm(e.target.value)}
+            onValueChange={setHipCm}
           />
         </div>
         <div className="space-y-2 sm:col-span-2">

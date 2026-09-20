@@ -5,6 +5,7 @@ import {
   listMeasurements,
   listPatients,
 } from "@/lib/store";
+import { parseNormalizedNumber } from "@/lib/digits";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -34,9 +35,10 @@ export async function POST(request: Request) {
   const body = await request.json();
   const patientId = String(body.patientId ?? "");
   const recordedAt = String(body.recordedAt ?? new Date().toISOString());
-  const weightKg = Number(body.weightKg);
-  const waistCm = Number(body.waistCm);
-  const hipCm = body.hipCm !== undefined && body.hipCm !== "" ? Number(body.hipCm) : undefined;
+  const weightKg = parseNormalizedNumber(String(body.weightKg ?? ""));
+  const waistCm = parseNormalizedNumber(String(body.waistCm ?? ""));
+  const hipRaw = body.hipCm !== undefined && body.hipCm !== "" ? String(body.hipCm) : "";
+  const hipCm = hipRaw ? parseNormalizedNumber(hipRaw) : undefined;
   const note = body.note ? String(body.note).trim() : undefined;
 
   if (
