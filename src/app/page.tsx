@@ -42,7 +42,7 @@ export default async function HomePage() {
           </Link>
 
           <Link
-            href="/clinic"
+            href="/login?next=/clinic/reception"
             className="group rounded-[2rem] bg-brand p-7 text-primary-foreground shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
           >
             <p className="text-sm font-medium text-white/75">اپ کلینیک</p>
@@ -51,7 +51,7 @@ export default async function HomePage() {
               ثبت مراجعه‌کننده، فرم پذیرش، جداول لیست‌ها، نوبت‌های آنلاین و بخش مالی.
             </p>
             <span className="mt-6 inline-flex text-sm font-semibold text-white group-hover:underline">
-              ورود به اپ کلینیک
+              ورود با نام کاربری
             </span>
           </Link>
         </div>
