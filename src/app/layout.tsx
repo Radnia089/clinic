@@ -9,9 +9,9 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
-  title: "کلینیک لاغری تندیس یزد | کاهش وزن علمی و مراقبت شخصی",
+  title: "کلینیک رژیم درمانی تندیس",
   description:
-    "کلینیک لاغری تندیس یزد — برنامه‌های تخصصی کاهش وزن، تغذیه درمانی و مراقبت بدنی با پیگیری مستمر در یزد.",
+    "اپلیکیشن مشتری و کلینیک برای پذیرش، نوبت‌دهی، اطلاعات تخصصی و مدیریت مالی تندیس.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
