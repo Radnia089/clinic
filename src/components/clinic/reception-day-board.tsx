@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, UserPlus, Users } from "lucide-react";
 import {
@@ -16,6 +16,7 @@ import {
   durationForVisit,
   endTimeFromStart,
   formatTimeFa,
+  minutesToTime,
   rangesOverlap,
   slotDurationForType,
   timeToMinutes,
@@ -28,17 +29,40 @@ import {
   type ClinicProfile,
   type Patient,
   type Visit,
-  type VisitType,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type VisitRow = Visit & { patient: Patient | null };
 type Lane = "consultation" | "package";
 
-const ROW_PX = 28;
+const ROW_PX = 30;
+const MIN_DURATION = 15;
+
+type Interaction =
+  | {
+      kind: "create";
+      lane: Lane;
+      anchorMin: number;
+      currentMin: number;
+    }
+  | {
+      kind: "move";
+      visitId: string;
+      lane: Lane;
+      duration: number;
+      grabOffsetMin: number;
+      previewStartMin: number;
+    }
+  | {
+      kind: "resize";
+      visitId: string;
+      lane: Lane;
+      startMin: number;
+      previewDuration: number;
+    };
 
 export function ReceptionDayBoard({
-  visits,
+  visits: initialVisits,
   clinic,
 }: {
   visits: VisitRow[];
@@ -48,6 +72,13 @@ export function ReceptionDayBoard({
   const [day, setDay] = useState(() => jalaliPartsToIsoDate(todayJalaliParts()));
   const todayIso = jalaliPartsToIsoDate(todayJalaliParts());
   const gridMinutes = clinic.gridSlotMinutes || 15;
+  const [visits, setVisits] = useState(initialVisits);
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [hint, setHint] = useState("");
+
+  useEffect(() => {
+    setVisits(initialVisits);
+  }, [initialVisits]);
 
   const dayVisits = useMemo(
     () => visits.filter((v) => isSameIsoDay(v.visitDate, day)),
@@ -59,89 +90,258 @@ export function ReceptionDayBoard({
     [clinic.workStart, clinic.workEnd, gridMinutes]
   );
 
+  const workStartMin = timeToMinutes(clinic.workStart);
+  const workEndMin = timeToMinutes(clinic.workEnd);
   const untimed = dayVisits.filter((v) => !v.visitTime);
   const dayLabel = formatJalaliDate(day, { withMonthName: true, withWeekday: true });
   const isToday = day === todayIso;
 
-  const [drag, setDrag] = useState<null | {
-    lane: Lane;
-    start: string;
-    end: string;
-  }>(null);
-  const dragging = useRef(false);
+  const [interaction, setInteraction] = useState<Interaction | null>(null);
+  const interactionRef = useRef<Interaction | null>(null);
+  const laneRefs = useRef<Record<Lane, HTMLDivElement | null>>({
+    consultation: null,
+    package: null,
+  });
+
+  useEffect(() => {
+    interactionRef.current = interaction;
+  }, [interaction]);
 
   function laneVisits(lane: Lane) {
-    return dayVisits.filter(
-      (v) => v.visitType === lane && v.visitTime
+    return dayVisits.filter((v) => v.visitType === lane && v.visitTime);
+  }
+
+  function snapMinutes(raw: number) {
+    const snapped =
+      Math.round((raw - workStartMin) / gridMinutes) * gridMinutes + workStartMin;
+    return Math.max(workStartMin, Math.min(workEndMin - gridMinutes, snapped));
+  }
+
+  function minutesFromPointer(lane: Lane, clientY: number) {
+    const el = laneRefs.current[lane];
+    if (!el) return workStartMin;
+    const rect = el.getBoundingClientRect();
+    const y = clientY - rect.top;
+    const raw = workStartMin + (y / ROW_PX) * gridMinutes;
+    return snapMinutes(raw);
+  }
+
+  function conflictsWithOthers(
+    lane: Lane,
+    visitId: string,
+    start: string,
+    duration: number
+  ) {
+    return laneVisits(lane).some((v) => {
+      if (v.id === visitId) return false;
+      return rangesOverlap(
+        start,
+        duration,
+        v.visitTime!,
+        durationForVisit(v, clinic)
+      );
+    });
+  }
+
+  async function persistVisit(
+    visitId: string,
+    patch: { visitTime: string; durationMinutes: number }
+  ) {
+    setSavingId(visitId);
+    setHint("");
+    const previous = visits;
+    setVisits((list) =>
+      list.map((v) => (v.id === visitId ? { ...v, ...patch } : v))
     );
+
+    try {
+      const res = await fetch("/api/visits", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: visitId, ...patch }),
+      });
+      if (!res.ok) throw new Error("save_failed");
+      router.refresh();
+    } catch {
+      setVisits(previous);
+      setHint("جابه‌جایی ذخیره نشد. دوباره تلاش کنید.");
+    } finally {
+      setSavingId(null);
+    }
   }
 
-  function coversSlot(visit: VisitRow, slot: string) {
-    if (!visit.visitTime) return false;
+  function beginCreate(lane: Lane, clientY: number) {
+    const min = minutesFromPointer(lane, clientY);
+    setInteraction({ kind: "create", lane, anchorMin: min, currentMin: min });
+  }
+
+  function beginMove(visit: VisitRow, lane: Lane, clientY: number) {
+    const startMin = timeToMinutes(visit.visitTime!);
     const duration = durationForVisit(visit, clinic);
-    const start = timeToMinutes(visit.visitTime);
-    const end = start + duration;
-    const t = timeToMinutes(slot);
-    return t >= start && t < end;
+    const pointerMin = minutesFromPointer(lane, clientY);
+    setInteraction({
+      kind: "move",
+      visitId: visit.id,
+      lane,
+      duration,
+      grabOffsetMin: pointerMin - startMin,
+      previewStartMin: startMin,
+    });
   }
 
-  function isStartSlot(visit: VisitRow, slot: string) {
-    return visit.visitTime === slot;
+  function beginResize(visit: VisitRow, lane: Lane) {
+    setInteraction({
+      kind: "resize",
+      visitId: visit.id,
+      lane,
+      startMin: timeToMinutes(visit.visitTime!),
+      previewDuration: durationForVisit(visit, clinic),
+    });
   }
 
-  function beginDrag(lane: Lane, slot: string) {
-    dragging.current = true;
-    setDrag({ lane, start: slot, end: slot });
-  }
+  function onPointerMove(lane: Lane, clientY: number) {
+    const current = interactionRef.current;
+    if (!current || current.lane !== lane) return;
 
-  function moveDrag(lane: Lane, slot: string) {
-    if (!dragging.current || !drag || drag.lane !== lane) return;
-    setDrag({ ...drag, end: slot });
-  }
-
-  function finishDrag() {
-    if (!drag) {
-      dragging.current = false;
+    if (current.kind === "create") {
+      setInteraction({
+        ...current,
+        currentMin: minutesFromPointer(lane, clientY),
+      });
       return;
     }
-    const startMin = Math.min(timeToMinutes(drag.start), timeToMinutes(drag.end));
-    const endMin = Math.max(timeToMinutes(drag.start), timeToMinutes(drag.end)) + gridMinutes;
-    let duration = endMin - startMin;
-    const defaultDuration = slotDurationForType(clinic, drag.lane);
-    // اگر فقط یک ربع کلیک شد، مدت پیش‌فرض نوع نوبت را بگذار
-    if (duration <= gridMinutes) duration = defaultDuration;
 
-    const start = minutesPad(startMin);
-    const occupied = laneVisits(drag.lane).some((v) =>
-      rangesOverlap(start, duration, v.visitTime!, durationForVisit(v, clinic))
-    );
+    if (current.kind === "move") {
+      const pointerMin = minutesFromPointer(lane, clientY);
+      let nextStart = pointerMin - current.grabOffsetMin;
+      nextStart =
+        Math.round((nextStart - workStartMin) / gridMinutes) * gridMinutes +
+        workStartMin;
+      const maxStart = workEndMin - current.duration;
+      nextStart = Math.max(workStartMin, Math.min(maxStart, nextStart));
+      setInteraction({ ...current, previewStartMin: nextStart });
+      return;
+    }
 
-    dragging.current = false;
-    setDrag(null);
-
-    if (occupied) return;
-
-    router.push(
-      `/clinic/reception/new?date=${day}&time=${start}&type=${drag.lane}&duration=${duration}`
-    );
+    if (current.kind === "resize") {
+      const pointerMin = minutesFromPointer(lane, clientY) + gridMinutes;
+      let duration = pointerMin - current.startMin;
+      duration = Math.max(
+        MIN_DURATION,
+        Math.round(duration / gridMinutes) * gridMinutes
+      );
+      const maxDuration = workEndMin - current.startMin;
+      duration = Math.min(maxDuration, duration);
+      setInteraction({ ...current, previewDuration: duration });
+    }
   }
 
-  function minutesPad(total: number) {
-    const h = Math.floor(total / 60);
-    const m = total % 60;
-    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  function finishInteraction() {
+    const current = interactionRef.current;
+    setInteraction(null);
+    if (!current) return;
+
+    if (current.kind === "create") {
+      const startMin = Math.min(current.anchorMin, current.currentMin);
+      const endMin =
+        Math.max(current.anchorMin, current.currentMin) + gridMinutes;
+      let duration = endMin - startMin;
+      if (duration <= gridMinutes) {
+        duration = slotDurationForType(clinic, current.lane);
+      }
+      const start = minutesToTime(startMin);
+      const occupied = laneVisits(current.lane).some((v) =>
+        rangesOverlap(
+          start,
+          duration,
+          v.visitTime!,
+          durationForVisit(v, clinic)
+        )
+      );
+      if (occupied) {
+        setHint("این بازه با نوبت دیگری تداخل دارد.");
+        return;
+      }
+      router.push(
+        `/clinic/reception/new?date=${day}&time=${start}&type=${current.lane}&duration=${duration}`
+      );
+      return;
+    }
+
+    if (current.kind === "move") {
+      const start = minutesToTime(current.previewStartMin);
+      const visit = dayVisits.find((v) => v.id === current.visitId);
+      if (!visit) return;
+      if (
+        start === visit.visitTime &&
+        current.duration === durationForVisit(visit, clinic)
+      ) {
+        return;
+      }
+      if (
+        conflictsWithOthers(
+          current.lane,
+          current.visitId,
+          start,
+          current.duration
+        )
+      ) {
+        setHint("جابه‌جایی ممکن نیست؛ با نوبت دیگری تداخل دارد.");
+        return;
+      }
+      void persistVisit(current.visitId, {
+        visitTime: start,
+        durationMinutes: current.duration,
+      });
+      return;
+    }
+
+    if (current.kind === "resize") {
+      const visit = dayVisits.find((v) => v.id === current.visitId);
+      if (!visit) return;
+      const start = minutesToTime(current.startMin);
+      if (current.previewDuration === durationForVisit(visit, clinic)) return;
+      if (
+        conflictsWithOthers(
+          current.lane,
+          current.visitId,
+          start,
+          current.previewDuration
+        )
+      ) {
+        setHint("کوتاه/بلند کردن ممکن نیست؛ با نوبت دیگری تداخل دارد.");
+        return;
+      }
+      void persistVisit(current.visitId, {
+        visitTime: start,
+        durationMinutes: current.previewDuration,
+      });
+    }
   }
 
-  function selectionCovers(lane: Lane, slot: string) {
-    if (!drag || drag.lane !== lane) return false;
-    const a = Math.min(timeToMinutes(drag.start), timeToMinutes(drag.end));
-    const b = Math.max(timeToMinutes(drag.start), timeToMinutes(drag.end));
-    const t = timeToMinutes(slot);
-    return t >= a && t <= b;
+  const finishRef = useRef(finishInteraction);
+  finishRef.current = finishInteraction;
+
+  useEffect(() => {
+    function onUp() {
+      if (interactionRef.current) finishRef.current();
+    }
+    window.addEventListener("mouseup", onUp);
+    return () => window.removeEventListener("mouseup", onUp);
+  }, []);
+
+  function createSelection(lane: Lane) {
+    if (!interaction || interaction.kind !== "create" || interaction.lane !== lane) {
+      return null;
+    }
+    const startMin = Math.min(interaction.anchorMin, interaction.currentMin);
+    const endMin =
+      Math.max(interaction.anchorMin, interaction.currentMin) + gridMinutes;
+    return { startMin, duration: endMin - startMin };
   }
 
   return (
-    <div className="space-y-5" onMouseUp={finishDrag} onMouseLeave={() => { if (dragging.current) finishDrag(); }}>
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-muted-foreground">تقویم روزانه پذیرش</p>
@@ -152,8 +352,11 @@ export function ReceptionDayBoard({
             دستگاه/پکیج معمولاً {toFaNumber(clinic.packageSlotMinutes)} دقیقه
           </p>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            برای انتخاب زمان، روی خانه خالی کلیک کنید یا بکشید (مثل تقویم).
+            خانه خالی را بکشید تا نوبت جدید بسازید · نوبت را بکشید تا جابه‌جا شود · از لبه پایین اندازه را عوض کنید.
           </p>
+          {hint ? (
+            <p className="mt-1 text-[11px] font-medium text-[#9A4E42]">{hint}</p>
+          ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -208,7 +411,7 @@ export function ReceptionDayBoard({
       </div>
 
       <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_6px_18px_rgba(35,70,55,0.06)] select-none">
-        <div className="grid grid-cols-[3.75rem_1fr_1fr] border-b border-black/5 bg-[#F7F8F6] text-center text-xs font-bold text-brand">
+        <div className="grid grid-cols-[4.25rem_1fr_1fr] border-b border-black/5 bg-[#F7F8F6] text-center text-xs font-bold text-brand">
           <div className="px-1 py-3">ساعت</div>
           <div className="border-r border-black/5 px-2 py-3">
             ویزیت
@@ -224,44 +427,59 @@ export function ReceptionDayBoard({
           </div>
         </div>
 
-        <div>
-          {gridSlots.map((slot) => (
-            <div
-              key={slot}
-              className="grid grid-cols-[3.75rem_1fr_1fr] border-b border-black/5"
-              style={{ height: ROW_PX }}
-            >
-              <div className="flex items-start justify-center bg-[#FAFBFA] pt-1 text-[10px] font-semibold text-muted-foreground">
-                {slot.endsWith(":00") || slot.endsWith(":30") ? formatTimeFa(slot) : ""}
+        <div className="grid grid-cols-[4.25rem_1fr_1fr]">
+          <div className="relative bg-[#FAFBFA]">
+            {gridSlots.map((slot) => (
+              <div
+                key={slot}
+                className="border-b border-black/5 pr-1 text-left text-[10px] font-semibold leading-none text-muted-foreground"
+                style={{ height: ROW_PX }}
+                dir="ltr"
+              >
+                <span className="inline-block pt-1.5 pl-1">{formatTimeFa(slot)}</span>
               </div>
-              <LaneCell
-                lane="consultation"
-                slot={slot}
-                visits={laneVisits("consultation")}
-                clinic={clinic}
-                allVisits={visits}
-                gridMinutes={gridMinutes}
-                coversSlot={coversSlot}
-                isStartSlot={isStartSlot}
-                selected={selectionCovers("consultation", slot)}
-                onStart={() => beginDrag("consultation", slot)}
-                onEnter={() => moveDrag("consultation", slot)}
-              />
-              <LaneCell
-                lane="package"
-                slot={slot}
-                visits={laneVisits("package")}
-                clinic={clinic}
-                allVisits={visits}
-                gridMinutes={gridMinutes}
-                coversSlot={coversSlot}
-                isStartSlot={isStartSlot}
-                selected={selectionCovers("package", slot)}
-                onStart={() => beginDrag("package", slot)}
-                onEnter={() => moveDrag("package", slot)}
-              />
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <LaneColumn
+            lane="consultation"
+            slots={gridSlots}
+            visits={laneVisits("consultation")}
+            allVisits={visits}
+            clinic={clinic}
+            gridMinutes={gridMinutes}
+            workStartMin={workStartMin}
+            selection={createSelection("consultation")}
+            interaction={interaction}
+            savingId={savingId}
+            laneRef={(el) => {
+              laneRefs.current.consultation = el;
+            }}
+            onEmptyDown={(y) => beginCreate("consultation", y)}
+            onMove={(y) => onPointerMove("consultation", y)}
+            onVisitMoveStart={(visit, y) => beginMove(visit, "consultation", y)}
+            onVisitResizeStart={(visit) => beginResize(visit, "consultation")}
+          />
+
+          <LaneColumn
+            lane="package"
+            slots={gridSlots}
+            visits={laneVisits("package")}
+            allVisits={visits}
+            clinic={clinic}
+            gridMinutes={gridMinutes}
+            workStartMin={workStartMin}
+            selection={createSelection("package")}
+            interaction={interaction}
+            savingId={savingId}
+            laneRef={(el) => {
+              laneRefs.current.package = el;
+            }}
+            onEmptyDown={(y) => beginCreate("package", y)}
+            onMove={(y) => onPointerMove("package", y)}
+            onVisitMoveStart={(visit, y) => beginMove(visit, "package", y)}
+            onVisitResizeStart={(visit) => beginResize(visit, "package")}
+          />
         </div>
       </div>
 
@@ -291,101 +509,172 @@ export function ReceptionDayBoard({
   );
 }
 
-function LaneCell({
+function LaneColumn({
   lane,
-  slot,
+  slots,
   visits,
-  clinic,
   allVisits,
+  clinic,
   gridMinutes,
-  coversSlot,
-  isStartSlot,
-  selected,
-  onStart,
-  onEnter,
+  workStartMin,
+  selection,
+  interaction,
+  savingId,
+  laneRef,
+  onEmptyDown,
+  onMove,
+  onVisitMoveStart,
+  onVisitResizeStart,
 }: {
   lane: Lane;
-  slot: string;
+  slots: string[];
   visits: VisitRow[];
-  clinic: ClinicProfile;
   allVisits: VisitRow[];
+  clinic: ClinicProfile;
   gridMinutes: number;
-  coversSlot: (visit: VisitRow, slot: string) => boolean;
-  isStartSlot: (visit: VisitRow, slot: string) => boolean;
-  selected: boolean;
-  onStart: () => void;
-  onEnter: () => void;
+  workStartMin: number;
+  selection: { startMin: number; duration: number } | null;
+  interaction: Interaction | null;
+  savingId: string | null;
+  laneRef: (el: HTMLDivElement | null) => void;
+  onEmptyDown: (clientY: number) => void;
+  onMove: (clientY: number) => void;
+  onVisitMoveStart: (visit: VisitRow, clientY: number) => void;
+  onVisitResizeStart: (visit: VisitRow) => void;
 }) {
-  const starter = visits.find((v) => isStartSlot(v, slot));
-  const coveredByOther = !starter && visits.some((v) => coversSlot(v, slot));
-
-  if (coveredByOther) {
-    return <div className="relative border-r border-black/5 last:border-r-0" />;
-  }
-
-  if (starter) {
-    const duration = durationForVisit(starter, clinic);
-    const rows = Math.max(1, Math.round(duration / gridMinutes));
-    const end = endTimeFromStart(starter.visitTime!, duration);
-    const n = visitNumberForPatient(allVisits, starter.patientId, starter.id);
-
-    return (
-      <div className="relative border-r border-black/5 last:border-r-0">
-        <div
-          className={cn(
-            "absolute inset-x-1 top-0 z-10 overflow-hidden rounded-xl px-2 py-1 shadow-sm",
-            lane === "consultation"
-              ? "bg-[#E8F2EA] text-[#2F6B4F]"
-              : "bg-[#F6E6E1] text-[#9A4E42]"
-          )}
-          style={{ height: rows * ROW_PX - 4 }}
-        >
-          <div className="flex items-start justify-between gap-1">
-            <p className="truncate text-[11px] font-extrabold leading-tight">
-              {starter.patient ? patientFullName(starter.patient) : "بدون نام"}
-            </p>
-            <VisitBadge n={n} />
-          </div>
-          <p className="mt-0.5 text-[9px] opacity-80">
-            {formatTimeFa(starter.visitTime!)}–{formatTimeFa(end)} · {visitStatusLabel(starter.status)}
-          </p>
-          <div className="mt-1 flex gap-2">
-            {starter.patient ? (
-              <Link
-                href={`/clinic/reception/customers/${starter.patient.id}`}
-                className="text-[9px] font-bold underline-offset-2 hover:underline"
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                پرونده
-              </Link>
-            ) : null}
-            {starter.status === "visitor" ? (
-              <Link
-                href={`/clinic/reception/admission/${starter.id}`}
-                className="text-[9px] font-bold underline-offset-2 hover:underline"
-                onMouseDown={(e) => e.stopPropagation()}
-              >
-                پذیرش
-              </Link>
-            ) : null}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
-      className={cn(
-        "border-r border-black/5 last:border-r-0",
-        selected ? "bg-brand/15" : "hover:bg-[#E8F2EA]/40"
-      )}
+      ref={laneRef}
+      className="relative border-r border-black/5 last:border-r-0"
+      style={{ height: slots.length * ROW_PX }}
       onMouseDown={(e) => {
+        if (e.button !== 0) return;
+        if ((e.target as HTMLElement).closest("[data-visit-block]")) return;
         e.preventDefault();
-        onStart();
+        onEmptyDown(e.clientY);
       }}
-      onMouseEnter={onEnter}
-    />
+      onMouseMove={(e) => onMove(e.clientY)}
+    >
+      {slots.map((slot) => (
+        <div
+          key={slot}
+          className="pointer-events-none absolute inset-x-0 border-b border-black/5"
+          style={{
+            top: ((timeToMinutes(slot) - workStartMin) / gridMinutes) * ROW_PX,
+            height: ROW_PX,
+          }}
+        />
+      ))}
+
+      {selection ? (
+        <div
+          className="pointer-events-none absolute inset-x-1 z-20 rounded-xl bg-brand/20 ring-1 ring-brand/30"
+          style={{
+            top: ((selection.startMin - workStartMin) / gridMinutes) * ROW_PX + 1,
+            height: (selection.duration / gridMinutes) * ROW_PX - 2,
+          }}
+        />
+      ) : null}
+
+      {visits.map((visit) => {
+        let start = visit.visitTime!;
+        let duration = durationForVisit(visit, clinic);
+
+        if (
+          interaction &&
+          (interaction.kind === "move" || interaction.kind === "resize") &&
+          interaction.visitId === visit.id
+        ) {
+          if (interaction.kind === "move") {
+            start = minutesToTime(interaction.previewStartMin);
+            duration = interaction.duration;
+          } else {
+            start = minutesToTime(interaction.startMin);
+            duration = interaction.previewDuration;
+          }
+        }
+
+        const top =
+          ((timeToMinutes(start) - workStartMin) / gridMinutes) * ROW_PX + 1;
+        const height = (duration / gridMinutes) * ROW_PX - 2;
+        const end = endTimeFromStart(start, duration);
+        const n = visitNumberForPatient(allVisits, visit.patientId, visit.id);
+        const active =
+          !!interaction &&
+          (interaction.kind === "move" || interaction.kind === "resize") &&
+          interaction.visitId === visit.id;
+        const saving = savingId === visit.id;
+
+        return (
+          <div
+            key={visit.id}
+            data-visit-block
+            className={cn(
+              "absolute inset-x-1 z-10 overflow-hidden rounded-xl px-2 py-1 shadow-sm",
+              lane === "consultation"
+                ? "bg-[#E8F2EA] text-[#2F6B4F]"
+                : "bg-[#F6E6E1] text-[#9A4E42]",
+              active && "ring-2 ring-brand/40",
+              saving && "opacity-70"
+            )}
+            style={{ top, height: Math.max(height, ROW_PX - 2), cursor: "grab" }}
+            onMouseDown={(e) => {
+              if (e.button !== 0) return;
+              if ((e.target as HTMLElement).closest("[data-resize-handle]")) return;
+              if ((e.target as HTMLElement).closest("a")) return;
+              e.preventDefault();
+              e.stopPropagation();
+              onVisitMoveStart(visit, e.clientY);
+            }}
+          >
+            <div className="flex items-start justify-between gap-1">
+              <p className="truncate text-[11px] font-extrabold leading-tight">
+                {visit.patient ? patientFullName(visit.patient) : "بدون نام"}
+              </p>
+              <VisitBadge n={n} />
+            </div>
+            <p className="mt-0.5 text-[9px] opacity-80">
+              {formatTimeFa(start)}–{formatTimeFa(end)} · {visitStatusLabel(visit.status)}
+            </p>
+            {height >= ROW_PX * 2 ? (
+              <div className="mt-1 flex gap-2">
+                {visit.patient ? (
+                  <Link
+                    href={`/clinic/reception/customers/${visit.patient.id}`}
+                    className="text-[9px] font-bold underline-offset-2 hover:underline"
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    پرونده
+                  </Link>
+                ) : null}
+                {visit.status === "visitor" ? (
+                  <Link
+                    href={`/clinic/reception/admission/${visit.id}`}
+                    className="text-[9px] font-bold underline-offset-2 hover:underline"
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    پذیرش
+                  </Link>
+                ) : null}
+              </div>
+            ) : null}
+            <div
+              data-resize-handle
+              title="کشیدن برای تغییر مدت"
+              className="absolute inset-x-2 bottom-0 h-2 cursor-ns-resize rounded-b-xl"
+              onMouseDown={(e) => {
+                if (e.button !== 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                onVisitResizeStart(visit);
+              }}
+            >
+              <div className="mx-auto mt-0.5 h-1 w-8 rounded-full bg-current opacity-35" />
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
