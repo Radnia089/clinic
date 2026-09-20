@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, UserPlus, Users } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, UserPlus, Users, X } from "lucide-react";
 import {
   formatJalaliDate,
   jalaliPartsToIsoDate,
@@ -29,6 +29,7 @@ import {
   type ClinicProfile,
   type Patient,
   type Visit,
+  type VisitStatus,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -145,7 +146,7 @@ export function ReceptionDayBoard({
 
   async function persistVisit(
     visitId: string,
-    patch: { visitTime: string; durationMinutes: number }
+    patch: Partial<Pick<Visit, "visitTime" | "durationMinutes" | "status">>
   ) {
     setSavingId(visitId);
     setHint("");
@@ -164,10 +165,18 @@ export function ReceptionDayBoard({
       router.refresh();
     } catch {
       setVisits(previous);
-      setHint("جابه‌جایی ذخیره نشد. دوباره تلاش کنید.");
+      setHint("تغییر ذخیره نشد. دوباره تلاش کنید.");
     } finally {
       setSavingId(null);
     }
+  }
+
+  function setAttendance(visitId: string, status: VisitStatus) {
+    const visit = visits.find((v) => v.id === visitId);
+    if (!visit) return;
+    // اگر همان وضعیت دوباره زده شد، برگردد به حالت در انتظار
+    const next = visit.status === status ? "visitor" : status;
+    void persistVisit(visitId, { status: next });
   }
 
   function beginCreate(lane: Lane, clientY: number) {
@@ -352,7 +361,8 @@ export function ReceptionDayBoard({
             دستگاه/پکیج معمولاً {toFaNumber(clinic.packageSlotMinutes)} دقیقه
           </p>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            خانه خالی را بکشید تا نوبت جدید بسازید · نوبت را بکشید تا جابه‌جا شود · از لبه پایین اندازه را عوض کنید.
+            خانه خالی را بکشید تا نوبت جدید بسازید · نوبت را بکشید تا جابه‌جا شود · از لبه پایین
+            اندازه را عوض کنید · تیک سبز = مراجعه کرد · ضربدر قرمز = لغو / نیامد.
           </p>
           {hint ? (
             <p className="mt-1 text-[11px] font-medium text-[#9A4E42]">{hint}</p>
@@ -459,6 +469,7 @@ export function ReceptionDayBoard({
             onMove={(y) => onPointerMove("consultation", y)}
             onVisitMoveStart={(visit, y) => beginMove(visit, "consultation", y)}
             onVisitResizeStart={(visit) => beginResize(visit, "consultation")}
+            onAttendance={setAttendance}
           />
 
           <LaneColumn
@@ -479,6 +490,7 @@ export function ReceptionDayBoard({
             onMove={(y) => onPointerMove("package", y)}
             onVisitMoveStart={(visit, y) => beginMove(visit, "package", y)}
             onVisitResizeStart={(visit) => beginResize(visit, "package")}
+            onAttendance={setAttendance}
           />
         </div>
       </div>
@@ -534,6 +546,7 @@ function LaneColumn({
   onMove,
   onVisitMoveStart,
   onVisitResizeStart,
+  onAttendance,
 }: {
   lane: Lane;
   slots: string[];
@@ -550,6 +563,7 @@ function LaneColumn({
   onMove: (clientY: number) => void;
   onVisitMoveStart: (visit: VisitRow, clientY: number) => void;
   onVisitResizeStart: (visit: VisitRow) => void;
+  onAttendance: (visitId: string, status: VisitStatus) => void;
 }) {
   return (
     <div
@@ -613,6 +627,8 @@ function LaneColumn({
           (interaction.kind === "move" || interaction.kind === "resize") &&
           interaction.visitId === visit.id;
         const saving = savingId === visit.id;
+        const attended = visit.status === "completed" || visit.status === "admitted";
+        const cancelled = visit.status === "cancelled";
 
         return (
           <div
@@ -620,9 +636,13 @@ function LaneColumn({
             data-visit-block
             className={cn(
               "absolute inset-x-1 z-10 overflow-hidden rounded-xl px-2 py-1 shadow-sm",
-              lane === "consultation"
-                ? "bg-[#E8F2EA] text-[#2F6B4F]"
-                : "bg-[#F6E6E1] text-[#9A4E42]",
+              cancelled
+                ? "bg-[#F3F3F3] text-[#8A8A8A] line-through decoration-[#C45C5C]/50"
+                : attended
+                  ? "bg-[#DCEFDF] text-[#1F6B3A] ring-1 ring-[#2F9E5A]/35"
+                  : lane === "consultation"
+                    ? "bg-[#E8F2EA] text-[#2F6B4F]"
+                    : "bg-[#F6E6E1] text-[#9A4E42]",
               active && "ring-2 ring-brand/40",
               saving && "opacity-70"
             )}
@@ -631,6 +651,7 @@ function LaneColumn({
               if (e.button !== 0) return;
               if ((e.target as HTMLElement).closest("[data-resize-handle]")) return;
               if ((e.target as HTMLElement).closest("a")) return;
+              if ((e.target as HTMLElement).closest("[data-attend-btn]")) return;
               e.preventDefault();
               e.stopPropagation();
               onVisitMoveStart(visit, e.clientY);
@@ -640,7 +661,25 @@ function LaneColumn({
               <p className="truncate text-[11px] font-extrabold leading-tight">
                 {visit.patient ? patientFullName(visit.patient) : "بدون نام"}
               </p>
-              <VisitBadge n={n} />
+              <div className="flex shrink-0 items-center gap-1">
+                {attended ? (
+                  <span
+                    className="inline-flex size-5 items-center justify-center rounded-full bg-[#2F9E5A] text-white"
+                    title="مراجعه کرد"
+                  >
+                    <Check className="size-3.5 stroke-[3]" />
+                  </span>
+                ) : null}
+                {cancelled ? (
+                  <span
+                    className="inline-flex size-5 items-center justify-center rounded-full bg-[#C45C5C] text-white"
+                    title="لغو / نیامد"
+                  >
+                    <X className="size-3.5 stroke-[3]" />
+                  </span>
+                ) : null}
+                <VisitBadge n={n} />
+              </div>
             </div>
             {visit.patient?.phone ? (
               <a
@@ -657,28 +696,55 @@ function LaneColumn({
             <p className="mt-0.5 text-[9px] opacity-80">
               {formatTimeFa(start)}–{formatTimeFa(end)} · {visitStatusLabel(visit.status)}
             </p>
-            {height >= ROW_PX * 2 ? (
-              <div className="mt-1 flex gap-2">
-                {visit.patient ? (
-                  <Link
-                    href={`/clinic/reception/customers/${visit.patient.id}`}
-                    className="text-[9px] font-bold underline-offset-2 hover:underline"
-                    onMouseDown={(e) => e.stopPropagation()}
-                  >
-                    پرونده
-                  </Link>
-                ) : null}
-                {visit.status === "visitor" ? (
-                  <Link
-                    href={`/clinic/reception/admission/${visit.id}`}
-                    className="text-[9px] font-bold underline-offset-2 hover:underline"
-                    onMouseDown={(e) => e.stopPropagation()}
-                  >
-                    پذیرش
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
+
+            <div
+              data-attend-btn
+              className="mt-1 flex items-center gap-1"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                title="مراجعه کرد"
+                className={cn(
+                  "inline-flex size-6 items-center justify-center rounded-lg transition",
+                  attended
+                    ? "bg-[#2F9E5A] text-white"
+                    : "bg-white/80 text-[#2F9E5A] ring-1 ring-[#2F9E5A]/30 hover:bg-[#2F9E5A] hover:text-white"
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAttendance(visit.id, "completed");
+                }}
+              >
+                <Check className="size-3.5 stroke-[3]" />
+              </button>
+              <button
+                type="button"
+                title="لغو / نیامد"
+                className={cn(
+                  "inline-flex size-6 items-center justify-center rounded-lg transition",
+                  cancelled
+                    ? "bg-[#C45C5C] text-white"
+                    : "bg-white/80 text-[#C45C5C] ring-1 ring-[#C45C5C]/30 hover:bg-[#C45C5C] hover:text-white"
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAttendance(visit.id, "cancelled");
+                }}
+              >
+                <X className="size-3.5 stroke-[3]" />
+              </button>
+              {visit.patient ? (
+                <Link
+                  href={`/clinic/reception/customers/${visit.patient.id}`}
+                  className="mr-auto text-[9px] font-bold underline-offset-2 hover:underline"
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  پرونده
+                </Link>
+              ) : null}
+            </div>
+
             <div
               data-resize-handle
               title="کشیدن برای تغییر مدت"

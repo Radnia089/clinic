@@ -212,13 +212,13 @@ export function visitTypeLabel(type: VisitType) {
 export function visitStatusLabel(status: VisitStatus) {
   switch (status) {
     case "visitor":
-      return "مراجعه‌کننده";
+      return "در انتظار";
     case "admitted":
       return "پذیرش‌شده";
     case "completed":
-      return "تکمیل‌شده";
+      return "مراجعه کرد";
     case "cancelled":
-      return "لغو‌شده";
+      return "لغو / نیامد";
   }
 }
 
