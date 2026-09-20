@@ -494,10 +494,19 @@ export function ReceptionDayBoard({
                   key={visit.id}
                   className="flex items-center justify-between rounded-2xl bg-white px-3 py-2 text-sm"
                 >
-                  <span className="flex items-center gap-2">
+                  <span className="flex flex-wrap items-center gap-2">
                     <VisitBadge n={n} />
                     {visit.patient ? patientFullName(visit.patient) : "بدون نام"} ·{" "}
                     {visit.visitType === "package" ? "پکیج" : "ویزیت"}
+                    {visit.patient?.phone ? (
+                      <a
+                        href={`tel:${visit.patient.phone}`}
+                        className="font-semibold text-brand underline-offset-2 hover:underline"
+                        dir="ltr"
+                      >
+                        {visit.patient.phone}
+                      </a>
+                    ) : null}
                   </span>
                 </li>
               );
@@ -633,6 +642,18 @@ function LaneColumn({
               </p>
               <VisitBadge n={n} />
             </div>
+            {visit.patient?.phone ? (
+              <a
+                href={`tel:${visit.patient.phone}`}
+                className="mt-0.5 block truncate text-[10px] font-semibold underline-offset-2 hover:underline"
+                dir="ltr"
+                title="تماس"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {visit.patient.phone}
+              </a>
+            ) : null}
             <p className="mt-0.5 text-[9px] opacity-80">
               {formatTimeFa(start)}–{formatTimeFa(end)} · {visitStatusLabel(visit.status)}
             </p>
