@@ -59,12 +59,12 @@ export default async function CustomerFilePage({
           <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2">
             <dt className="text-[11px] text-muted-foreground">سن / جنسیت</dt>
             <dd className="mt-1 text-sm font-medium">
-              {patient.age} · {genderLabel(patient.gender)}
+              {patient.age != null ? patient.age : "—"} · {genderLabel(patient.gender)}
             </dd>
           </div>
           <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2 sm:col-span-2">
             <dt className="text-[11px] text-muted-foreground">آدرس</dt>
-            <dd className="mt-1 text-sm font-medium">{patient.address}</dd>
+            <dd className="mt-1 text-sm font-medium">{patient.address || "—"}</dd>
           </div>
           {patient.notes ? (
             <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2 sm:col-span-2">

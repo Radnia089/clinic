@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,29 @@ import type { ClinicProfile, Gender, VisitType } from "@/lib/types";
 
 const fieldClass =
   "h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] px-3 text-base focus-visible:border-brand focus-visible:ring-brand/20";
+
+function FieldLabel({
+  children,
+  required,
+}: {
+  children: ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <Label className="inline-flex items-center gap-1">
+      <span>{children}</span>
+      {required ? (
+        <span className="text-sm font-bold text-red-500" title="اجباری">
+          *
+        </span>
+      ) : (
+        <span className="text-[11px] font-normal text-muted-foreground">
+          (اختیاری)
+        </span>
+      )}
+    </Label>
+  );
+}
 
 export function NewVisitorForm({
   clinic,
@@ -40,7 +63,7 @@ export function NewVisitorForm({
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [age, setAge] = useState("");
-  const [gender, setGender] = useState<Gender>("female");
+  const [gender, setGender] = useState<Gender | "">("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
@@ -84,7 +107,6 @@ export function NewVisitorForm({
 
   function changeVisitType(next: VisitType) {
     setVisitType(next);
-    // اگر مدت از تقویم آمده، دست نزن؛ وگرنه پیش‌فرض نوع را بگذار
     if (!initialDuration) {
       setDurationMinutes(slotDurationForType(clinic, next));
     }
@@ -93,6 +115,15 @@ export function NewVisitorForm({
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError("");
+
+    if (!lastName.trim()) {
+      setError("نام خانوادگی الزامی است.");
+      return;
+    }
+    if (!/^09\d{9}$/.test(phone.replace(/\D/g, ""))) {
+      setError("شماره موبایل معتبر (۱۱ رقم، شروع با ۰۹) الزامی است.");
+      return;
+    }
     if (!visitTime) {
       setError("لطفاً ساعت شروع نوبت را انتخاب کنید.");
       return;
@@ -108,13 +139,13 @@ export function NewVisitorForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName,
-          lastName,
-          age: Number(age),
-          gender,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          age: age.trim() || undefined,
+          gender: gender || "female",
           phone,
-          address,
-          notes,
+          address: address.trim(),
+          notes: notes.trim() || undefined,
         }),
       });
 
@@ -141,7 +172,10 @@ export function NewVisitorForm({
           visitTime,
           durationMinutes,
           visitType,
-          packageName: visitType === "package" ? packageName : undefined,
+          packageName:
+            visitType === "package"
+              ? packageName.trim() || "پکیج لاغری"
+              : undefined,
           status: "visitor",
         }),
       });
@@ -157,41 +191,57 @@ export function NewVisitorForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-5" noValidate>
       <section className="rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-6">
         <div className="mb-4 rounded-2xl bg-[#E8F2EA] px-4 py-3">
           <p className="text-sm font-bold text-brand">۱ · اطلاعات عمومی مشتری</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            اگر اولین مراجعه است، این مشخصات را کامل ثبت کنید.
+            فقط فیلدهای دارای <span className="font-bold text-red-500">*</span>{" "}
+            اجباری‌اند؛ بقیه را می‌توانید بعداً تکمیل کنید.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>نام</Label>
-            <Input className={fieldClass} value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+            <FieldLabel>نام</FieldLabel>
+            <Input
+              className={fieldClass}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
-            <Label>نام خانوادگی</Label>
-            <Input className={fieldClass} value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+            <FieldLabel required>نام خانوادگی</FieldLabel>
+            <Input
+              className={fieldClass}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+            />
           </div>
           <div className="space-y-2">
-            <Label>سن</Label>
-            <DigitsInput mode="integer" className={fieldClass} value={age} onValueChange={setAge} required />
+            <FieldLabel>سن</FieldLabel>
+            <DigitsInput
+              mode="integer"
+              className={fieldClass}
+              value={age}
+              onValueChange={setAge}
+            />
           </div>
           <div className="space-y-2">
-            <Label>جنسیت</Label>
+            <FieldLabel>جنسیت</FieldLabel>
             <select
               className={`w-full ${fieldClass}`}
               value={gender}
-              onChange={(e) => setGender(e.target.value as Gender)}
+              onChange={(e) => setGender(e.target.value as Gender | "")}
             >
+              <option value="">انتخاب نشده</option>
               <option value="female">زن</option>
               <option value="male">مرد</option>
               <option value="other">سایر</option>
             </select>
           </div>
           <div className="space-y-2">
-            <Label>شماره موبایل</Label>
+            <FieldLabel required>شماره موبایل</FieldLabel>
             <DigitsInput
               mode="phone"
               className={fieldClass}
@@ -202,16 +252,15 @@ export function NewVisitorForm({
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label>آدرس</Label>
+            <FieldLabel>آدرس</FieldLabel>
             <Textarea
               className="min-h-20 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] focus-visible:border-brand focus-visible:ring-brand/20"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              required
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label>توضیح عمومی (اختیاری)</Label>
+            <FieldLabel>توضیح عمومی</FieldLabel>
             <Textarea
               className="min-h-20 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] focus-visible:border-brand focus-visible:ring-brand/20"
               value={notes}
@@ -232,11 +281,11 @@ export function NewVisitorForm({
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>تاریخ مراجعه (شمسی)</Label>
+            <FieldLabel required>تاریخ مراجعه (شمسی)</FieldLabel>
             <ShamsiDateInput value={visitDate} onChange={setVisitDate} required />
           </div>
           <div className="space-y-2">
-            <Label>نوع مراجعه</Label>
+            <FieldLabel required>نوع مراجعه</FieldLabel>
             <select
               className={`w-full ${fieldClass}`}
               value={visitType}
@@ -247,7 +296,7 @@ export function NewVisitorForm({
             </select>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label>ساعت شروع</Label>
+            <FieldLabel required>ساعت شروع</FieldLabel>
             <div className="grid max-h-56 grid-cols-4 gap-2 overflow-y-auto rounded-2xl bg-[#F7F8F6] p-2 sm:grid-cols-6">
               {slots.map((slot) => (
                 <button
@@ -266,7 +315,7 @@ export function NewVisitorForm({
             </div>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label>مدت نوبت</Label>
+            <FieldLabel required>مدت نوبت</FieldLabel>
             <div className="flex flex-wrap gap-2">
               {durationOptions.map((m) => (
                 <button
@@ -292,12 +341,11 @@ export function NewVisitorForm({
           </div>
           {visitType === "package" ? (
             <div className="space-y-2 sm:col-span-2">
-              <Label>نام پکیج / دستگاه</Label>
+              <FieldLabel>نام پکیج / دستگاه</FieldLabel>
               <Input
                 className={fieldClass}
                 value={packageName}
                 onChange={(e) => setPackageName(e.target.value)}
-                required
               />
             </div>
           ) : null}

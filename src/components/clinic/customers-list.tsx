@@ -69,7 +69,8 @@ export function CustomersList({ patients }: { patients: Patient[] }) {
                     {patient.phone}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {patient.age} ساله · {genderLabel(patient.gender)} · ثبت از{" "}
+                    {patient.age != null ? `${patient.age} ساله · ` : ""}
+                    {genderLabel(patient.gender)} · ثبت از{" "}
                     {formatDateFa(patient.createdAt)}
                   </p>
                 </div>

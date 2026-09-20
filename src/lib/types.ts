@@ -16,7 +16,8 @@ export interface Patient {
   id: string;
   firstName: string;
   lastName: string;
-  age: number;
+  /** سن؛ اگر هنگام ثبت خالی باشد اختیاری است */
+  age?: number;
   gender: Gender;
   phone: string;
   address: string;

@@ -94,9 +94,9 @@ export function VisitsTable({
               <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2">
                 <p className="text-[11px] text-muted-foreground">سن / جنسیت</p>
                 <p className="mt-1 font-medium">
-                  {visit.patient
-                    ? `${visit.patient.age} · ${genderLabel(visit.patient.gender)}`
-                    : "—"}
+                {visit.patient
+                  ? `${visit.patient.age != null ? visit.patient.age : "—"} · ${genderLabel(visit.patient.gender)}`
+                  : "—"}
                 </p>
               </div>
               <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2">
