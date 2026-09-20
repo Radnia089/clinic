@@ -24,9 +24,9 @@ const receptionLinks = [
 ];
 
 const managementLinks = [
-  { href: "/clinic", label: "داشبورد", icon: LayoutDashboard },
-  { href: "/clinic/finance", label: "مالی", icon: Wallet },
-  { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck },
+  { href: "/clinic", label: "داشبورد", icon: LayoutDashboard, short: "مدیریت" },
+  { href: "/clinic/finance", label: "مالی", icon: Wallet, short: "مالی" },
+  { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },
 ];
 
 function isActive(pathname: string, href: string) {
