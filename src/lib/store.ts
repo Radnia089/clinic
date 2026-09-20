@@ -6,6 +6,7 @@ import {
   DEFAULT_CLINIC,
   Patient,
   Payment,
+  ProgressMeasurement,
   Visit,
 } from "@/lib/types";
 
@@ -18,6 +19,7 @@ const emptyData = (): AppData => ({
   visits: [],
   payments: [],
   appointments: [],
+  measurements: [],
 });
 
 async function ensureStore(): Promise<AppData> {
@@ -31,6 +33,7 @@ async function ensureStore(): Promise<AppData> {
       visits: parsed.visits ?? [],
       payments: parsed.payments ?? [],
       appointments: parsed.appointments ?? [],
+      measurements: parsed.measurements ?? [],
     };
   } catch {
     const data = emptyData();
@@ -184,6 +187,85 @@ export async function updateAppointment(
   data.appointments[index] = { ...data.appointments[index], ...patch, id };
   await writeStore(data);
   return data.appointments[index];
+}
+
+export async function listMeasurements(patientId?: string) {
+  const all = (await ensureStore()).measurements;
+  const filtered = patientId ? all.filter((m) => m.patientId === patientId) : all;
+  return [...filtered].sort(
+    (a, b) => new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
+  );
+}
+
+export async function createMeasurement(
+  input: Omit<ProgressMeasurement, "id" | "createdAt">
+) {
+  const data = await ensureStore();
+  const measurement: ProgressMeasurement = {
+    ...input,
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+  };
+  data.measurements.push(measurement);
+  await writeStore(data);
+  return measurement;
+}
+
+/** مشتری نمونه سارا + چند نقطه اندازه‌گیری برای نمایش نمودار */
+export async function ensureDemoPatientProgress() {
+  const data = await ensureStore();
+  let patient = data.patients.find((p) => p.phone === "09130000001");
+
+  if (!patient) {
+    const now = new Date().toISOString();
+    patient = {
+      id: crypto.randomUUID(),
+      firstName: "سارا",
+      lastName: "محمدی",
+      age: 29,
+      gender: "female",
+      phone: "09130000001",
+      address: "یزد",
+      createdAt: now,
+      updatedAt: now,
+    };
+    data.patients.unshift(patient);
+  }
+
+  const existing = data.measurements.filter((m) => m.patientId === patient!.id);
+  if (existing.length === 0) {
+    const samples = [
+      { daysAgo: 56, weightKg: 78.4, waistCm: 92 },
+      { daysAgo: 42, weightKg: 76.1, waistCm: 89 },
+      { daysAgo: 28, weightKg: 74.0, waistCm: 86 },
+      { daysAgo: 14, weightKg: 72.3, waistCm: 84 },
+      { daysAgo: 0, weightKg: 71.2, waistCm: 82 },
+    ];
+    const now = Date.now();
+    for (const sample of samples) {
+      const recordedAt = new Date(now - sample.daysAgo * 24 * 60 * 60 * 1000).toISOString();
+      data.measurements.push({
+        id: crypto.randomUUID(),
+        patientId: patient.id,
+        recordedAt,
+        weightKg: sample.weightKg,
+        waistCm: sample.waistCm,
+        hipCm: sample.waistCm + 12,
+        createdAt: recordedAt,
+      });
+    }
+  }
+
+  await writeStore(data);
+  return {
+    patient,
+    measurements: data.measurements
+      .filter((m) => m.patientId === patient!.id)
+      .sort(
+        (a, b) =>
+          new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
+      ),
+  };
 }
 
 export async function getDashboardStats() {

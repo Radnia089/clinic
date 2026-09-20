@@ -12,6 +12,7 @@ import {
   Wallet,
   CalendarCheck,
   Stethoscope,
+  LineChart,
 } from "lucide-react";
 
 const receptionLinks = [
@@ -19,6 +20,7 @@ const receptionLinks = [
   { href: "/clinic/reception/new", label: "ثبت مراجعه‌کننده", icon: UserPlus },
   { href: "/clinic/reception/visitors", label: "لیست مراجعه‌کنندگان", icon: Users },
   { href: "/clinic/reception/admitted", label: "پذیرش‌شده‌ها", icon: ClipboardList },
+  { href: "/clinic/progress", label: "ثبت وزن و سایز", icon: LineChart },
 ];
 
 const managementLinks = [

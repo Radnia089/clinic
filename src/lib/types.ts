@@ -75,6 +75,18 @@ export interface AppointmentRequest {
   createdAt: string;
 }
 
+/** اندازه‌گیری‌های دوره‌ای که از پنل کلینیک ثبت می‌شود */
+export interface ProgressMeasurement {
+  id: string;
+  patientId: string;
+  recordedAt: string;
+  weightKg: number;
+  waistCm: number;
+  hipCm?: number;
+  note?: string;
+  createdAt: string;
+}
+
 export interface ClinicProfile {
   name: string;
   fullName: string;
@@ -91,6 +103,7 @@ export interface AppData {
   visits: Visit[];
   payments: Payment[];
   appointments: AppointmentRequest[];
+  measurements: ProgressMeasurement[];
 }
 
 export const DEFAULT_CLINIC: ClinicProfile = {

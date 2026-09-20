@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Home,
   ClipboardList,
@@ -18,6 +19,7 @@ import {
   Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PatientProgressScreen } from "@/components/patient/patient-progress";
 
 const meals = [
   {
@@ -112,11 +114,22 @@ function LeafLogo() {
 }
 
 export function PatientHomeScreen() {
+  const searchParams = useSearchParams();
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState("home");
 
+  useEffect(() => {
+    const initial = searchParams.get("tab");
+    if (initial === "progress" || initial === "plan" || initial === "more" || initial === "home") {
+      setTab(initial);
+    }
+  }, [searchParams]);
+
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-[430px] flex-col bg-[#F7F8F6] text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.04)]">
+      {tab === "progress" ? (
+        <PatientProgressScreen />
+      ) : (
       <div className="flex-1 space-y-4 px-4 pb-28 pt-5">
         <header className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -164,6 +177,11 @@ export function PatientHomeScreen() {
               <button
                 key={action.label}
                 type="button"
+                onClick={() => {
+                  if (action.label === "ثبت وزن" || action.label === "جلسه بعد") {
+                    setTab("progress");
+                  }
+                }}
                 className="flex flex-col items-center gap-2 rounded-2xl bg-white px-1 py-3 shadow-[0_6px_18px_rgba(35,70,55,0.06)] transition active:scale-[0.98]"
               >
                 <span
@@ -283,6 +301,7 @@ export function PatientHomeScreen() {
           </Link>
         </div>
       </div>
+      )}
 
       <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-[430px] border-t border-black/5 bg-white/95 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur">
         <ul className="grid grid-cols-4">
