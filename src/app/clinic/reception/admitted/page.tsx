@@ -12,8 +12,9 @@ export default async function AdmittedPage() {
   return (
     <div>
       <PageHeader
-        title="لیست پذیرش‌شده‌ها"
-        description="پرونده‌هایی که فرم پذیرش تخصصی‌شان تکمیل و در سیستم ثبت شده است."
+        eyebrow="پرونده‌ها"
+        title="پذیرش‌شده‌ها"
+        description="پرونده‌هایی که فرم پذیرش تخصصی‌شان تکمیل شده است."
       />
       <VisitsTable visits={rows} emptyTitle="هنوز پذیرش‌شده‌ای وجود ندارد" />
     </div>

@@ -5,8 +5,9 @@ export default function NewVisitorPage() {
   return (
     <div>
       <PageHeader
+        eyebrow="جریان پذیرش"
         title="ثبت مراجعه‌کننده"
-        description="اگر مشتری برای اولین بار آمده، اطلاعات عمومی را بگیرید، تاریخ مراجعه را ثبت کنید و مشخص کنید ویزیت است یا پکیج لاغری."
+        description="اطلاعات عمومی را بگیرید، تاریخ مراجعه را ثبت کنید و مشخص کنید ویزیت است یا پکیج لاغری."
       />
       <NewVisitorForm />
     </div>

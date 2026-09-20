@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { VisitsTable } from "@/components/clinic/visits-table";
 import { PageHeader } from "@/components/clinic/page-header";
 import { listPatients, listVisits } from "@/lib/store";
@@ -12,8 +13,17 @@ export default async function VisitorsPage() {
   return (
     <div>
       <PageHeader
-        title="لیست مراجعه‌کنندگان"
-        description="افرادی که ثبت اولیه شده‌اند و هنوز فرم پذیرش تخصصی‌شان کامل نشده است."
+        eyebrow="صف پذیرش"
+        title="مراجعه‌کنندگان"
+        description="افرادی که ثبت اولیه شده‌اند و هنوز فرم پذیرش تخصصی‌شان کامل نشده."
+        action={
+          <Link
+            href="/clinic/reception/new"
+            className="inline-flex h-11 items-center rounded-2xl bg-brand px-5 text-sm font-semibold text-white"
+          >
+            ثبت جدید
+          </Link>
+        }
       />
       <VisitsTable visits={rows} emptyTitle="مراجعه‌کننده‌ای در صف نیست" showAdmissionAction />
     </div>

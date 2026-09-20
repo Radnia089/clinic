@@ -1,12 +1,5 @@
 import Link from "next/link";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { ChevronLeft } from "lucide-react";
 import { EmptyState, StatusBadge } from "@/components/clinic/page-header";
 import {
   formatDateFa,
@@ -30,82 +23,79 @@ export function VisitsTable({
   showAdmissionAction?: boolean;
 }) {
   if (visits.length === 0) {
-    return <EmptyState title={emptyTitle} hint="با ثبت مراجعه‌کننده جدید، ردیف‌ها اینجا ظاهر می‌شوند." />;
+    return (
+      <EmptyState
+        title={emptyTitle}
+        hint="با ثبت مراجعه‌کننده جدید، ردیف‌ها اینجا ظاهر می‌شوند."
+      />
+    );
   }
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-border/80 bg-card/90 shadow-sm">
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="text-right">نام</TableHead>
-            <TableHead className="text-right">موبایل</TableHead>
-            <TableHead className="text-right">سن / جنسیت</TableHead>
-            <TableHead className="text-right">تاریخ مراجعه</TableHead>
-            <TableHead className="text-right">نوع</TableHead>
-            <TableHead className="text-right">وضعیت</TableHead>
-            <TableHead className="text-right">عملیات</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {visits.map((visit) => (
-            <TableRow key={visit.id}>
-              <TableCell className="font-medium">
-                {visit.patient ? patientFullName(visit.patient) : "—"}
-              </TableCell>
-              <TableCell dir="ltr" className="text-left">
+    <div className="space-y-3">
+      {visits.map((visit) => (
+        <article
+          key={visit.id}
+          className="rounded-[24px] bg-white p-4 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-5"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-base font-extrabold text-brand">
+                {visit.patient ? patientFullName(visit.patient) : "بدون نام"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground" dir="ltr">
                 {visit.patient?.phone ?? "—"}
-              </TableCell>
-              <TableCell>
+              </p>
+            </div>
+            <StatusBadge
+              tone={
+                visit.status === "admitted"
+                  ? "success"
+                  : visit.status === "visitor"
+                    ? "info"
+                    : "default"
+              }
+            >
+              {visitStatusLabel(visit.status)}
+            </StatusBadge>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+            <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2">
+              <p className="text-[11px] text-muted-foreground">سن / جنسیت</p>
+              <p className="mt-1 font-medium">
                 {visit.patient
                   ? `${visit.patient.age} · ${genderLabel(visit.patient.gender)}`
                   : "—"}
-              </TableCell>
-              <TableCell>{formatDateFa(visit.visitDate)}</TableCell>
-              <TableCell>
-                {visitTypeLabel(visit.visitType)}
-                {visit.packageName ? (
-                  <span className="mt-1 block text-xs text-muted-foreground">
-                    {visit.packageName}
-                  </span>
-                ) : null}
-              </TableCell>
-              <TableCell>
-                <StatusBadge
-                  tone={
-                    visit.status === "admitted"
-                      ? "success"
-                      : visit.status === "visitor"
-                        ? "info"
-                        : "default"
-                  }
-                >
-                  {visitStatusLabel(visit.status)}
-                </StatusBadge>
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-2">
-                  {showAdmissionAction || visit.status === "visitor" ? (
-                    <Link
-                      href={`/clinic/reception/admission/${visit.id}`}
-                      className="text-sm font-medium text-brand hover:underline"
-                    >
-                      فرم پذیرش
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/clinic/reception/admission/${visit.id}`}
-                      className="text-sm text-muted-foreground hover:text-brand"
-                    >
-                      مشاهده
-                    </Link>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              </p>
+            </div>
+            <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2">
+              <p className="text-[11px] text-muted-foreground">تاریخ</p>
+              <p className="mt-1 font-medium">{formatDateFa(visit.visitDate)}</p>
+            </div>
+            <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2">
+              <p className="text-[11px] text-muted-foreground">نوع</p>
+              <p className="mt-1 font-medium">{visitTypeLabel(visit.visitType)}</p>
+            </div>
+            <div className="rounded-2xl bg-[#F7F8F6] px-3 py-2">
+              <p className="text-[11px] text-muted-foreground">پکیج</p>
+              <p className="mt-1 truncate font-medium">{visit.packageName || "—"}</p>
+            </div>
+          </div>
+
+          <div className="mt-4 flex justify-end">
+            <Link
+              href={`/clinic/reception/admission/${visit.id}`}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-brand"
+            >
+              {showAdmissionAction || visit.status === "visitor"
+                ? "ادامه فرم پذیرش"
+                : "مشاهده پرونده"}
+              <ChevronLeft className="size-4" />
+            </Link>
+          </div>
+        </article>
+      ))}
     </div>
   );
 }

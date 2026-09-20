@@ -8,6 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { AdmissionForm, Visit } from "@/lib/types";
 
+const fieldClass =
+  "h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] px-3 text-base focus-visible:border-brand focus-visible:ring-brand/20";
+const areaClass =
+  "min-h-20 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] focus-visible:border-brand focus-visible:ring-brand/20";
+
 export function AdmissionFormEditor({
   visit,
   patientName,
@@ -72,93 +77,102 @@ export function AdmissionFormEditor({
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="space-y-6 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-sm sm:p-8"
-    >
-      <div className="rounded-2xl bg-brand-soft/70 px-4 py-3">
-        <p className="text-sm text-muted-foreground">فرم پذیرش تخصصی برای</p>
-        <p className="text-lg font-bold text-brand">{patientName}</p>
+    <form onSubmit={onSubmit} className="space-y-5">
+      <div className="rounded-[28px] bg-[#E8F2EA] px-5 py-4">
+        <p className="text-xs text-muted-foreground">فرم پذیرش تخصصی برای</p>
+        <p className="mt-1 text-lg font-extrabold text-brand">{patientName}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="space-y-2">
-          <Label>قد (سانتی‌متر)</Label>
-          <Input
-            type="number"
-            className="h-11 rounded-xl"
-            value={form.heightCm ?? ""}
-            onChange={(e) => setField("heightCm", e.target.value ? Number(e.target.value) : undefined)}
-          />
+      <section className="rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-6">
+        <h3 className="mb-4 text-sm font-bold text-brand">اندازه‌ها و وضعیت بدنی</h3>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <Label>قد (سانتی‌متر)</Label>
+            <Input
+              type="number"
+              className={fieldClass}
+              value={form.heightCm ?? ""}
+              onChange={(e) =>
+                setField("heightCm", e.target.value ? Number(e.target.value) : undefined)
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>وزن فعلی</Label>
+            <Input
+              type="number"
+              className={fieldClass}
+              value={form.weightKg ?? ""}
+              onChange={(e) =>
+                setField("weightKg", e.target.value ? Number(e.target.value) : undefined)
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>وزن هدف</Label>
+            <Input
+              type="number"
+              className={fieldClass}
+              value={form.goalWeightKg ?? ""}
+              onChange={(e) =>
+                setField("goalWeightKg", e.target.value ? Number(e.target.value) : undefined)
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>دور کمر</Label>
+            <Input
+              type="number"
+              className={fieldClass}
+              value={form.waistCm ?? ""}
+              onChange={(e) =>
+                setField("waistCm", e.target.value ? Number(e.target.value) : undefined)
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>دور باسن</Label>
+            <Input
+              type="number"
+              className={fieldClass}
+              value={form.hipCm ?? ""}
+              onChange={(e) =>
+                setField("hipCm", e.target.value ? Number(e.target.value) : undefined)
+              }
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>فشار خون</Label>
+            <Input
+              className={fieldClass}
+              placeholder="مثلاً ۱۲/۸"
+              value={form.bloodPressure ?? ""}
+              onChange={(e) => setField("bloodPressure", e.target.value)}
+            />
+          </div>
+          <div className="space-y-2 sm:col-span-3">
+            <Label>سطح فعالیت</Label>
+            <select
+              className={`w-full ${fieldClass}`}
+              value={form.activityLevel ?? "medium"}
+              onChange={(e) =>
+                setField("activityLevel", e.target.value as AdmissionForm["activityLevel"])
+              }
+            >
+              <option value="low">کم</option>
+              <option value="medium">متوسط</option>
+              <option value="high">زیاد</option>
+            </select>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label>وزن فعلی (کیلوگرم)</Label>
-          <Input
-            type="number"
-            className="h-11 rounded-xl"
-            value={form.weightKg ?? ""}
-            onChange={(e) => setField("weightKg", e.target.value ? Number(e.target.value) : undefined)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>وزن هدف</Label>
-          <Input
-            type="number"
-            className="h-11 rounded-xl"
-            value={form.goalWeightKg ?? ""}
-            onChange={(e) =>
-              setField("goalWeightKg", e.target.value ? Number(e.target.value) : undefined)
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>دور کمر</Label>
-          <Input
-            type="number"
-            className="h-11 rounded-xl"
-            value={form.waistCm ?? ""}
-            onChange={(e) => setField("waistCm", e.target.value ? Number(e.target.value) : undefined)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>دور باسن</Label>
-          <Input
-            type="number"
-            className="h-11 rounded-xl"
-            value={form.hipCm ?? ""}
-            onChange={(e) => setField("hipCm", e.target.value ? Number(e.target.value) : undefined)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>فشار خون</Label>
-          <Input
-            className="h-11 rounded-xl"
-            placeholder="مثلاً ۱۲/۸"
-            value={form.bloodPressure ?? ""}
-            onChange={(e) => setField("bloodPressure", e.target.value)}
-          />
-        </div>
-        <div className="space-y-2 sm:col-span-3">
-          <Label>سطح فعالیت</Label>
-          <select
-            className="h-11 w-full rounded-xl border border-input bg-transparent px-3"
-            value={form.activityLevel ?? "medium"}
-            onChange={(e) =>
-              setField("activityLevel", e.target.value as AdmissionForm["activityLevel"])
-            }
-          >
-            <option value="low">کم</option>
-            <option value="medium">متوسط</option>
-            <option value="high">زیاد</option>
-          </select>
-        </div>
-      </div>
+      </section>
 
-      <div className="grid gap-4">
+      <section className="space-y-4 rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-6">
+        <h3 className="text-sm font-bold text-brand">سابقه و هدف درمان</h3>
         <div className="space-y-2">
           <Label>شکایت اصلی / هدف مراجعه</Label>
           <Textarea
-            className="min-h-20 rounded-xl"
+            className={areaClass}
             value={form.chiefComplaint ?? ""}
             onChange={(e) => setField("chiefComplaint", e.target.value)}
           />
@@ -166,7 +180,7 @@ export function AdmissionFormEditor({
         <div className="space-y-2">
           <Label>سابقه رژیم‌های قبلی</Label>
           <Textarea
-            className="min-h-20 rounded-xl"
+            className={areaClass}
             value={form.previousDiets ?? ""}
             onChange={(e) => setField("previousDiets", e.target.value)}
           />
@@ -174,7 +188,7 @@ export function AdmissionFormEditor({
         <div className="space-y-2">
           <Label>سابقه بیماری</Label>
           <Textarea
-            className="min-h-20 rounded-xl"
+            className={areaClass}
             value={form.medicalHistory ?? ""}
             onChange={(e) => setField("medicalHistory", e.target.value)}
           />
@@ -183,7 +197,7 @@ export function AdmissionFormEditor({
           <div className="space-y-2">
             <Label>داروهای مصرفی</Label>
             <Textarea
-              className="min-h-20 rounded-xl"
+              className={areaClass}
               value={form.medications ?? ""}
               onChange={(e) => setField("medications", e.target.value)}
             />
@@ -191,7 +205,7 @@ export function AdmissionFormEditor({
           <div className="space-y-2">
             <Label>حساسیت‌ها</Label>
             <Textarea
-              className="min-h-20 rounded-xl"
+              className={areaClass}
               value={form.allergies ?? ""}
               onChange={(e) => setField("allergies", e.target.value)}
             />
@@ -200,12 +214,12 @@ export function AdmissionFormEditor({
         <div className="space-y-2">
           <Label>یادداشت کارشناس</Label>
           <Textarea
-            className="min-h-24 rounded-xl"
+            className={`${areaClass} min-h-24`}
             value={form.therapistNotes ?? ""}
             onChange={(e) => setField("therapistNotes", e.target.value)}
           />
         </div>
-      </div>
+      </section>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
@@ -213,14 +227,14 @@ export function AdmissionFormEditor({
         <Button
           type="submit"
           disabled={loading}
-          className="h-12 rounded-xl bg-cta px-6 text-cta-foreground hover:bg-cta/90"
+          className="h-12 rounded-2xl bg-[#D86B5C] px-6 font-semibold text-white hover:bg-[#D86B5C]/90"
         >
-          {loading ? "در حال ذخیره..." : "تکمیل پذیرش و انتقال به لیست پذیرش‌شده‌ها"}
+          {loading ? "در حال ذخیره..." : "تکمیل پذیرش"}
         </Button>
         <Button
           type="button"
           variant="outline"
-          className="h-12 rounded-xl"
+          className="h-12 rounded-2xl"
           onClick={() => router.push("/clinic/reception/visitors")}
         >
           بعداً تکمیل می‌کنم

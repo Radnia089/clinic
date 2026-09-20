@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Gender, VisitType } from "@/lib/types";
 
+const fieldClass =
+  "h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] px-3 text-base focus-visible:border-brand focus-visible:ring-brand/20";
+
 export function NewVisitorForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -19,9 +22,7 @@ export function NewVisitorForm() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const [visitDate, setVisitDate] = useState(
-    () => new Date().toISOString().slice(0, 10)
-  );
+  const [visitDate, setVisitDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [visitType, setVisitType] = useState<VisitType>("consultation");
   const [packageName, setPackageName] = useState("پکیج لاغری استاندارد");
 
@@ -82,51 +83,31 @@ export function NewVisitorForm() {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="space-y-8 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-sm sm:p-8"
-    >
-      <section className="space-y-4">
-        <h3 className="text-lg font-semibold text-brand">اطلاعات عمومی مشتری</h3>
+    <form onSubmit={onSubmit} className="space-y-5">
+      <section className="rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-6">
+        <div className="mb-4 rounded-2xl bg-[#E8F2EA] px-4 py-3">
+          <p className="text-sm font-bold text-brand">۱ · اطلاعات عمومی مشتری</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            اگر اولین مراجعه است، این مشخصات را کامل ثبت کنید.
+          </p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="firstName">نام</Label>
-            <Input
-              id="firstName"
-              className="h-11 rounded-xl"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-            />
+            <Label>نام</Label>
+            <Input className={fieldClass} value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">نام خانوادگی</Label>
-            <Input
-              id="lastName"
-              className="h-11 rounded-xl"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-            />
+            <Label>نام خانوادگی</Label>
+            <Input className={fieldClass} value={lastName} onChange={(e) => setLastName(e.target.value)} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="age">سن</Label>
-            <Input
-              id="age"
-              type="number"
-              min={1}
-              max={120}
-              className="h-11 rounded-xl"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              required
-            />
+            <Label>سن</Label>
+            <Input className={fieldClass} type="number" min={1} max={120} value={age} onChange={(e) => setAge(e.target.value)} required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="gender">جنسیت</Label>
+            <Label>جنسیت</Label>
             <select
-              id="gender"
-              className="h-11 w-full rounded-xl border border-input bg-transparent px-3"
+              className={`w-full ${fieldClass}`}
               value={gender}
               onChange={(e) => setGender(e.target.value as Gender)}
             >
@@ -136,11 +117,10 @@ export function NewVisitorForm() {
             </select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">شماره موبایل</Label>
+            <Label>شماره موبایل</Label>
             <Input
-              id="phone"
               dir="ltr"
-              className="h-11 rounded-xl text-left"
+              className={`${fieldClass} text-left`}
               placeholder="0913xxxxxxx"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -148,20 +128,18 @@ export function NewVisitorForm() {
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="address">آدرس</Label>
+            <Label>آدرس</Label>
             <Textarea
-              id="address"
-              className="min-h-20 rounded-xl"
+              className="min-h-20 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] focus-visible:border-brand focus-visible:ring-brand/20"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="notes">توضیح عمومی (اختیاری)</Label>
+            <Label>توضیح عمومی (اختیاری)</Label>
             <Textarea
-              id="notes"
-              className="min-h-20 rounded-xl"
+              className="min-h-20 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] focus-visible:border-brand focus-visible:ring-brand/20"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -169,25 +147,26 @@ export function NewVisitorForm() {
         </div>
       </section>
 
-      <section className="space-y-4 border-t border-border/70 pt-6">
-        <h3 className="text-lg font-semibold text-brand">ثبت مراجعه</h3>
+      <section className="rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-6">
+        <div className="mb-4 rounded-2xl bg-[#F6E6E1] px-4 py-3">
+          <p className="text-sm font-bold text-[#9A4E42]">۲ · ثبت مراجعه امروز</p>
+          <p className="mt-1 text-xs text-[#9A4E42]/80">تاریخ و نوع خدمت را مشخص کنید.</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="visitDate">تاریخ مراجعه</Label>
+            <Label>تاریخ مراجعه</Label>
             <Input
-              id="visitDate"
               type="date"
-              className="h-11 rounded-xl"
+              className={fieldClass}
               value={visitDate}
               onChange={(e) => setVisitDate(e.target.value)}
               required
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="visitType">نوع مراجعه</Label>
+            <Label>نوع مراجعه</Label>
             <select
-              id="visitType"
-              className="h-11 w-full rounded-xl border border-input bg-transparent px-3"
+              className={`w-full ${fieldClass}`}
               value={visitType}
               onChange={(e) => setVisitType(e.target.value as VisitType)}
             >
@@ -197,10 +176,9 @@ export function NewVisitorForm() {
           </div>
           {visitType === "package" ? (
             <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="packageName">نام پکیج</Label>
+              <Label>نام پکیج</Label>
               <Input
-                id="packageName"
-                className="h-11 rounded-xl"
+                className={fieldClass}
                 value={packageName}
                 onChange={(e) => setPackageName(e.target.value)}
                 required
@@ -210,16 +188,12 @@ export function NewVisitorForm() {
         </div>
       </section>
 
-      {error ? (
-        <p className="text-sm text-destructive" role="alert">
-          {error}
-        </p>
-      ) : null}
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       <Button
         type="submit"
         disabled={loading}
-        className="h-12 w-full rounded-xl bg-cta text-base text-cta-foreground hover:bg-cta/90 sm:w-auto sm:px-8"
+        className="h-12 w-full rounded-2xl bg-[#D86B5C] text-base font-semibold text-white hover:bg-[#D86B5C]/90 sm:w-auto sm:px-8"
       >
         {loading ? "در حال ثبت..." : "ثبت و ادامه فرم پذیرش"}
       </Button>
