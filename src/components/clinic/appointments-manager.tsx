@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Check, X } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -10,9 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { EmptyState, StatusBadge } from "@/components/clinic/page-header";
 import { formatDateFa, type AppointmentRequest } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export function AppointmentsManager({
   initialAppointments,
@@ -24,23 +25,35 @@ export function AppointmentsManager({
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function updateStatus(id: string, status: AppointmentRequest["status"]) {
+    const current = items.find((i) => i.id === id);
+    if (!current) return;
+    // دوباره زدن همان وضعیت → برگردد به جدید
+    const next = current.status === status ? "new" : status;
     setBusyId(id);
+    const previous = items;
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, status: next } : item)));
     try {
       const res = await fetch("/api/appointments", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+        body: JSON.stringify({ id, status: next }),
       });
       if (!res.ok) throw new Error("failed");
-      setItems((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)));
       router.refresh();
+    } catch {
+      setItems(previous);
     } finally {
       setBusyId(null);
     }
   }
 
   if (items.length === 0) {
-    return <EmptyState title="نوبت آنلاینی ثبت نشده" hint="درخواست‌های اپ مشتری اینجا دیده می‌شوند." />;
+    return (
+      <EmptyState
+        title="نوبت آنلاینی / تلفنی ثبت نشده"
+        hint="درخواست‌های تلفنی و اپ مشتری اینجا دیده می‌شوند."
+      />
+    );
   }
 
   return (
@@ -53,60 +66,87 @@ export function AppointmentsManager({
             <TableHead className="text-right">خدمت</TableHead>
             <TableHead className="text-right">تاریخ پیشنهادی</TableHead>
             <TableHead className="text-right">وضعیت</TableHead>
-            <TableHead className="text-right">عملیات</TableHead>
+            <TableHead className="text-right">مراجعه</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium">{item.name}</TableCell>
-              <TableCell dir="ltr" className="text-left">
-                {item.phone}
-              </TableCell>
-              <TableCell>{item.service}</TableCell>
-              <TableCell>
-                {item.preferredDate ? formatDateFa(item.preferredDate) : "—"}
-              </TableCell>
-              <TableCell>
-                <StatusBadge
-                  tone={
-                    item.status === "confirmed"
-                      ? "success"
-                      : item.status === "rejected"
-                        ? "danger"
-                        : "warning"
-                  }
-                >
-                  {item.status === "new"
-                    ? "جدید"
-                    : item.status === "confirmed"
-                      ? "تأیید شده"
-                      : "رد شده"}
-                </StatusBadge>
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    className="rounded-lg"
-                    disabled={busyId === item.id || item.status === "confirmed"}
-                    onClick={() => updateStatus(item.id, "confirmed")}
+          {items.map((item) => {
+            const confirmed = item.status === "confirmed";
+            const rejected = item.status === "rejected";
+            return (
+              <TableRow key={item.id} className={busyId === item.id ? "opacity-60" : undefined}>
+                <TableCell className="font-medium">
+                  <span className="inline-flex items-center gap-2">
+                    {confirmed ? (
+                      <span className="inline-flex size-5 items-center justify-center rounded-full bg-[#2F9E5A] text-white">
+                        <Check className="size-3.5 stroke-[3]" />
+                      </span>
+                    ) : null}
+                    {rejected ? (
+                      <span className="inline-flex size-5 items-center justify-center rounded-full bg-[#C45C5C] text-white">
+                        <X className="size-3.5 stroke-[3]" />
+                      </span>
+                    ) : null}
+                    {item.name}
+                  </span>
+                </TableCell>
+                <TableCell dir="ltr" className="text-left">
+                  {item.phone}
+                </TableCell>
+                <TableCell>{item.service}</TableCell>
+                <TableCell>
+                  {item.preferredDate ? formatDateFa(item.preferredDate) : "—"}
+                </TableCell>
+                <TableCell>
+                  <StatusBadge
+                    tone={
+                      confirmed ? "success" : rejected ? "danger" : "warning"
+                    }
                   >
-                    تأیید
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-lg"
-                    disabled={busyId === item.id || item.status === "rejected"}
-                    onClick={() => updateStatus(item.id, "rejected")}
-                  >
-                    رد
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
+                    {item.status === "new"
+                      ? "در انتظار"
+                      : confirmed
+                        ? "مراجعه کرد / تأیید"
+                        : "نیامد / رد"}
+                  </StatusBadge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      title="مراجعه کرد"
+                      disabled={busyId === item.id}
+                      className={cn(
+                        "inline-flex h-8 items-center gap-1 rounded-xl px-2.5 text-[11px] font-bold transition",
+                        confirmed
+                          ? "bg-[#2F9E5A] text-white"
+                          : "bg-white text-[#2F9E5A] ring-1 ring-[#2F9E5A]/35 hover:bg-[#2F9E5A] hover:text-white"
+                      )}
+                      onClick={() => updateStatus(item.id, "confirmed")}
+                    >
+                      <Check className="size-3.5 stroke-[3]" />
+                      مراجعه کرد
+                    </button>
+                    <button
+                      type="button"
+                      title="نیامد / لغو"
+                      disabled={busyId === item.id}
+                      className={cn(
+                        "inline-flex h-8 items-center gap-1 rounded-xl px-2.5 text-[11px] font-bold transition",
+                        rejected
+                          ? "bg-[#C45C5C] text-white"
+                          : "bg-white text-[#C45C5C] ring-1 ring-[#C45C5C]/35 hover:bg-[#C45C5C] hover:text-white"
+                      )}
+                      onClick={() => updateStatus(item.id, "rejected")}
+                    >
+                      <X className="size-3.5 stroke-[3]" />
+                      نیامد
+                    </button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

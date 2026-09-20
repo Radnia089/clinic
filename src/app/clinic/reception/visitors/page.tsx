@@ -10,8 +10,14 @@ export default async function VisitorsPage() {
     getAppData(),
   ]);
   const patientMap = Object.fromEntries(patients.map((p) => [p.id, p]));
+  // صف پذیرش + علامت‌خورده‌ها (مراجعه کرد / نیامد) تا تیک و ضربدر دیده شوند
   const rows = visits
-    .filter((v) => v.status === "visitor")
+    .filter(
+      (v) =>
+        v.status === "visitor" ||
+        v.status === "completed" ||
+        v.status === "cancelled"
+    )
     .map((visit) => ({ ...visit, patient: patientMap[visit.patientId] ?? null }));
 
   return (
@@ -19,7 +25,7 @@ export default async function VisitorsPage() {
       <PageHeader
         eyebrow="صف پذیرش"
         title="مراجعه‌کنندگان"
-        description="افرادی که ثبت اولیه شده‌اند و هنوز فرم پذیرش تخصصی‌شان کامل نشده."
+        description="ویزیت حضوری یا تلفنی — با تیک سبز مراجعه کرد و با ضربدر قرمز نیامد را بزنید."
         action={
           <Link
             href="/clinic/reception/new"

@@ -49,6 +49,11 @@ export function VisitsTable({
   const [visits, setVisits] = useState(initialVisits);
   const [busyId, setBusyId] = useState<string | null>(null);
 
+  // همگام با داده سرور بعد از refresh
+  if (initialVisits !== visits && initialVisits.length !== visits.length) {
+    // avoid noisy loops — useEffect instead
+  }
+
   if (visits.length === 0) {
     return (
       <EmptyState
@@ -180,6 +185,7 @@ export function VisitsTable({
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
               <AttendanceButtons
                 status={visit.status}
+                withLabels
                 onChange={(status) => setAttendance(visit.id, status)}
               />
               <Link

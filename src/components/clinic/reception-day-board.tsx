@@ -549,6 +549,7 @@ export function ReceptionDayBoard({
                   <AttendanceButtons
                     status={visit.status}
                     size="sm"
+                    withLabels
                     onChange={(status) => setAttendance(visit.id, status)}
                   />
                 </li>
