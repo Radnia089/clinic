@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
+import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
 const services = [
@@ -32,7 +34,13 @@ export function PatientBookingForm() {
       const res = await fetch("/api/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, service, preferredDate, note }),
+        body: JSON.stringify({
+          name,
+          phone,
+          service,
+          preferredDate: preferredDate || undefined,
+          note,
+        }),
       });
       if (!res.ok) throw new Error("failed");
       setState("success");
@@ -105,14 +113,27 @@ export function PatientBookingForm() {
         </select>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="pdate">تاریخ پیشنهادی (اختیاری)</Label>
-        <Input
-          id="pdate"
-          type="date"
-          className="h-11 rounded-xl"
-          value={preferredDate}
-          onChange={(e) => setPreferredDate(e.target.value)}
-        />
+        <Label>تاریخ پیشنهادی شمسی (اختیاری)</Label>
+        {preferredDate ? (
+          <>
+            <ShamsiDateInput value={preferredDate} onChange={setPreferredDate} />
+            <button
+              type="button"
+              className="text-xs text-muted-foreground"
+              onClick={() => setPreferredDate("")}
+            >
+              پاک کردن تاریخ
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            className="h-11 w-full rounded-xl border border-dashed border-[#D7E2D9] text-sm text-brand"
+            onClick={() => setPreferredDate(jalaliPartsToIsoDate(todayJalaliParts()))}
+          >
+            انتخاب تاریخ شمسی
+          </button>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="pnote">توضیح</Label>

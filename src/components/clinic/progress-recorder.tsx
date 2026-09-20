@@ -20,6 +20,8 @@ import {
   type Patient,
   type ProgressMeasurement,
 } from "@/lib/types";
+import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
+import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 
 type Row = ProgressMeasurement & { patient: Patient | null };
 
@@ -28,7 +30,7 @@ export function ProgressRecorder() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
   const [patientId, setPatientId] = useState("");
-  const [recordedAt, setRecordedAt] = useState(() => new Date().toISOString().slice(0, 10));
+  const [recordedAt, setRecordedAt] = useState(() => jalaliPartsToIsoDate(todayJalaliParts()));
   const [weightKg, setWeightKg] = useState("");
   const [waistCm, setWaistCm] = useState("");
   const [hipCm, setHipCm] = useState("");
@@ -115,14 +117,8 @@ export function ProgressRecorder() {
           </select>
         </div>
         <div className="space-y-2">
-          <Label>تاریخ اندازه‌گیری</Label>
-          <Input
-            type="date"
-            className="h-11 rounded-xl"
-            value={recordedAt}
-            onChange={(e) => setRecordedAt(e.target.value)}
-            required
-          />
+          <Label>تاریخ اندازه‌گیری (شمسی)</Label>
+          <ShamsiDateInput value={recordedAt} onChange={setRecordedAt} required />
         </div>
         <div className="space-y-2">
           <Label>وزن (کیلوگرم)</Label>

@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import type { ProgressMeasurement } from "@/lib/types";
 
+import { formatJalaliShort } from "@/lib/jalali";
+
 type Point = { x: number; y: number; label: string; value: number };
 
 function buildPoints(
@@ -58,11 +60,7 @@ export function TrendChart({
 
   const chart = useMemo(() => {
     const values = measurements.map((m) => m[metric]);
-    const labels = measurements.map((m) =>
-      new Intl.DateTimeFormat("fa-IR", { month: "short", day: "numeric" }).format(
-        new Date(m.recordedAt)
-      )
-    );
+    const labels = measurements.map((m) => formatJalaliShort(m.recordedAt));
     const points = buildPoints(values, labels, width, height, pad);
     return { values, labels, points };
   }, [measurements, metric]);

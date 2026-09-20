@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/clinic/page-header";
 import { getDashboardStats, listAppointments, listVisits } from "@/lib/store";
-import { formatMoney } from "@/lib/types";
+import { formatDateFa, formatMoney } from "@/lib/types";
 
 export default async function ClinicDashboardPage() {
   const [stats, visits, appointments] = await Promise.all([
@@ -53,7 +53,7 @@ export default async function ClinicDashboardPage() {
             {visits.slice(0, 5).map((visit) => (
               <li key={visit.id} className="flex justify-between gap-3 border-b border-border/50 pb-2">
                 <span>{visit.visitType === "package" ? "پکیج" : "ویزیت"}</span>
-                <span className="text-muted-foreground">{visit.visitDate}</span>
+                <span className="text-muted-foreground">{formatDateFa(visit.visitDate)}</span>
               </li>
             ))}
             {visits.length === 0 ? (

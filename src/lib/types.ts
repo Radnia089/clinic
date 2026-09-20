@@ -1,3 +1,5 @@
+import { formatJalaliDate } from "@/lib/jalali";
+
 export type Gender = "female" | "male" | "other";
 
 export type VisitType = "consultation" | "package";
@@ -177,13 +179,5 @@ export function formatMoney(amount: number) {
 }
 
 export function formatDateFa(iso: string) {
-  try {
-    return new Intl.DateTimeFormat("fa-IR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    }).format(new Date(iso));
-  } catch {
-    return iso;
-  }
+  return formatJalaliDate(iso, { withMonthName: true });
 }

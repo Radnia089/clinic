@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
+import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 import type { Gender, VisitType } from "@/lib/types";
 
 const fieldClass =
@@ -22,7 +24,7 @@ export function NewVisitorForm() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const [visitDate, setVisitDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [visitDate, setVisitDate] = useState(() => jalaliPartsToIsoDate(todayJalaliParts()));
   const [visitType, setVisitType] = useState<VisitType>("consultation");
   const [packageName, setPackageName] = useState("پکیج لاغری استاندارد");
 
@@ -154,12 +156,10 @@ export function NewVisitorForm() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label>تاریخ مراجعه</Label>
-            <Input
-              type="date"
-              className={fieldClass}
+            <Label>تاریخ مراجعه (شمسی)</Label>
+            <ShamsiDateInput
               value={visitDate}
-              onChange={(e) => setVisitDate(e.target.value)}
+              onChange={setVisitDate}
               required
             />
           </div>
