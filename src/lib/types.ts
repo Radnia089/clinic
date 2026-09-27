@@ -156,6 +156,24 @@ export interface SmsLogEntry {
   createdAt: string;
 }
 
+/** دفتر حساب شخصی مدیر کلینیک (جدا از مالی مشتریان) */
+export type PersonalLedgerKind = "income" | "expense";
+
+export interface PersonalLedgerEntry {
+  id: string;
+  kind: PersonalLedgerKind;
+  /** دسته از پیش‌تعریف‌شده مثل حقوق، خرید، ... */
+  category: string;
+  /** توضیح کوتاه اختیاری */
+  title?: string;
+  /** مبلغ به تومان */
+  amount: number;
+  /** تاریخ ثبت به‌صورت ISO تاریخ YYYY-MM-DD */
+  entryDate: string;
+  note?: string;
+  createdAt: string;
+}
+
 export interface AppData {
   clinic: ClinicProfile;
   patients: Patient[];
@@ -164,6 +182,27 @@ export interface AppData {
   appointments: AppointmentRequest[];
   measurements: ProgressMeasurement[];
   smsLogs: SmsLogEntry[];
+  personalLedger: PersonalLedgerEntry[];
+}
+
+export const PERSONAL_INCOME_CATEGORIES = [
+  "حقوق",
+  "درآمد کلینیک",
+  "پاداش",
+  "سایر درآمد",
+] as const;
+
+export const PERSONAL_EXPENSE_CATEGORIES = [
+  "خرید تجهیزات",
+  "اجاره",
+  "قبض و آبونمان",
+  "حمل‌ونقل",
+  "مواد مصرفی",
+  "سایر هزینه",
+] as const;
+
+export function personalLedgerKindLabel(kind: PersonalLedgerKind) {
+  return kind === "income" ? "درآمد" : "هزینه";
 }
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {

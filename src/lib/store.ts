@@ -7,6 +7,7 @@ import {
   DEFAULT_REMINDER_SETTINGS,
   Patient,
   Payment,
+  PersonalLedgerEntry,
   ProgressMeasurement,
   SmsLogEntry,
   Visit,
@@ -24,6 +25,7 @@ const emptyData = (): AppData => ({
   appointments: [],
   measurements: [],
   smsLogs: [],
+  personalLedger: [],
 });
 
 async function ensureStore(): Promise<AppData> {
@@ -45,6 +47,7 @@ async function ensureStore(): Promise<AppData> {
       appointments: parsed.appointments ?? [],
       measurements: parsed.measurements ?? [],
       smsLogs: parsed.smsLogs ?? [],
+      personalLedger: parsed.personalLedger ?? [],
     };
   } catch {
     const data = emptyData();
@@ -101,6 +104,38 @@ export async function createSmsLog(
   data.smsLogs = data.smsLogs.slice(0, 500);
   await writeStore(data);
   return entry;
+}
+
+export async function listPersonalLedger() {
+  const items = (await ensureStore()).personalLedger;
+  return [...items].sort((a, b) => {
+    const byDate = b.entryDate.localeCompare(a.entryDate);
+    if (byDate !== 0) return byDate;
+    return b.createdAt.localeCompare(a.createdAt);
+  });
+}
+
+export async function createPersonalLedgerEntry(
+  input: Omit<PersonalLedgerEntry, "id" | "createdAt">
+) {
+  const data = await ensureStore();
+  const entry: PersonalLedgerEntry = {
+    ...input,
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+  };
+  data.personalLedger.unshift(entry);
+  await writeStore(data);
+  return entry;
+}
+
+export async function deletePersonalLedgerEntry(id: string) {
+  const data = await ensureStore();
+  const next = data.personalLedger.filter((e) => e.id !== id);
+  if (next.length === data.personalLedger.length) return false;
+  data.personalLedger = next;
+  await writeStore(data);
+  return true;
 }
 
 export async function listPatients() {

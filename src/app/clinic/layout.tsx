@@ -13,7 +13,11 @@ export default async function ClinicLayout({
   ensureReminderScheduler();
   const [data, user] = await Promise.all([getAppData(), getCurrentUser()]);
   return (
-    <ClinicShell version={data.clinic.version} userName={user?.name}>
+    <ClinicShell
+      version={data.clinic.version}
+      userName={user?.name}
+      userRole={user?.role}
+    >
       {children}
     </ClinicShell>
   );

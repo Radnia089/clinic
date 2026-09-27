@@ -13,6 +13,7 @@ import {
   Leaf,
   LogOut,
   MessageSquare,
+  BookOpen,
 } from "lucide-react";
 
 const receptionLinks = [
@@ -24,7 +25,14 @@ const receptionLinks = [
 const managementLinks = [
   { href: "/clinic", label: "داشبورد", icon: LayoutDashboard, short: "مدیریت" },
   { href: "/clinic/reminders", label: "پیامک و تبلیغات", icon: MessageSquare, short: "پیامک" },
-  { href: "/clinic/finance", label: "مالی", icon: Wallet, short: "مالی" },
+  { href: "/clinic/finance", label: "مالی کلینیک", icon: Wallet, short: "مالی" },
+  {
+    href: "/clinic/personal-accounting",
+    label: "حسابداری شخصی",
+    icon: BookOpen,
+    short: "حساب شخصی",
+    managerOnly: true,
+  },
   { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },
 ];
 
@@ -42,15 +50,21 @@ export function ClinicShell({
   children,
   version,
   userName,
+  userRole,
 }: {
   children: React.ReactNode;
   version: string;
   userName?: string;
+  userRole?: "reception" | "management";
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const isReceptionArea =
     pathname.startsWith("/clinic/reception") || pathname.startsWith("/clinic/progress");
+  const isManager = userRole === "management";
+  const visibleManagementLinks = managementLinks.filter(
+    (link) => !("managerOnly" in link && link.managerOnly) || isManager
+  );
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -112,7 +126,7 @@ export function ClinicShell({
                 مدیریت
               </p>
               <ul className="space-y-1.5">
-                {managementLinks.map((link) => {
+                {visibleManagementLinks.map((link) => {
                   const Icon = link.icon;
                   const active = isActive(pathname, link.href);
                   return (
@@ -181,7 +195,7 @@ export function ClinicShell({
             </div>
 
             <div className="mt-3 flex gap-2 overflow-x-auto pb-1 md:hidden">
-              {[...receptionLinks, ...managementLinks].map((link) => (
+              {[...receptionLinks, ...visibleManagementLinks].map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
