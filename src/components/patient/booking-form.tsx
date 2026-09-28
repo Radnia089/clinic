@@ -94,8 +94,8 @@ export function PatientBookingForm() {
         <CheckCircle2 className="mx-auto size-12 text-brand" />
         <h3 className="mt-4 text-xl font-bold text-brand">نوبت حضوری ثبت شد</h3>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          درخواست مراجعه حضوری شما به کلینیک رسید. پس از تأیید، در بخش «نوبت
-          حضوری» صفحه اصلی می‌بینیدش.
+          درخواست مراجعه حضوری شما به کلینیک رسید. همکاران تندیس برای هماهنگی
+          زمان با شما تماس می‌گیرند.
         </p>
         <div className="mt-6 flex flex-col gap-2">
           <Button
