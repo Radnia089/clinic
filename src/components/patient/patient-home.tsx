@@ -11,7 +11,6 @@ import {
   MoreHorizontal,
   CalendarDays,
   Scale,
-  Clock3,
   Video,
   ChevronLeft,
   UtensilsCrossed,
@@ -22,8 +21,6 @@ import {
 import { cn } from "@/lib/utils";
 import { ClinicLogo } from "@/components/brand/clinic-logo";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
-import { readLastClinicBooking } from "@/components/patient/booking-form";
-import { formatDateFa, type AppointmentRequest } from "@/lib/types";
 
 const meals = [
   {
@@ -49,20 +46,9 @@ const meals = [
 const quickActions = [
   { label: "برنامه امروز", icon: CalendarDays, tone: "green", href: undefined as string | undefined },
   { label: "ثبت وزن", icon: Scale, tone: "coral", href: undefined as string | undefined },
-  { label: "جلسه بعد", icon: Clock3, tone: "mint", href: "/patient/book" },
+  { label: "نوبت حضوری", icon: MapPin, tone: "mint", href: "/patient/book" },
   { label: "مشاوره آنلاین", icon: Video, tone: "peach", href: "/patient/consult" },
 ];
-
-function appointmentStatusLabel(status: AppointmentRequest["status"]) {
-  switch (status) {
-    case "new":
-      return "در انتظار تأیید کلینیک";
-    case "confirmed":
-      return "تأیید شد — حضوری";
-    case "rejected":
-      return "لغو / رد شد";
-  }
-}
 
 function ProgressRing({ value }: { value: number }) {
   const radius = 42;
@@ -105,9 +91,6 @@ export function PatientHomeScreen() {
   const searchParams = useSearchParams();
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState("home");
-  const [clinicBooking, setClinicBooking] = useState<AppointmentRequest | null>(
-    null
-  );
 
   useEffect(() => {
     const initial = searchParams.get("tab");
@@ -115,21 +98,6 @@ export function PatientHomeScreen() {
       setTab(initial);
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    const local = readLastClinicBooking();
-    setClinicBooking(local);
-    if (!local?.phone) return;
-    void fetch(`/api/appointments?phone=${encodeURIComponent(local.phone)}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { appointments?: AppointmentRequest[] } | null) => {
-        const next = data?.appointments?.find(
-          (item) => (item.channel ?? "clinic") === "clinic"
-        );
-        if (next) setClinicBooking(next);
-      })
-      .catch(() => undefined);
-  }, []);
 
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-[430px] flex-col bg-[#F7F8F6] text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.04)]">
@@ -220,28 +188,6 @@ export function PatientHomeScreen() {
           })}
         </section>
 
-        <Link
-          href="/patient/book"
-          className="flex items-center gap-3 rounded-[24px] bg-white px-4 py-3.5 shadow-[0_6px_18px_rgba(35,70,55,0.06)] transition active:scale-[0.99]"
-        >
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-[#E8F2EA] text-brand">
-            <CalendarDays className="size-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-bold text-brand">جلسه بعدی · نوبت حضوری</p>
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">
-              {clinicBooking?.preferredDate
-                ? `${formatDateFa(clinicBooking.preferredDate)}${
-                    clinicBooking.preferredTime
-                      ? ` • ساعت ${clinicBooking.preferredTime}`
-                      : ""
-                  }`
-                : "برای رزرو مراجعه حضوری به کلینیک، اینجا بزنید"}
-            </p>
-          </div>
-          <ChevronLeft className="size-5 text-muted-foreground" />
-        </Link>
-
         <section className="rounded-[28px] bg-white p-4 shadow-[0_6px_18px_rgba(35,70,55,0.06)]">
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -317,46 +263,6 @@ export function PatientHomeScreen() {
           >
             مشاهده جوایز
           </button>
-        </section>
-
-        <section className="rounded-[28px] bg-white p-4 shadow-[0_6px_18px_rgba(35,70,55,0.06)]">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <MapPin className="size-4 text-brand" />
-              <h2 className="text-sm font-bold text-brand">نوبت حضوری من</h2>
-            </div>
-            <span className="rounded-full bg-[#E8F2EA] px-2.5 py-1 text-[10px] font-bold text-brand">
-              حضوری
-            </span>
-          </div>
-          {clinicBooking ? (
-            <div className="space-y-2 rounded-2xl bg-[#F7F8F6] px-3 py-3">
-              <p className="text-sm font-semibold text-foreground">
-                {clinicBooking.service}
-              </p>
-              <p className="text-xs leading-6 text-muted-foreground">
-                {clinicBooking.preferredDate
-                  ? formatDateFa(clinicBooking.preferredDate)
-                  : "تاریخ در انتظار هماهنگی"}
-                {clinicBooking.preferredTime
-                  ? ` • ساعت ${clinicBooking.preferredTime}`
-                  : ""}
-              </p>
-              <p className="text-xs font-medium text-brand">
-                {appointmentStatusLabel(clinicBooking.status)}
-              </p>
-            </div>
-          ) : (
-            <p className="text-xs leading-6 text-muted-foreground">
-              هنوز نوبت حضوری ثبت نکرده‌اید. از «جلسه بعدی» یا دکمه زیر رزرو کنید.
-            </p>
-          )}
-          <Link
-            href="/patient/book"
-            className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-2xl bg-brand text-sm font-semibold text-white"
-          >
-            {clinicBooking ? "رزرو نوبت حضوری جدید" : "رزرو نوبت حضوری"}
-          </Link>
         </section>
 
         <div className="pt-1 text-center">
