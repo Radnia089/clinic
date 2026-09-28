@@ -19,6 +19,7 @@ import {
   Star,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ClinicLogo } from "@/components/brand/clinic-logo";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
 
 const meals = [
@@ -86,33 +87,6 @@ function ProgressRing({ value }: { value: number }) {
   );
 }
 
-function LeafLogo() {
-  return (
-    <div className="flex size-12 items-center justify-center rounded-2xl bg-brand/10">
-      <svg viewBox="0 0 48 48" className="size-9" aria-hidden>
-        <path
-          d="M24 6c-9 4-14 12-14 20 0 8 6 14 14 14s14-6 14-14C38 18 33 10 24 6z"
-          fill="oklch(0.42 0.08 155)"
-        />
-        <path
-          d="M24 14c-1.5 5-2 10-2 16"
-          stroke="oklch(0.95 0.02 155)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          fill="none"
-        />
-        <path
-          d="M24 22c4 1.5 8 4 10 8"
-          stroke="oklch(0.95 0.02 155)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          fill="none"
-        />
-      </svg>
-    </div>
-  );
-}
-
 export function PatientHomeScreen() {
   const searchParams = useSearchParams();
   const [done, setDone] = useState<Record<string, boolean>>({});
@@ -132,12 +106,9 @@ export function PatientHomeScreen() {
       ) : (
       <div className="flex-1 space-y-4 px-4 pb-28 pt-5">
         <header className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <LeafLogo />
-            <div>
-              <p className="text-[15px] font-extrabold text-brand">کلینیک تندیس یزد</p>
-              <p className="text-xs text-muted-foreground">سلامت، سبک زندگی بهتر</p>
-            </div>
+          <div>
+            <ClinicLogo compact />
+            <p className="mt-1 text-[11px] text-muted-foreground">سلامت، سبک زندگی بهتر · یزد</p>
           </div>
           <div className="text-left">
             <p className="text-sm font-bold text-brand">سلام سارا 🍃</p>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ClinicLogo } from "@/components/brand/clinic-logo";
 import {
   LayoutDashboard,
   Users,
@@ -10,7 +11,6 @@ import {
   Wallet,
   CalendarCheck,
   Stethoscope,
-  Leaf,
   LogOut,
   MessageSquare,
   BookOpen,
@@ -76,14 +76,9 @@ export function ClinicShell({
     <div className="min-h-screen bg-[#EEF1EE] text-foreground">
       <div className="mx-auto flex min-h-screen max-w-[1200px]">
         <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col border-l border-black/5 bg-[#F7F8F6] p-5 md:flex">
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-[#E8F2EA] text-brand">
-              <Leaf className="size-6" />
-            </div>
-            <div>
-              <p className="text-[15px] font-extrabold text-brand">کلینیک تندیس یزد</p>
-              <p className="text-xs text-muted-foreground">اپ کلینیک · v{version}</p>
-            </div>
+          <div>
+            <ClinicLogo />
+            <p className="mt-1.5 text-xs text-muted-foreground">اپ کلینیک · یزد · v{version}</p>
           </div>
 
           <div className="mt-6 rounded-[24px] bg-[#E8F2EA] p-4">
@@ -163,16 +158,11 @@ export function ClinicShell({
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-20 border-b border-black/5 bg-[#F7F8F6]/90 px-4 py-3 backdrop-blur md:px-8">
             <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 md:hidden">
-                <div className="flex size-10 items-center justify-center rounded-2xl bg-[#E8F2EA] text-brand">
-                  <Leaf className="size-5" />
-                </div>
-                <div>
-                  <p className="text-sm font-extrabold text-brand">تندیس</p>
-                  <p className="text-[11px] text-muted-foreground">
-                    {userName || (isReceptionArea ? "بخش پذیرش" : "پنل کلینیک")}
-                  </p>
-                </div>
+              <div className="md:hidden">
+                <ClinicLogo compact />
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {userName || (isReceptionArea ? "بخش پذیرش" : "پنل کلینیک")}
+                </p>
               </div>
               <div className="hidden md:block">
                 <p className="text-xs text-muted-foreground">

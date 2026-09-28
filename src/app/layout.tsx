@@ -12,6 +12,10 @@ export const metadata: Metadata = {
   title: "کلینیک رژیم درمانی تندیس",
   description:
     "اپلیکیشن مشتری و کلینیک برای پذیرش، نوبت‌دهی، اطلاعات تخصصی و مدیریت مالی تندیس.",
+  icons: {
+    icon: "/tandis-logo.png",
+    apple: "/tandis-logo.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
