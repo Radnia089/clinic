@@ -108,7 +108,7 @@ export function PatientHomeScreen() {
         <header className="flex items-start justify-between gap-3">
           <div>
             <ClinicLogo compact />
-            <p className="mt-1 text-[11px] text-muted-foreground">سلامت، سبک زندگی بهتر · یزد</p>
+            <p className="mt-1 text-[11px] text-muted-foreground">کلینیک لاغری تندیس یزد</p>
           </div>
           <div className="text-left">
             <p className="text-sm font-bold text-brand">سلام سارا 🍃</p>
