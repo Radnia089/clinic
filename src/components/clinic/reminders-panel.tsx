@@ -52,6 +52,8 @@ function kindLabel(kind: SmsLogEntry["kind"]) {
       return "تبلیغاتی";
     case "test":
       return "آزمایشی";
+    case "online_consult":
+      return "مشاوره آنلاین";
     default:
       return kind;
   }

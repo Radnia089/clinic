@@ -5,6 +5,7 @@ import {
   AppointmentRequest,
   DEFAULT_CLINIC,
   DEFAULT_REMINDER_SETTINGS,
+  OnlineConsultRequest,
   Patient,
   Payment,
   PersonalLedgerEntry,
@@ -23,6 +24,7 @@ const emptyData = (): AppData => ({
   visits: [],
   payments: [],
   appointments: [],
+  onlineConsults: [],
   measurements: [],
   smsLogs: [],
   personalLedger: [],
@@ -45,6 +47,7 @@ async function ensureStore(): Promise<AppData> {
       visits: parsed.visits ?? [],
       payments: parsed.payments ?? [],
       appointments: parsed.appointments ?? [],
+      onlineConsults: parsed.onlineConsults ?? [],
       measurements: parsed.measurements ?? [],
       smsLogs: parsed.smsLogs ?? [],
       personalLedger: parsed.personalLedger ?? [],
@@ -267,6 +270,57 @@ export async function updateAppointment(
   data.appointments[index] = { ...data.appointments[index], ...patch, id };
   await writeStore(data);
   return data.appointments[index];
+}
+
+export async function listOnlineConsults() {
+  const items = (await ensureStore()).onlineConsults;
+  return [...items].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
+
+export async function createOnlineConsult(
+  input: Omit<
+    OnlineConsultRequest,
+    | "id"
+    | "createdAt"
+    | "updatedAt"
+    | "status"
+    | "scheduledDate"
+    | "scheduledTime"
+    | "smsNotifiedAt"
+    | "callStartedAt"
+  >
+) {
+  const data = await ensureStore();
+  const now = new Date().toISOString();
+  const item: OnlineConsultRequest = {
+    ...input,
+    id: crypto.randomUUID(),
+    status: "new",
+    createdAt: now,
+    updatedAt: now,
+  };
+  data.onlineConsults.unshift(item);
+  await writeStore(data);
+  return item;
+}
+
+export async function updateOnlineConsult(
+  id: string,
+  patch: Partial<OnlineConsultRequest>
+) {
+  const data = await ensureStore();
+  const index = data.onlineConsults.findIndex((item) => item.id === id);
+  if (index < 0) return null;
+  data.onlineConsults[index] = {
+    ...data.onlineConsults[index],
+    ...patch,
+    id,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeStore(data);
+  return data.onlineConsults[index];
 }
 
 export async function listMeasurements(patientId?: string) {

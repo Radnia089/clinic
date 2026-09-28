@@ -118,7 +118,44 @@ export interface ClinicProfile {
   reminderSettings: ReminderSettings;
 }
 
-export type ReminderKind = "morning" | "hours_before" | "promo" | "test";
+export type ReminderKind =
+  | "morning"
+  | "hours_before"
+  | "promo"
+  | "test"
+  | "online_consult";
+
+/** درخواست مشاوره آنلاین از اپ مشتری */
+export type OnlineConsultStatus =
+  | "new"
+  | "scheduled"
+  | "completed"
+  | "cancelled";
+
+export interface OnlineConsultRequest {
+  id: string;
+  name: string;
+  phone: string;
+  age?: number;
+  gender?: Gender;
+  heightCm?: number;
+  weightKg?: number;
+  waistCm?: number;
+  hipCm?: number;
+  note?: string;
+  preferredDate?: string;
+  status: OnlineConsultStatus;
+  /** تاریخ رزرو نهایی YYYY-MM-DD */
+  scheduledDate?: string;
+  /** ساعت رزرو نهایی HH:mm */
+  scheduledTime?: string;
+  /** زمان ارسال پیامک تأیید نوبت */
+  smsNotifiedAt?: string;
+  /** زمان شروع تماس از پنل کلینیک */
+  callStartedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface ReminderSettings {
   /** روشن/خاموش بودن کل سیستم یادآوری */
@@ -142,8 +179,9 @@ export type SmsDeliveryStatus = "sent" | "mock" | "failed";
 
 export interface SmsLogEntry {
   id: string;
-  visitId: string;
-  patientId: string;
+  visitId?: string;
+  patientId?: string;
+  onlineConsultId?: string;
   patientName: string;
   phone: string;
   kind: ReminderKind;
@@ -180,6 +218,7 @@ export interface AppData {
   visits: Visit[];
   payments: Payment[];
   appointments: AppointmentRequest[];
+  onlineConsults: OnlineConsultRequest[];
   measurements: ProgressMeasurement[];
   smsLogs: SmsLogEntry[];
   personalLedger: PersonalLedgerEntry[];
@@ -252,6 +291,19 @@ export function visitTypeLabel(type: VisitType) {
 
 export function visitChannelLabel(channel?: Visit["channel"]) {
   return channel === "phone" ? "تلفنی" : "حضوری";
+}
+
+export function onlineConsultStatusLabel(status: OnlineConsultStatus) {
+  switch (status) {
+    case "new":
+      return "درخواست جدید";
+    case "scheduled":
+      return "نوبت رزرو شد";
+    case "completed":
+      return "انجام شد";
+    case "cancelled":
+      return "لغو شد";
+  }
 }
 
 export function visitStatusLabel(status: VisitStatus) {

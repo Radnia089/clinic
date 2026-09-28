@@ -12,7 +12,7 @@ import {
   CalendarDays,
   Scale,
   Clock3,
-  MessageCircle,
+  Video,
   ChevronLeft,
   UtensilsCrossed,
   Gift,
@@ -44,10 +44,10 @@ const meals = [
 ];
 
 const quickActions = [
-  { label: "برنامه امروز", icon: CalendarDays, tone: "green" },
-  { label: "ثبت وزن", icon: Scale, tone: "coral" },
-  { label: "جلسه بعد", icon: Clock3, tone: "mint" },
-  { label: "پیام به مشاور", icon: MessageCircle, tone: "peach" },
+  { label: "برنامه امروز", icon: CalendarDays, tone: "green", href: undefined as string | undefined },
+  { label: "ثبت وزن", icon: Scale, tone: "coral", href: undefined as string | undefined },
+  { label: "جلسه بعد", icon: Clock3, tone: "mint", href: undefined as string | undefined },
+  { label: "مشاوره آنلاین", icon: Video, tone: "peach", href: "/patient/consult" },
 ];
 
 function ProgressRing({ value }: { value: number }) {
@@ -144,17 +144,10 @@ export function PatientHomeScreen() {
         <section className="grid grid-cols-4 gap-2.5">
           {quickActions.map((action) => {
             const Icon = action.icon;
-            return (
-              <button
-                key={action.label}
-                type="button"
-                onClick={() => {
-                  if (action.label === "ثبت وزن" || action.label === "جلسه بعد") {
-                    setTab("progress");
-                  }
-                }}
-                className="flex flex-col items-center gap-2 rounded-2xl bg-white px-1 py-3 shadow-[0_6px_18px_rgba(35,70,55,0.06)] transition active:scale-[0.98]"
-              >
+            const className =
+              "flex flex-col items-center gap-2 rounded-2xl bg-white px-1 py-3 shadow-[0_6px_18px_rgba(35,70,55,0.06)] transition active:scale-[0.98]";
+            const content = (
+              <>
                 <span
                   className={cn(
                     "flex size-11 items-center justify-center rounded-2xl",
@@ -166,7 +159,30 @@ export function PatientHomeScreen() {
                 >
                   <Icon className="size-5" />
                 </span>
-                <span className="text-[11px] font-medium text-foreground/80">{action.label}</span>
+                <span className="text-[11px] font-medium text-foreground/80">
+                  {action.label}
+                </span>
+              </>
+            );
+            if (action.href) {
+              return (
+                <Link key={action.label} href={action.href} className={className}>
+                  {content}
+                </Link>
+              );
+            }
+            return (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => {
+                  if (action.label === "ثبت وزن" || action.label === "جلسه بعد") {
+                    setTab("progress");
+                  }
+                }}
+                className={className}
+              >
+                {content}
               </button>
             );
           })}

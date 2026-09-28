@@ -14,6 +14,7 @@ import {
   LogOut,
   MessageSquare,
   BookOpen,
+  Video,
 } from "lucide-react";
 
 const receptionLinks = [
@@ -34,6 +35,12 @@ const managementLinks = [
     managerOnly: true,
   },
   { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },
+  {
+    href: "/clinic/online-consults",
+    label: "مشاوره آنلاین",
+    icon: Video,
+    short: "آنلاین",
+  },
 ];
 
 function isActive(pathname: string, href: string) {
