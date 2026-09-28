@@ -1,8 +1,22 @@
 import { NextResponse } from "next/server";
-import { createAppointment, listAppointments, updateAppointment } from "@/lib/store";
+import {
+  createAppointment,
+  listAppointments,
+  listAppointmentsByPhone,
+  updateAppointment,
+} from "@/lib/store";
 import { normalizeIntegerInput } from "@/lib/digits";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const phone = normalizeIntegerInput(searchParams.get("phone") ?? "");
+  if (phone) {
+    if (!/^09\d{9}$/.test(phone)) {
+      return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
+    }
+    const appointments = await listAppointmentsByPhone(phone);
+    return NextResponse.json({ appointments });
+  }
   const appointments = await listAppointments();
   return NextResponse.json({ appointments });
 }
@@ -15,7 +29,12 @@ export async function POST(request: Request) {
   const preferredDate = body.preferredDate
     ? String(body.preferredDate)
     : undefined;
+  const preferredTime = body.preferredTime
+    ? String(body.preferredTime).trim()
+    : undefined;
   const note = body.note ? String(body.note).trim() : undefined;
+  const channel =
+    body.channel === "phone" ? ("phone" as const) : ("clinic" as const);
 
   if (name.length < 2 || !/^09\d{9}$/.test(phone) || !service) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
@@ -26,7 +45,12 @@ export async function POST(request: Request) {
     phone,
     service,
     preferredDate,
+    preferredTime:
+      preferredTime && /^\d{2}:\d{2}$/.test(preferredTime)
+        ? preferredTime
+        : undefined,
     note,
+    channel,
   });
 
   return NextResponse.json({ appointment }, { status: 201 });

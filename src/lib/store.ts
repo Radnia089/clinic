@@ -46,7 +46,10 @@ async function ensureStore(): Promise<AppData> {
       patients: parsed.patients ?? [],
       visits: parsed.visits ?? [],
       payments: parsed.payments ?? [],
-      appointments: parsed.appointments ?? [],
+      appointments: (parsed.appointments ?? []).map((item) => ({
+        ...item,
+        channel: item.channel ?? "clinic",
+      })),
       onlineConsults: parsed.onlineConsults ?? [],
       measurements: parsed.measurements ?? [],
       smsLogs: parsed.smsLogs ?? [],
@@ -246,11 +249,14 @@ export async function listAppointments() {
 }
 
 export async function createAppointment(
-  input: Omit<AppointmentRequest, "id" | "createdAt" | "status">
+  input: Omit<AppointmentRequest, "id" | "createdAt" | "status"> & {
+    channel?: AppointmentRequest["channel"];
+  }
 ) {
   const data = await ensureStore();
   const appointment: AppointmentRequest = {
     ...input,
+    channel: input.channel ?? "clinic",
     id: crypto.randomUUID(),
     status: "new",
     createdAt: new Date().toISOString(),
@@ -258,6 +264,12 @@ export async function createAppointment(
   data.appointments.unshift(appointment);
   await writeStore(data);
   return appointment;
+}
+
+export async function listAppointmentsByPhone(phone: string) {
+  const normalized = phone.replace(/\D/g, "");
+  const all = await listAppointments();
+  return all.filter((a) => a.phone.replace(/\D/g, "") === normalized);
 }
 
 export async function updateAppointment(

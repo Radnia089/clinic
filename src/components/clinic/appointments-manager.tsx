@@ -12,7 +12,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState, StatusBadge } from "@/components/clinic/page-header";
-import { formatDateFa, type AppointmentRequest } from "@/lib/types";
+import {
+  formatDateFa,
+  visitChannelLabel,
+  type AppointmentRequest,
+} from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function AppointmentsManager({
@@ -64,6 +68,7 @@ export function AppointmentsManager({
             <TableHead className="text-right">نام</TableHead>
             <TableHead className="text-right">موبایل</TableHead>
             <TableHead className="text-right">خدمت</TableHead>
+            <TableHead className="text-right">نوع</TableHead>
             <TableHead className="text-right">تاریخ پیشنهادی</TableHead>
             <TableHead className="text-right">وضعیت</TableHead>
             <TableHead className="text-right">مراجعه</TableHead>
@@ -95,7 +100,21 @@ export function AppointmentsManager({
                 </TableCell>
                 <TableCell>{item.service}</TableCell>
                 <TableCell>
-                  {item.preferredDate ? formatDateFa(item.preferredDate) : "—"}
+                  <StatusBadge
+                    tone={(item.channel ?? "clinic") === "clinic" ? "info" : "warning"}
+                  >
+                    {visitChannelLabel(item.channel ?? "clinic")}
+                  </StatusBadge>
+                </TableCell>
+                <TableCell>
+                  {item.preferredDate ? (
+                    <>
+                      {formatDateFa(item.preferredDate)}
+                      {item.preferredTime ? ` • ${item.preferredTime}` : ""}
+                    </>
+                  ) : (
+                    "—"
+                  )}
                 </TableCell>
                 <TableCell>
                   <StatusBadge

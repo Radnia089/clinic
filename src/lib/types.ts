@@ -78,8 +78,12 @@ export interface AppointmentRequest {
   name: string;
   phone: string;
   preferredDate?: string;
+  /** ساعت پیشنهادی HH:mm */
+  preferredTime?: string;
   service: string;
   note?: string;
+  /** نوبت حضوری در کلینیک یا تلفنی */
+  channel: "clinic" | "phone";
   status: "new" | "confirmed" | "rejected";
   createdAt: string;
 }
