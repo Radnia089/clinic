@@ -160,6 +160,12 @@ export function OnlineConsultsPanel({
                 </dd>
               </div>
               <div>
+                <dt className="text-xs text-muted-foreground">دور بازو</dt>
+                <dd className="font-medium">
+                  {item.armCm ? `${item.armCm} سانتی‌متر` : "—"}
+                </dd>
+              </div>
+              <div>
                 <dt className="text-xs text-muted-foreground">دور کمر</dt>
                 <dd className="font-medium">
                   {item.waistCm ? `${item.waistCm} سانتی‌متر` : "—"}
@@ -169,6 +175,18 @@ export function OnlineConsultsPanel({
                 <dt className="text-xs text-muted-foreground">دور باسن</dt>
                 <dd className="font-medium">
                   {item.hipCm ? `${item.hipCm} سانتی‌متر` : "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">دور ران</dt>
+                <dd className="font-medium">
+                  {item.thighCm ? `${item.thighCm} سانتی‌متر` : "—"}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-muted-foreground">دور ساق</dt>
+                <dd className="font-medium">
+                  {item.calfCm ? `${item.calfCm} سانتی‌متر` : "—"}
                 </dd>
               </div>
             </dl>

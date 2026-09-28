@@ -144,8 +144,16 @@ export interface OnlineConsultRequest {
   gender?: Gender;
   heightCm?: number;
   weightKg?: number;
+  /** دور بازو */
+  armCm?: number;
+  /** دور کمر (باریک‌ترین / ناف) */
   waistCm?: number;
+  /** دور باسن */
   hipCm?: number;
+  /** دور ران */
+  thighCm?: number;
+  /** دور ساق */
+  calfCm?: number;
   note?: string;
   preferredDate?: string;
   status: OnlineConsultStatus;

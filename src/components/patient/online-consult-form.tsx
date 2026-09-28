@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DigitsInput } from "@/components/ui/digits-input";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
+import { MeasurementGuide } from "@/components/patient/measurement-guide";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 import type { Gender } from "@/lib/types";
 
@@ -23,10 +24,29 @@ export function OnlineConsultForm() {
   const [gender, setGender] = useState<Gender | "">("");
   const [heightCm, setHeightCm] = useState("");
   const [weightKg, setWeightKg] = useState("");
+  const [armCm, setArmCm] = useState("");
   const [waistCm, setWaistCm] = useState("");
   const [hipCm, setHipCm] = useState("");
+  const [thighCm, setThighCm] = useState("");
+  const [calfCm, setCalfCm] = useState("");
   const [preferredDate, setPreferredDate] = useState("");
   const [note, setNote] = useState("");
+
+  function resetForm() {
+    setName("");
+    setPhone("");
+    setAge("");
+    setGender("");
+    setHeightCm("");
+    setWeightKg("");
+    setArmCm("");
+    setWaistCm("");
+    setHipCm("");
+    setThighCm("");
+    setCalfCm("");
+    setPreferredDate("");
+    setNote("");
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -44,24 +64,18 @@ export function OnlineConsultForm() {
           gender: gender || undefined,
           heightCm: heightCm || undefined,
           weightKg: weightKg || undefined,
+          armCm: armCm || undefined,
           waistCm: waistCm || undefined,
           hipCm: hipCm || undefined,
+          thighCm: thighCm || undefined,
+          calfCm: calfCm || undefined,
           preferredDate: preferredDate || undefined,
           note,
         }),
       });
       if (!res.ok) throw new Error("failed");
       setState("success");
-      setName("");
-      setPhone("");
-      setAge("");
-      setGender("");
-      setHeightCm("");
-      setWeightKg("");
-      setWaistCm("");
-      setHipCm("");
-      setPreferredDate("");
-      setNote("");
+      resetForm();
     } catch {
       setError("ارسال درخواست انجام نشد. دوباره تلاش کنید.");
       setState("error");
@@ -107,8 +121,7 @@ export function OnlineConsultForm() {
         <div>
           <p className="text-sm font-bold text-brand">مشاوره آنلاین تلفنی</p>
           <p className="mt-1 text-xs leading-6 text-muted-foreground">
-            مشخصات و اندازه‌ها را بفرستید تا کلینیک وقت تماس رزرو کند و پیامک
-            تأیید برایتان بیاید. فیلدهای فرم بعداً دقیق‌تر تنظیم می‌شوند.
+            مشخصات و سایزها را طبق راهنما وارد کنید تا کلینیک وقت تماس رزرو کند.
           </p>
         </div>
       </div>
@@ -166,7 +179,8 @@ export function OnlineConsultForm() {
       </section>
 
       <section className="space-y-3">
-        <p className="text-sm font-bold text-brand">قد و سایز</p>
+        <p className="text-sm font-bold text-brand">قد، وزن و سایز</p>
+        <MeasurementGuide />
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor="oc-height">قد (سانتی‌متر)</Label>
@@ -189,7 +203,17 @@ export function OnlineConsultForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="oc-waist">دور کمر (سانتی‌متر)</Label>
+            <Label htmlFor="oc-arm">۲ · دور بازو</Label>
+            <DigitsInput
+              id="oc-arm"
+              mode="decimal"
+              className="h-12 rounded-2xl"
+              value={armCm}
+              onValueChange={setArmCm}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="oc-waist">۳ · دور کمر</Label>
             <DigitsInput
               id="oc-waist"
               mode="decimal"
@@ -199,13 +223,33 @@ export function OnlineConsultForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="oc-hip">دور باسن (سانتی‌متر)</Label>
+            <Label htmlFor="oc-hip">۴ · دور باسن</Label>
             <DigitsInput
               id="oc-hip"
               mode="decimal"
               className="h-12 rounded-2xl"
               value={hipCm}
               onValueChange={setHipCm}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="oc-thigh">۵ · دور ران</Label>
+            <DigitsInput
+              id="oc-thigh"
+              mode="decimal"
+              className="h-12 rounded-2xl"
+              value={thighCm}
+              onValueChange={setThighCm}
+            />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="oc-calf">۶ · دور ساق</Label>
+            <DigitsInput
+              id="oc-calf"
+              mode="decimal"
+              className="h-12 rounded-2xl"
+              value={calfCm}
+              onValueChange={setCalfCm}
             />
           </div>
         </div>

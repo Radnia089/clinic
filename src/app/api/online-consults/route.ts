@@ -45,8 +45,11 @@ export async function POST(request: Request) {
   const age = parseOptionalNumber(body.age);
   const heightCm = parseOptionalNumber(body.heightCm);
   const weightKg = parseOptionalNumber(body.weightKg);
+  const armCm = parseOptionalNumber(body.armCm);
   const waistCm = parseOptionalNumber(body.waistCm);
   const hipCm = parseOptionalNumber(body.hipCm);
+  const thighCm = parseOptionalNumber(body.thighCm);
+  const calfCm = parseOptionalNumber(body.calfCm);
   const genderRaw = String(body.gender ?? "").trim();
   const gender = (["female", "male", "other"] as Gender[]).includes(
     genderRaw as Gender
@@ -58,15 +61,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
   }
 
+  const positive = (n?: number) => (n && n > 0 ? n : undefined);
+
   const item = await createOnlineConsult({
     name,
     phone,
     age: age && age > 0 ? Math.round(age) : undefined,
     gender,
-    heightCm: heightCm && heightCm > 0 ? heightCm : undefined,
-    weightKg: weightKg && weightKg > 0 ? weightKg : undefined,
-    waistCm: waistCm && waistCm > 0 ? waistCm : undefined,
-    hipCm: hipCm && hipCm > 0 ? hipCm : undefined,
+    heightCm: positive(heightCm),
+    weightKg: positive(weightKg),
+    armCm: positive(armCm),
+    waistCm: positive(waistCm),
+    hipCm: positive(hipCm),
+    thighCm: positive(thighCm),
+    calfCm: positive(calfCm),
     note: note || undefined,
     preferredDate,
   });
