@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     "*.cursor.com",
     "*.cursorusercontent.com",
     "*.gitpod.dev",
+    "*.trycloudflare.com",
   ],
 };
 
