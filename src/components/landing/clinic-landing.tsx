@@ -23,6 +23,24 @@ const services = [
   },
 ];
 
+const devices = [
+  {
+    name: "آر‌اف (RF)",
+    full: "رادیوفرکوئنسی",
+    text: "امواج رادیویی گرمای کنترل‌شده به لایه‌های پوست و بافت زیرین می‌رسانند. این روش به سفت‌شدن پوست، تحریک کلاژن و کمک به فرم‌دهی موضعی کمک می‌کند — به‌ویژه وقتی با رژیم و پیگیری همراه باشد.",
+  },
+  {
+    name: "کویتیشن",
+    full: "اولتراسوند کاویتاسیون",
+    text: "امواج اولتراسوند حباب‌های میکروسکوپی در بافت چربی ایجاد می‌کنند و به شکستن سلول‌های چربی موضعی کمک می‌کنند. معمولاً برای نواحی مقاوم مثل شکم، پهلو و ران پیشنهاد می‌شود.",
+  },
+  {
+    name: "ایندرمولوژی",
+    full: "اندومولوژی / LPG",
+    text: "ماساژ مکانیکی با مکش و غلتک که گردش لنفاوی را بهتر می‌کند، ظاهر سلولیت را کاهش می‌دهد و پوست را نرم‌تر و یکدست‌تر نشان می‌دهد. مکمل خوبی برای مسیر لاغری و فرم‌دهی بدن است.",
+  },
+];
+
 export function ClinicLanding({
   phone,
   address,
@@ -63,6 +81,9 @@ export function ClinicLanding({
             <a href="#services" className="hover:text-[#14352A]">
               خدمات
             </a>
+            <a href="#devices" className="hover:text-[#14352A]">
+              دستگاه‌ها
+            </a>
             <a href="#path" className="hover:text-[#14352A]">
               مسیر درمان
             </a>
@@ -102,8 +123,8 @@ export function ClinicLanding({
             تندیس
           </h1>
           <p className="animate-rise-delay-2 mt-5 max-w-xl text-base leading-8 text-white/90 sm:text-lg">
-            لاغری پایدار با رژیم شخصی، پیگیری واقعی و همراهی مشاور — حضوری در
-            کلینیک یا آنلاین از خانه.
+            لاغری پایدار با رژیم شخصی، دستگاه‌های کمک لاغری و همراهی مشاور —
+            حضوری در کلینیک یا آنلاین از خانه.
           </p>
           <div className="animate-rise-delay-3 mt-8 flex flex-wrap gap-3">
             <Link
@@ -162,6 +183,70 @@ export function ClinicLanding({
         </div>
       </section>
 
+      {/* Devices — کمک لاغری */}
+      <section id="devices" className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="/images/clinic-care.jpg"
+            alt=""
+            fill
+            className="object-cover opacity-[0.12]"
+            sizes="100vw"
+            aria-hidden
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#F6F8F5] via-[#F6F8F5]/92 to-[#E8F0EA]" />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
+          <p className="text-sm font-bold tracking-wide text-[#C48A12]">
+            دستگاه‌های کمک لاغری
+          </p>
+          <h2 className="mt-2 max-w-2xl text-3xl font-extrabold text-[#14352A] sm:text-4xl">
+            آر‌اف، کویتیشن و ایندرمولوژی در کنار رژیم
+          </h2>
+          <p className="mt-4 max-w-2xl text-sm leading-8 text-[#1A2E26]/70 sm:text-base">
+            در کلینیک تندیس، علاوه بر رژیم شخصی، از دستگاه‌های کمک لاغری برای
+            فرم‌دهی موضعی، سفتی پوست و کاهش ظاهر سلولیت استفاده می‌شود. انتخاب
+            روش مناسب بعد از ویزیت و اندازه‌گیری انجام می‌گیرد.
+          </p>
+
+          <div className="mt-14 grid gap-0 border-t border-[#14352A]/12 md:grid-cols-3">
+            {devices.map((device, index) => (
+              <article
+                key={device.name}
+                className="border-b border-[#14352A]/12 py-8 md:border-b-0 md:border-l md:px-8 md:py-10 md:first:border-l-0 md:first:pr-8 md:first:pl-0"
+              >
+                <span className="font-[family-name:var(--font-playfair)] text-2xl font-bold text-[#F0B429]">
+                  {new Intl.NumberFormat("fa-IR").format(index + 1)}
+                </span>
+                <h3 className="mt-3 text-2xl font-extrabold text-[#14352A]">
+                  {device.name}
+                </h3>
+                <p className="mt-1 text-xs font-semibold tracking-wide text-[#C48A12]">
+                  {device.full}
+                </p>
+                <p className="mt-4 text-sm leading-8 text-[#1A2E26]/70">
+                  {device.text}
+                </p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-12 flex flex-wrap items-center gap-4">
+            <Link
+              href="/patient/book"
+              className="inline-flex h-12 items-center gap-2 rounded-full bg-[#14352A] px-6 text-sm font-bold text-white transition hover:bg-[#1f4a3a]"
+            >
+              رزرو برای مشاوره دستگاه
+              <ArrowLeft className="size-4" />
+            </Link>
+            <p className="text-sm text-[#1A2E26]/55">
+              دستگاه‌ها جایگزین رژیم نیستند؛ مکمل مسیر لاغری‌اند.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Split story */}
       <section className="overflow-hidden bg-[#14352A] text-white">
         <div className="mx-auto grid max-w-6xl md:grid-cols-2">
@@ -181,7 +266,8 @@ export function ClinicLanding({
             </h2>
             <p className="mt-5 text-sm leading-8 text-white/80 sm:text-base">
               وزن، سایز و هدف شما ثبت می‌شود تا مشاور برنامه را مرحله‌به‌مرحله
-              تنظیم کند. همین دقت، تفاوت مسیر پایدار با رژیم‌های کوتاه‌مدت است.
+              تنظیم کند — از رژیم تا جلسات دستگاه‌های کمک لاغری. همین دقت، تفاوت
+              مسیر پایدار با رژیم‌های کوتاه‌مدت است.
             </p>
             <Link
               href="/patient"
