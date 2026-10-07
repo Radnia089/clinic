@@ -22,3 +22,8 @@ export function parseNormalizedNumber(value: string): number {
   const n = Number(toEnglishDigits(value).trim());
   return n;
 }
+
+/** موبایل ایران: ۱۱ رقم، شروع با ۰۹ */
+export function isValidIranMobile(value: string): boolean {
+  return /^09\d{9}$/.test(normalizeIntegerInput(value));
+}

@@ -5,7 +5,7 @@ import {
   listAppointmentsByPhone,
   updateAppointment,
 } from "@/lib/store";
-import { normalizeIntegerInput } from "@/lib/digits";
+import { isValidIranMobile, normalizeIntegerInput } from "@/lib/digits";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -36,7 +36,13 @@ export async function POST(request: Request) {
   const channel =
     body.channel === "phone" ? ("phone" as const) : ("clinic" as const);
 
-  if (name.length < 2 || !/^09\d{9}$/.test(phone) || !service) {
+  if (name.length < 2) {
+    return NextResponse.json({ error: "invalid_name" }, { status: 400 });
+  }
+  if (!isValidIranMobile(phone)) {
+    return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
+  }
+  if (!service) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
   }
 

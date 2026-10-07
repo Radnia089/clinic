@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
 import { DigitsInput } from "@/components/ui/digits-input";
+import { isValidIranMobile } from "@/lib/digits";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 import { CheckCircle2, Loader2, MapPin } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { AppointmentRequest } from "@/lib/types";
 
 const services = ["ویزیت", "مشاوره دستگاه لاغری"];
@@ -41,15 +43,31 @@ export function PatientBookingForm() {
     "idle"
   );
   const [error, setError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [service, setService] = useState(services[0]);
   const [preferredDate, setPreferredDate] = useState("");
   const [note, setNote] = useState("");
 
+  function handlePhoneChange(value: string) {
+    setPhone(value);
+    if (phoneError) setPhoneError("");
+  }
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError("");
+    setPhoneError("");
+
+    if (!isValidIranMobile(phone)) {
+      setPhoneError(
+        "شماره موبایل را درست وارد کنید؛ باید ۱۱ رقم و با ۰۹ شروع شود."
+      );
+      setState("idle");
+      return;
+    }
+
     setState("loading");
 
     try {
@@ -65,7 +83,24 @@ export function PatientBookingForm() {
           channel: "clinic",
         }),
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        if (data?.error === "invalid_phone") {
+          setPhoneError(
+            "شماره موبایل را درست وارد کنید؛ باید ۱۱ رقم و با ۰۹ شروع شود."
+          );
+          setState("idle");
+          return;
+        }
+        if (data?.error === "invalid_name") {
+          setError("نام و نام خانوادگی را کامل وارد کنید.");
+          setState("error");
+          return;
+        }
+        throw new Error("failed");
+      }
       const data = (await res.json()) as { appointment: AppointmentRequest };
       saveLastClinicBooking(data.appointment);
       setState("success");
@@ -141,12 +176,26 @@ export function PatientBookingForm() {
         <DigitsInput
           id="pphone"
           mode="phone"
-          className="h-12 rounded-2xl"
+          className={cn(
+            "h-12 rounded-2xl",
+            phoneError && "border-destructive focus-visible:ring-destructive/30"
+          )}
           placeholder="0913xxxxxxx"
           value={phone}
-          onValueChange={setPhone}
+          onValueChange={handlePhoneChange}
+          aria-invalid={phoneError ? true : undefined}
+          aria-describedby={phoneError ? "pphone-error" : undefined}
           required
         />
+        {phoneError ? (
+          <p id="pphone-error" className="text-sm text-destructive" role="alert">
+            {phoneError}
+          </p>
+        ) : (
+          <p className="text-[11px] text-muted-foreground">
+            مثال: ۰۹۱۳xxxxxxx — یازده رقم، شروع با ۰۹
+          </p>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="pservice">خدمت حضوری</Label>
