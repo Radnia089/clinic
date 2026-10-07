@@ -38,9 +38,15 @@ curl -X POST http://127.0.0.1:3847/api/reminders \
   -d '{"action":"run"}'
 ```
 
-## ورود کلینیک
+## ورود
 
-نام کاربری: `tandis` یا `admin` · رمز: `123456`
+درگاه همه پنل‌ها روی لندینگ است: [`/#portal`](http://127.0.0.1:3847/#portal)
+
+- اپ مشتری → `/patient`
+- پذیرش → `/login?next=/clinic/reception` (کاربر `tandis`)
+- مدیریت → `/login?next=/clinic` (کاربر `admin`)
+
+رمز تست: `123456`
 
 ## اجرا
 
