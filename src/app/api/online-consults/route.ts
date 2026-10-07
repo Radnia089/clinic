@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   const thighCm = parseOptionalNumber(body.thighCm);
   const calfCm = parseOptionalNumber(body.calfCm);
   const genderRaw = String(body.gender ?? "").trim();
-  const gender = (["female", "male", "other"] as Gender[]).includes(
+  const gender = (["female", "male"] as Gender[]).includes(
     genderRaw as Gender
   )
     ? (genderRaw as Gender)

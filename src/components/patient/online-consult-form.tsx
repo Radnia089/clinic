@@ -178,7 +178,6 @@ export function OnlineConsultForm() {
               <option value="">انتخاب</option>
               <option value="female">زن</option>
               <option value="male">مرد</option>
-              <option value="other">سایر</option>
             </select>
           </div>
         </div>
