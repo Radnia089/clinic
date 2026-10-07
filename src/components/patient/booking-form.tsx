@@ -45,7 +45,6 @@ export function PatientBookingForm() {
   const [phone, setPhone] = useState("");
   const [service, setService] = useState(services[0]);
   const [preferredDate, setPreferredDate] = useState("");
-  const [preferredTime, setPreferredTime] = useState("17:30");
   const [note, setNote] = useState("");
 
   async function onSubmit(event: FormEvent) {
@@ -62,7 +61,6 @@ export function PatientBookingForm() {
           phone,
           service,
           preferredDate: preferredDate || undefined,
-          preferredTime: preferredTime || undefined,
           note,
           channel: "clinic",
         }),
@@ -75,7 +73,6 @@ export function PatientBookingForm() {
       setPhone("");
       setService(services[0]);
       setPreferredDate("");
-      setPreferredTime("17:30");
       setNote("");
     } catch {
       setError("ارسال درخواست انجام نشد. دوباره تلاش کنید.");
@@ -190,16 +187,6 @@ export function PatientBookingForm() {
             انتخاب تاریخ شمسی
           </button>
         )}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="ptime">ساعت پیشنهادی</Label>
-        <input
-          id="ptime"
-          type="time"
-          value={preferredTime}
-          onChange={(e) => setPreferredTime(e.target.value)}
-          className="h-12 w-full rounded-2xl border border-[#D7E2D9] bg-[#F7F8F6] px-3 text-sm"
-        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="pnote">توضیح</Label>
