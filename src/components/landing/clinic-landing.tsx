@@ -27,16 +27,19 @@ const devices = [
   {
     name: "آر‌اف (RF)",
     full: "رادیوفرکوئنسی",
+    image: "/images/device-rf.jpg",
     text: "امواج رادیویی گرمای کنترل‌شده به لایه‌های پوست و بافت زیرین می‌رسانند. این روش به سفت‌شدن پوست، تحریک کلاژن و کمک به فرم‌دهی موضعی کمک می‌کند — به‌ویژه وقتی با رژیم و پیگیری همراه باشد.",
   },
   {
     name: "کویتیشن",
     full: "اولتراسوند کاویتاسیون",
+    image: "/images/device-cavitation.jpg",
     text: "امواج اولتراسوند حباب‌های میکروسکوپی در بافت چربی ایجاد می‌کنند و به شکستن سلول‌های چربی موضعی کمک می‌کنند. معمولاً برای نواحی مقاوم مثل شکم، پهلو و ران پیشنهاد می‌شود.",
   },
   {
     name: "ایندرمولوژی",
     full: "اندومولوژی / LPG",
+    image: "/images/device-endermologie.jpg",
     text: "ماساژ مکانیکی با مکش و غلتک که گردش لنفاوی را بهتر می‌کند، ظاهر سلولیت را کاهش می‌دهد و پوست را نرم‌تر و یکدست‌تر نشان می‌دهد. مکمل خوبی برای مسیر لاغری و فرم‌دهی بدن است.",
   },
 ];
@@ -210,22 +213,29 @@ export function ClinicLanding({
             روش مناسب بعد از ویزیت و اندازه‌گیری انجام می‌گیرد.
           </p>
 
-          <div className="mt-14 grid gap-0 border-t border-[#14352A]/12 md:grid-cols-3">
+          <div className="mt-14 grid gap-8 md:grid-cols-3 md:gap-6">
             {devices.map((device, index) => (
-              <article
-                key={device.name}
-                className="border-b border-[#14352A]/12 py-8 md:border-b-0 md:border-l md:px-8 md:py-10 md:first:border-l-0 md:first:pr-8 md:first:pl-0"
-              >
-                <span className="font-[family-name:var(--font-playfair)] text-2xl font-bold text-[#F0B429]">
-                  {new Intl.NumberFormat("fa-IR").format(index + 1)}
-                </span>
-                <h3 className="mt-3 text-2xl font-extrabold text-[#14352A]">
+              <article key={device.name} className="group">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem]">
+                  <Image
+                    src={device.image}
+                    alt={device.name}
+                    fill
+                    className="object-cover transition duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0F241C]/35 to-transparent" />
+                  <span className="absolute bottom-4 right-4 font-[family-name:var(--font-playfair)] text-3xl font-bold text-[#F0B429]">
+                    {new Intl.NumberFormat("fa-IR").format(index + 1)}
+                  </span>
+                </div>
+                <h3 className="mt-5 text-2xl font-extrabold text-[#14352A]">
                   {device.name}
                 </h3>
                 <p className="mt-1 text-xs font-semibold tracking-wide text-[#C48A12]">
                   {device.full}
                 </p>
-                <p className="mt-4 text-sm leading-8 text-[#1A2E26]/70">
+                <p className="mt-3 text-sm leading-8 text-[#1A2E26]/70">
                   {device.text}
                 </p>
               </article>
