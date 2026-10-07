@@ -58,12 +58,15 @@ export async function POST(request: Request) {
     : undefined;
 
   const positive = (n?: number) => (n && n > 0 ? n : undefined);
+  const requiredAge = age && age > 0 ? Math.round(age) : undefined;
   const requiredHeight = positive(heightCm);
   const requiredWeight = positive(weightKg);
 
   if (
     name.length < 2 ||
     !/^09\d{9}$/.test(phone) ||
+    !requiredAge ||
+    !gender ||
     !requiredHeight ||
     !requiredWeight
   ) {
@@ -73,7 +76,7 @@ export async function POST(request: Request) {
   const item = await createOnlineConsult({
     name,
     phone,
-    age: age && age > 0 ? Math.round(age) : undefined,
+    age: requiredAge,
     gender,
     heightCm: requiredHeight,
     weightKg: requiredWeight,

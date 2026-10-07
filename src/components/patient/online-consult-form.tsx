@@ -124,14 +124,14 @@ export function OnlineConsultForm() {
         <div>
           <p className="text-sm font-bold text-brand">مشاوره آنلاین تلفنی</p>
           <p className="mt-1 text-xs leading-6 text-muted-foreground">
-            فقط قد و وزن الزامی است. سایزها و جزئیات بیشتر اختیاری‌اند و در
-            بخش «اطلاعات بیشتر» می‌توانید وارد کنید.
+            نام، موبایل، سن، جنسیت، قد و وزن الزامی است. سایزها و جزئیات بیشتر
+            اختیاری‌اند و در بخش «اطلاعات بیشتر» می‌توانید وارد کنید.
           </p>
         </div>
       </div>
 
       <section className="space-y-3">
-        <p className="text-sm font-bold text-brand">مشخصات تماس</p>
+        <p className="text-sm font-bold text-brand">مشخصات شما</p>
         <div className="space-y-2">
           <Label htmlFor="oc-name">نام و نام خانوادگی</Label>
           <Input
@@ -153,6 +153,34 @@ export function OnlineConsultForm() {
             onValueChange={setPhone}
             required
           />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="oc-age">سن</Label>
+            <DigitsInput
+              id="oc-age"
+              mode="integer"
+              className="h-12 rounded-2xl"
+              value={age}
+              onValueChange={setAge}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="oc-gender">جنسیت</Label>
+            <select
+              id="oc-gender"
+              className="h-12 w-full rounded-2xl border border-input bg-transparent px-3 text-sm"
+              value={gender}
+              onChange={(e) => setGender(e.target.value as Gender | "")}
+              required
+            >
+              <option value="">انتخاب</option>
+              <option value="female">زن</option>
+              <option value="male">مرد</option>
+              <option value="other">سایر</option>
+            </select>
+          </div>
         </div>
       </section>
 
@@ -196,7 +224,7 @@ export function OnlineConsultForm() {
               اطلاعات بیشتر
             </span>
             <span className="mt-0.5 block text-[11px] leading-5 text-muted-foreground">
-              اختیاری · سن، جنسیت، سایزها، تاریخ پیشنهادی و توضیح
+              اختیاری · سایزها، تاریخ پیشنهادی و توضیح
             </span>
           </span>
           <ChevronDown
@@ -213,33 +241,6 @@ export function OnlineConsultForm() {
               پر کردن این بخش اجباری نیست؛ اگر سایز دارید طبق راهنما وارد کنید تا
               مشاور دقیق‌تر راهنمایی کند.
             </p>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="oc-age">سن</Label>
-                <DigitsInput
-                  id="oc-age"
-                  mode="integer"
-                  className="h-12 rounded-2xl bg-white"
-                  value={age}
-                  onValueChange={setAge}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="oc-gender">جنسیت</Label>
-                <select
-                  id="oc-gender"
-                  className="h-12 w-full rounded-2xl border border-input bg-white px-3 text-sm"
-                  value={gender}
-                  onChange={(e) => setGender(e.target.value as Gender | "")}
-                >
-                  <option value="">انتخاب</option>
-                  <option value="female">زن</option>
-                  <option value="male">مرد</option>
-                  <option value="other">سایر</option>
-                </select>
-              </div>
-            </div>
 
             <div className="space-y-3">
               <p className="text-sm font-bold text-brand">سایز بدن</p>
