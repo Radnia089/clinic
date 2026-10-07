@@ -13,12 +13,7 @@ import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 import { CheckCircle2, Loader2, MapPin } from "lucide-react";
 import type { AppointmentRequest } from "@/lib/types";
 
-const services = [
-  "ویزیت حضوری رژیم",
-  "مشاوره اولیه حضوری",
-  "پکیج لاغری",
-  "پیگیری هفتگی حضوری",
-];
+const services = ["ویزیت", "مشاوره دستگاه لاغری"];
 
 export const PATIENT_LAST_BOOKING_KEY = "tandis_last_clinic_booking";
 
