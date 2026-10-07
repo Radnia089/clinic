@@ -1,27 +1,66 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ClinicLogo } from "@/components/brand/clinic-logo";
+import { Phone } from "lucide-react";
+
+const navLinks = [
+  { href: "#services", label: "خدمات" },
+  { href: "#about", label: "درباره ما" },
+  { href: "/patient/book", label: "نوبت حضوری" },
+  { href: "/patient/consult", label: "مشاوره آنلاین" },
+  { href: "#contact", label: "تماس با ما" },
+];
 
 const services = [
   {
-    title: "رژیم شخصی‌سازی‌شده",
-    text: "برنامه غذایی متناسب با هدف، سبک زندگی و اندازه‌های شما در یزد.",
+    en: "Personal Diet Plan",
+    fa: "رژیم شخصی",
+    href: "/patient/book",
+    image: "/images/meals/lunch.jpg",
   },
   {
-    title: "نوبت حضوری",
-    text: "مراجعه به کلینیک برای ویزیت، اندازه‌گیری و پیگیری مسیر کاهش وزن.",
+    en: "In-Clinic Visit",
+    fa: "نوبت حضوری",
+    href: "/patient/book",
+    image: "/images/clinic-care.jpg",
   },
   {
-    title: "مشاوره آنلاین",
-    text: "ثبت سایزها از خانه، رزرو وقت تماس و دریافت راهنمایی تلفنی از تیم تندیس.",
+    en: "Online Consult",
+    fa: "مشاوره آنلاین",
+    href: "/patient/consult",
+    image: "/images/hero-wellness.jpg",
+  },
+  {
+    en: "Body Measurement",
+    fa: "اندازه‌گیری سایز",
+    href: "/patient/consult",
+    image: "/images/measurement-guide.png",
+  },
+  {
+    en: "Progress Follow-up",
+    fa: "پیگیری پیشرفت",
+    href: "/patient",
+    image: "/images/meals/breakfast.jpg",
   },
 ];
 
-const steps = [
-  { n: "۱", title: "درخواست بدهید", text: "نوبت حضوری یا مشاوره آنلاین را از سایت ثبت کنید." },
-  { n: "۲", title: "هماهنگی کلینیک", text: "پذیرش وقت را تأیید می‌کند و در صورت نیاز پیامک می‌فرستد." },
-  { n: "۳", title: "شروع مسیر", text: "با برنامه غذایی و پیگیری منظم به سمت هدفتان پیش بروید." },
+const reasons = [
+  { title: "رژیم علمی", text: "برنامه غذایی متناسب با هدف و سبک زندگی شما" },
+  { title: "پیگیری منظم", text: "ثبت وزن و سایز در هر مرحله درمان" },
+  { title: "حضوری و آنلاین", text: "هم مراجعه به کلینیک، هم مشاوره از خانه" },
+  { title: "تیم متخصص", text: "همراهی مشاوران رژیم درمانی تندیس یزد" },
 ];
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-center gap-4">
+      <span className="h-px w-12 bg-gradient-to-l from-[#F07167] to-transparent sm:w-24" />
+      <h2 className="text-center text-2xl font-extrabold text-[#2D2D2D] sm:text-3xl">
+        {children}
+      </h2>
+      <span className="h-px w-12 bg-gradient-to-r from-[#F07167] to-transparent sm:w-24" />
+    </div>
+  );
+}
 
 export function ClinicLanding({
   phone,
@@ -32,223 +71,310 @@ export function ClinicLanding({
   address: string;
   hours: string;
 }) {
-  return (
-    <div className="min-h-screen bg-[#F3F6F3] text-foreground">
-      {/* Hero — one composition: brand, headline, sentence, CTAs, full-bleed image */}
-      <header className="relative min-h-[100svh] overflow-hidden">
-        <Image
-          src="/images/tandis-landing-hero.jpg"
-          alt="فضای کلینیک لاغری تندیس"
-          fill
-          priority
-          className="object-cover animate-ken"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#163528]/88 via-[#1a3d30]/55 to-[#F3F6F3]/35" />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#163528]/35" />
+  const tel = phone.replace(/[^0-9+]/g, "");
 
-        <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-6xl flex-col px-5 pb-12 pt-6 sm:px-8 sm:pt-8">
-          <nav className="animate-rise flex items-center justify-between gap-4">
-            <div className="rounded-2xl bg-white/95 px-3 py-2 shadow-sm backdrop-blur-sm">
-              <ClinicLogo compact />
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3">
+  return (
+    <div className="min-h-screen bg-white text-[#2D2D2D]">
+      {/* Sticky white header — clinictandis style */}
+      <header className="sticky top-0 z-40 border-b border-black/5 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
+          <a
+            href={`tel:${tel}`}
+            className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-[#F07167] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#e45d53]"
+          >
+            <Phone className="size-4" />
+            <span className="hidden sm:inline" dir="ltr">
+              {phone}
+            </span>
+            <span className="sm:hidden">تماس</span>
+          </a>
+
+          <nav className="hidden items-center gap-5 text-sm font-medium text-[#4B5563] lg:flex">
+            {navLinks.map((link) => (
               <Link
-                href="/patient/book"
-                className="hidden rounded-full px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10 sm:inline-flex"
+                key={link.href}
+                href={link.href}
+                className="transition hover:text-[#F07167]"
               >
-                نوبت حضوری
+                {link.label}
               </Link>
-              <Link
-                href="/patient/consult"
-                className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1a3d30] transition hover:bg-[#E8F2EA]"
-              >
-                مشاوره آنلاین
-              </Link>
-            </div>
+            ))}
           </nav>
 
-          <div className="mt-auto max-w-2xl pb-4 pt-24 sm:pb-10 sm:pt-16">
-            <p className="animate-rise text-sm font-semibold tracking-wide text-[#C8E6D0] sm:text-base">
-              کلینیک لاغری تندیس یزد
+          <Link href="/" className="relative -mb-8 flex size-[78px] shrink-0 items-center justify-center rounded-full bg-white p-2 shadow-[0_8px_24px_rgba(0,0,0,0.08)] ring-1 ring-black/5 sm:size-[92px] sm:p-2.5">
+            <Image
+              src="/tandis-logo.png"
+              alt="کلینیک تندیس"
+              width={200}
+              height={84}
+              className="h-auto w-full object-contain"
+              priority
+            />
+          </Link>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="relative mx-auto mt-6 max-w-6xl px-4 sm:mt-8 sm:px-6">
+        <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] sm:min-h-[520px] sm:rounded-[2.5rem]">
+          <Image
+            src="/images/tandis-landing-hero.jpg"
+            alt="کلینیک لاغری تندیس یزد"
+            fill
+            priority
+            className="object-cover"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-[#2D2D2D]/35" />
+          <div className="absolute inset-0 flex items-center justify-center p-5">
+            <div className="w-full max-w-xl rounded-[2rem] border border-white/50 bg-white/20 px-6 py-10 text-center backdrop-blur-md sm:px-10 sm:py-12">
+              <p className="text-2xl font-extrabold text-white sm:text-3xl">
+                کلینیک لاغری تندیس
+              </p>
+              <p className="mt-2 font-[family-name:var(--font-playfair)] text-xl font-bold tracking-wide text-[#F07167] sm:text-2xl">
+                TANDIS Diet Clinic
+              </p>
+              <p className="mt-4 text-sm leading-7 text-white/95 sm:text-base">
+                کلینیک رژیم درمانی و لاغری در یزد — حضوری و آنلاین
+              </p>
+              <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                <Link
+                  href="/patient/consult"
+                  className="inline-flex h-11 items-center gap-2 rounded-full bg-[#F07167] px-6 text-sm font-bold text-white transition hover:bg-[#e45d53]"
+                >
+                  <Phone className="size-4" />
+                  مشاوره و تماس
+                </Link>
+                <Link
+                  href="/patient/book"
+                  className="inline-flex h-11 items-center rounded-full bg-white px-6 text-sm font-bold text-[#F07167] transition hover:bg-[#FFF5F4]"
+                >
+                  رزرو نوبت حضوری
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services */}
+      <section id="services" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <SectionTitle>خدمات کلینیک</SectionTitle>
+        <div className="mt-12 flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory sm:grid sm:grid-cols-3 sm:overflow-visible lg:grid-cols-5 lg:gap-5">
+          {services.map((service) => (
+            <Link
+              key={service.fa}
+              href={service.href}
+              className="group relative min-w-[200px] snap-start overflow-hidden rounded-t-[100px] rounded-b-2xl bg-[#FFF5F4] shadow-sm transition hover:-translate-y-1 hover:shadow-md sm:min-w-0"
+            >
+              <div className="relative h-44 overflow-hidden rounded-t-[100px]">
+                <Image
+                  src={service.image}
+                  alt={service.fa}
+                  fill
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                  sizes="220px"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#F07167]/70 via-transparent to-transparent" />
+              </div>
+              <div className="px-3 py-4 text-center">
+                <p className="text-[11px] font-medium text-[#F07167]">{service.en}</p>
+                <p className="mt-1 text-sm font-extrabold text-[#2D2D2D]">
+                  {service.fa}
+                </p>
+                <span className="mt-3 inline-flex rounded-full bg-[#F07167] px-3 py-1 text-[11px] font-bold text-white">
+                  مشاهده
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* About */}
+      <section id="about" className="bg-[#FFF8F7] py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <SectionTitle>درباره کلینیک تندیس</SectionTitle>
+          <div className="mt-12 grid items-center gap-10 md:grid-cols-2">
+            <div>
+              <h3 className="text-xl font-extrabold text-[#F07167]">
+                کلینیک تخصصی رژیم درمانی و لاغری تندیس یزد
+              </h3>
+              <p className="mt-4 text-sm leading-8 text-[#6B7280] sm:text-base">
+                در کلینیک تندیس، مسیر کاهش وزن با رژیم علمی، اندازه‌گیری دقیق و
+                پیگیری منظم طراحی می‌شود. می‌توانید برای ویزیت حضوری وقت بگیرید یا
+                از طریق مشاوره آنلاین، سایز و مشخصات خود را ارسال کنید تا وقت
+                تماس برایتان رزرو شود.
+              </p>
+              <Link
+                href="/patient"
+                className="mt-6 inline-flex h-11 items-center rounded-full bg-[#F07167] px-6 text-sm font-bold text-white transition hover:bg-[#e45d53]"
+              >
+                ورود به اپ مشتری
+              </Link>
+            </div>
+            <div className="relative min-h-[260px] overflow-hidden rounded-[2rem] sm:min-h-[320px]">
+              <Image
+                src="/images/clinic-care.jpg"
+                alt="فضای کلینیک تندیس"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why us */}
+      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <SectionTitle>چرا کلینیک تندیس</SectionTitle>
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {reasons.map((item) => (
+            <div
+              key={item.title}
+              className="rounded-3xl bg-gradient-to-b from-[#FFF5F4] to-white px-5 py-7 text-center ring-1 ring-[#F07167]/10"
+            >
+              <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[#F07167]" />
+              <h3 className="text-base font-extrabold text-[#2D2D2D]">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-[#6B7280]">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Consultation CTA pill */}
+      <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
+        <div className="flex flex-col items-center justify-between gap-6 rounded-full bg-[#FFF5F4] px-6 py-8 text-center ring-1 ring-[#F07167]/15 sm:flex-row sm:px-10 sm:text-right">
+          <div>
+            <p className="text-xl font-extrabold text-[#2D2D2D] sm:text-2xl">
+              در مسیر لاغری همراه شماییم
             </p>
-            <h1 className="animate-rise-delay-1 mt-3 text-4xl font-extrabold leading-[1.15] text-white sm:text-5xl md:text-6xl lg:text-7xl">
-              تندیس
-            </h1>
-            <span className="animate-underline-draw mt-3 block h-1 w-24 origin-right rounded-full bg-[#7CB88A]" />
-            <p className="animate-rise-delay-2 mt-6 max-w-lg text-base leading-8 text-white/88 sm:text-lg">
-              مسیر کاهش وزن با رژیم علمی، پیگیری منظم و همراهی مشاور — حضوری در
-              کلینیک یا آنلاین از خانه.
+            <p className="mt-2 text-sm text-[#6B7280]">
+              همین حالا درخواست مشاوره آنلاین یا نوبت حضوری بدهید
             </p>
-            <div className="animate-rise-delay-3 mt-8 flex flex-wrap gap-3">
+          </div>
+          <Link
+            href="/patient/consult"
+            className="inline-flex h-12 shrink-0 items-center gap-2 rounded-full bg-[#F07167] px-7 text-sm font-bold text-white"
+          >
+            <Phone className="size-4" />
+            درخواست مشاوره
+          </Link>
+        </div>
+      </section>
+
+      {/* Contact / booking band */}
+      <section id="contact" className="bg-[#FFF8F7] py-16 sm:py-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 sm:px-6 md:grid-cols-2">
+          <div className="relative min-h-[280px] overflow-hidden rounded-[2rem]">
+            <Image
+              src="/images/hero-wellness.jpg"
+              alt="مشاوره رژیم درمانی"
+              fill
+              className="object-cover"
+              sizes="50vw"
+            />
+          </div>
+          <div>
+            <SectionTitle>رزرو و تماس</SectionTitle>
+            <p className="mt-6 text-sm leading-8 text-[#6B7280]">
+              برای هماهنگی نوبت حضوری یا مشاوره آنلاین از دکمه‌های زیر استفاده
+              کنید. اطلاعات تماس کلینیک نیز همین‌جاست.
+            </p>
+            <dl className="mt-6 space-y-3 text-sm">
+              <div>
+                <dt className="font-bold text-[#F07167]">آدرس</dt>
+                <dd className="mt-1 text-[#4B5563]">{address}</dd>
+              </div>
+              <div>
+                <dt className="font-bold text-[#F07167]">تلفن</dt>
+                <dd className="mt-1">
+                  <a href={`tel:${tel}`} className="font-bold text-[#2D2D2D]" dir="ltr">
+                    {phone}
+                  </a>
+                </dd>
+              </div>
+              <div>
+                <dt className="font-bold text-[#F07167]">ساعات کاری</dt>
+                <dd className="mt-1 text-[#4B5563]">{hours}</dd>
+              </div>
+            </dl>
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/patient/book"
-                className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#D86B5C] px-6 text-sm font-bold text-white transition hover:bg-[#c85a4c]"
+                className="inline-flex h-11 items-center rounded-full bg-[#F07167] px-6 text-sm font-bold text-white"
               >
                 رزرو نوبت حضوری
               </Link>
               <Link
                 href="/patient/consult"
-                className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/35 bg-white/10 px-6 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
+                className="inline-flex h-11 items-center rounded-full border border-[#F07167] bg-white px-6 text-sm font-bold text-[#F07167]"
               >
-                درخواست مشاوره آنلاین
+                مشاوره آنلاین
               </Link>
             </div>
           </div>
         </div>
-      </header>
-
-      {/* Services — one job */}
-      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
-        <p className="text-sm font-semibold text-brand">خدمات تندیس</p>
-        <h2 className="mt-2 max-w-xl text-3xl font-extrabold text-brand sm:text-4xl">
-          هر قدم مسیر لاغری، یک همراهی مشخص
-        </h2>
-        <ul className="mt-12 grid gap-10 md:grid-cols-3 md:gap-8">
-          {services.map((item) => (
-            <li key={item.title} className="border-t border-brand/15 pt-6">
-              <h3 className="text-xl font-bold text-brand">{item.title}</h3>
-              <p className="mt-3 text-sm leading-7 text-muted-foreground">
-                {item.text}
-              </p>
-            </li>
-          ))}
-        </ul>
       </section>
 
-      {/* Visual band */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto grid max-w-6xl items-center gap-0 md:grid-cols-2">
-          <div className="relative min-h-[280px] md:min-h-[420px]">
-            <Image
-              src="/images/clinic-care.jpg"
-              alt="مراقبت و پیگیری در کلینیک تندیس"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
-          </div>
-          <div className="bg-[#1a3d30] px-6 py-14 text-white sm:px-12 sm:py-20">
-            <h2 className="text-3xl font-extrabold leading-tight sm:text-4xl">
-              پیگیری واقعی، نه فقط یک رژیم کاغذی
-            </h2>
-            <p className="mt-5 max-w-md text-sm leading-8 text-white/80 sm:text-base">
-              وزن، سایز و هدف شما در هر مرحله ثبت می‌شود تا مشاور تندیس برنامه را
-              دقیق‌تر تنظیم کند — چه در کلینیک باشید، چه از راه دور.
-            </p>
-            <Link
-              href="/patient"
-              className="mt-8 inline-flex text-sm font-bold text-[#C8E6D0] underline-offset-4 hover:underline"
-            >
-              ورود به اپ مشتری
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
-        <p className="text-sm font-semibold text-brand">مسیر شروع</p>
-        <h2 className="mt-2 text-3xl font-extrabold text-brand sm:text-4xl">
-          سه قدم تا اولین جلسه
-        </h2>
-        <ol className="mt-12 grid gap-8 sm:grid-cols-3">
-          {steps.map((step) => (
-            <li key={step.n}>
-              <span className="text-4xl font-extrabold text-[#7CB88A]">{step.n}</span>
-              <h3 className="mt-3 text-lg font-bold text-brand">{step.title}</h3>
-              <p className="mt-2 text-sm leading-7 text-muted-foreground">
-                {step.text}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Online consult CTA band */}
-      <section className="border-y border-brand/10 bg-[#E8F2EA]">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-16 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-20">
-          <div className="max-w-xl">
-            <h2 className="text-2xl font-extrabold text-brand sm:text-3xl">
-              از خانه سایز بگیرید، آنلاین مشاوره شوید
-            </h2>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground sm:text-base">
-              با راهنمای تصویری اندازه‌گیری، مشخصات را بفرستید تا وقت تماس برایتان
-              رزرو شود.
+      {/* Footer — coral like reference */}
+      <footer className="bg-[#F07167] text-white">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4">
+          <div className="md:col-span-1">
+            <div className="inline-block rounded-2xl bg-white px-3 py-2">
+              <Image
+                src="/tandis-logo.png"
+                alt="تندیس"
+                width={140}
+                height={58}
+                className="h-10 w-auto object-contain"
+              />
+            </div>
+            <p className="mt-4 text-sm leading-7 text-white/90">
+              کلینیک لاغری و رژیم درمانی تندیس یزد
             </p>
           </div>
-          <Link
-            href="/patient/consult"
-            className="inline-flex h-12 shrink-0 items-center justify-center rounded-2xl bg-brand px-6 text-sm font-bold text-white transition hover:bg-brand/90"
-          >
-            شروع مشاوره آنلاین
-          </Link>
-        </div>
-      </section>
-
-      {/* Contact */}
-      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
-        <p className="text-sm font-semibold text-brand">ارتباط با کلینیک</p>
-        <h2 className="mt-2 text-3xl font-extrabold text-brand sm:text-4xl">
-          تندیس در یزد
-        </h2>
-        <div className="mt-10 grid gap-8 sm:grid-cols-3">
           <div>
-            <p className="text-xs font-semibold text-muted-foreground">آدرس</p>
-            <p className="mt-2 text-sm leading-7 text-foreground">{address}</p>
+            <p className="font-extrabold">خدمات</p>
+            <ul className="mt-3 space-y-2 text-sm text-white/90">
+              <li>
+                <Link href="/patient/book">نوبت حضوری</Link>
+              </li>
+              <li>
+                <Link href="/patient/consult">مشاوره آنلاین</Link>
+              </li>
+              <li>
+                <Link href="/patient">اپ مشتری</Link>
+              </li>
+            </ul>
           </div>
           <div>
-            <p className="text-xs font-semibold text-muted-foreground">تلفن</p>
-            <a
-              href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
-              className="mt-2 inline-block text-sm font-bold text-brand dir-ltr"
-              dir="ltr"
-            >
+            <p className="font-extrabold">دسترسی سریع</p>
+            <ul className="mt-3 space-y-2 text-sm text-white/90">
+              <li>
+                <Link href="#about">درباره ما</Link>
+              </li>
+              <li>
+                <Link href="#contact">تماس با ما</Link>
+              </li>
+              <li>
+                <Link href="/apps">ورود کارکنان</Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <p className="font-extrabold">تماس</p>
+            <p className="mt-3 text-sm leading-7 text-white/90">{address}</p>
+            <a href={`tel:${tel}`} className="mt-2 inline-block text-sm font-bold" dir="ltr">
               {phone}
             </a>
           </div>
-          <div>
-            <p className="text-xs font-semibold text-muted-foreground">ساعات کاری</p>
-            <p className="mt-2 text-sm leading-7 text-foreground">{hours}</p>
-          </div>
         </div>
-        <div className="mt-12 flex flex-wrap gap-3">
-          <Link
-            href="/patient/book"
-            className="inline-flex h-12 items-center rounded-2xl bg-[#D86B5C] px-6 text-sm font-bold text-white"
-          >
-            رزرو نوبت حضوری
-          </Link>
-          <a
-            href={`tel:${phone.replace(/[^0-9+]/g, "")}`}
-            className="inline-flex h-12 items-center rounded-2xl border border-brand/20 bg-white px-6 text-sm font-bold text-brand"
-          >
-            تماس با کلینیک
-          </a>
-        </div>
-      </section>
-
-      <footer className="border-t border-brand/10 bg-[#1a3d30] text-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <div>
-            <div className="inline-block rounded-2xl bg-white px-3 py-2">
-              <ClinicLogo compact />
-            </div>
-            <p className="mt-3 text-xs text-white/65">
-              کلینیک لاغری و رژیم درمانی تندیس · یزد
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-4 text-sm">
-            <Link href="/patient" className="text-white/80 hover:text-white">
-              اپ مشتری
-            </Link>
-            <Link href="/apps" className="text-white/80 hover:text-white">
-              ورود کارکنان
-            </Link>
-            <Link href="/patient/consult" className="text-white/80 hover:text-white">
-              مشاوره آنلاین
-            </Link>
-          </div>
+        <div className="border-t border-white/20 py-4 text-center text-xs text-white/80">
+          © کلینیک لاغری تندیس یزد
         </div>
       </footer>
     </div>
