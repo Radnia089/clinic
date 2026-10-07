@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { CheckCircle2, Loader2, Video } from "lucide-react";
+import { CheckCircle2, ChevronDown, Loader2, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +11,7 @@ import { DigitsInput } from "@/components/ui/digits-input";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
 import { MeasurementGuide } from "@/components/patient/measurement-guide";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
+import { cn } from "@/lib/utils";
 import type { Gender } from "@/lib/types";
 
 export function OnlineConsultForm() {
@@ -18,6 +19,7 @@ export function OnlineConsultForm() {
     "idle"
   );
   const [error, setError] = useState("");
+  const [showMore, setShowMore] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [age, setAge] = useState("");
@@ -46,6 +48,7 @@ export function OnlineConsultForm() {
     setCalfCm("");
     setPreferredDate("");
     setNote("");
+    setShowMore(false);
   }
 
   async function onSubmit(event: FormEvent) {
@@ -121,13 +124,14 @@ export function OnlineConsultForm() {
         <div>
           <p className="text-sm font-bold text-brand">مشاوره آنلاین تلفنی</p>
           <p className="mt-1 text-xs leading-6 text-muted-foreground">
-            مشخصات و سایزها را طبق راهنما وارد کنید تا کلینیک وقت تماس رزرو کند.
+            فقط قد و وزن الزامی است. سایزها و جزئیات بیشتر اختیاری‌اند و در
+            بخش «اطلاعات بیشتر» می‌توانید وارد کنید.
           </p>
         </div>
       </div>
 
       <section className="space-y-3">
-        <p className="text-sm font-bold text-brand">مشخصات شما</p>
+        <p className="text-sm font-bold text-brand">مشخصات تماس</p>
         <div className="space-y-2">
           <Label htmlFor="oc-name">نام و نام خانوادگی</Label>
           <Input
@@ -150,37 +154,10 @@ export function OnlineConsultForm() {
             required
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="oc-age">سن</Label>
-            <DigitsInput
-              id="oc-age"
-              mode="integer"
-              className="h-12 rounded-2xl"
-              value={age}
-              onValueChange={setAge}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="oc-gender">جنسیت</Label>
-            <select
-              id="oc-gender"
-              className="h-12 w-full rounded-2xl border border-input bg-transparent px-3 text-sm"
-              value={gender}
-              onChange={(e) => setGender(e.target.value as Gender | "")}
-            >
-              <option value="">انتخاب</option>
-              <option value="female">زن</option>
-              <option value="male">مرد</option>
-              <option value="other">سایر</option>
-            </select>
-          </div>
-        </div>
       </section>
 
       <section className="space-y-3">
-        <p className="text-sm font-bold text-brand">قد، وزن و سایز</p>
-        <MeasurementGuide />
+        <p className="text-sm font-bold text-brand">قد و وزن</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <Label htmlFor="oc-height">قد (سانتی‌متر)</Label>
@@ -190,6 +167,7 @@ export function OnlineConsultForm() {
               className="h-12 rounded-2xl"
               value={heightCm}
               onValueChange={setHeightCm}
+              required
             />
           </div>
           <div className="space-y-2">
@@ -200,99 +178,170 @@ export function OnlineConsultForm() {
               className="h-12 rounded-2xl"
               value={weightKg}
               onValueChange={setWeightKg}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="oc-arm">۲ · دور بازو</Label>
-            <DigitsInput
-              id="oc-arm"
-              mode="decimal"
-              className="h-12 rounded-2xl"
-              value={armCm}
-              onValueChange={setArmCm}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="oc-waist">۳ · دور کمر</Label>
-            <DigitsInput
-              id="oc-waist"
-              mode="decimal"
-              className="h-12 rounded-2xl"
-              value={waistCm}
-              onValueChange={setWaistCm}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="oc-hip">۴ · دور باسن</Label>
-            <DigitsInput
-              id="oc-hip"
-              mode="decimal"
-              className="h-12 rounded-2xl"
-              value={hipCm}
-              onValueChange={setHipCm}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="oc-thigh">۵ · دور ران</Label>
-            <DigitsInput
-              id="oc-thigh"
-              mode="decimal"
-              className="h-12 rounded-2xl"
-              value={thighCm}
-              onValueChange={setThighCm}
-            />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="oc-calf">۶ · دور ساق</Label>
-            <DigitsInput
-              id="oc-calf"
-              mode="decimal"
-              className="h-12 rounded-2xl"
-              value={calfCm}
-              onValueChange={setCalfCm}
+              required
             />
           </div>
         </div>
       </section>
 
-      <section className="space-y-3">
-        <p className="text-sm font-bold text-brand">زمان پیشنهادی</p>
-        <div className="space-y-2">
-          <Label>تاریخ پیشنهادی شمسی (اختیاری)</Label>
-          {preferredDate ? (
-            <>
-              <ShamsiDateInput value={preferredDate} onChange={setPreferredDate} />
-              <button
-                type="button"
-                className="text-xs text-muted-foreground"
-                onClick={() => setPreferredDate("")}
-              >
-                پاک کردن تاریخ
-              </button>
-            </>
-          ) : (
-            <button
-              type="button"
-              className="h-12 w-full rounded-2xl border border-dashed border-[#D7E2D9] text-sm text-brand"
-              onClick={() =>
-                setPreferredDate(jalaliPartsToIsoDate(todayJalaliParts()))
-              }
-            >
-              انتخاب تاریخ شمسی
-            </button>
-          )}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="oc-note">توضیح یا هدف شما</Label>
-          <Textarea
-            id="oc-note"
-            className="min-h-24 rounded-2xl"
-            placeholder="مثلاً هدف کاهش وزن، سابقه رژیم، سوال خاص..."
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
+      <div className="overflow-hidden rounded-2xl border border-[#D7E2D9] bg-[#F7F8F6]">
+        <button
+          type="button"
+          onClick={() => setShowMore((v) => !v)}
+          className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-right"
+          aria-expanded={showMore}
+        >
+          <span>
+            <span className="block text-sm font-bold text-brand">
+              اطلاعات بیشتر
+            </span>
+            <span className="mt-0.5 block text-[11px] leading-5 text-muted-foreground">
+              اختیاری · سن، جنسیت، سایزها، تاریخ پیشنهادی و توضیح
+            </span>
+          </span>
+          <ChevronDown
+            className={cn(
+              "size-5 shrink-0 text-brand transition-transform duration-200",
+              showMore && "rotate-180"
+            )}
           />
-        </div>
-      </section>
+        </button>
+
+        {showMore ? (
+          <div className="space-y-5 border-t border-[#D7E2D9] px-4 py-4">
+            <p className="text-xs leading-6 text-muted-foreground">
+              پر کردن این بخش اجباری نیست؛ اگر سایز دارید طبق راهنما وارد کنید تا
+              مشاور دقیق‌تر راهنمایی کند.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="oc-age">سن</Label>
+                <DigitsInput
+                  id="oc-age"
+                  mode="integer"
+                  className="h-12 rounded-2xl bg-white"
+                  value={age}
+                  onValueChange={setAge}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="oc-gender">جنسیت</Label>
+                <select
+                  id="oc-gender"
+                  className="h-12 w-full rounded-2xl border border-input bg-white px-3 text-sm"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value as Gender | "")}
+                >
+                  <option value="">انتخاب</option>
+                  <option value="female">زن</option>
+                  <option value="male">مرد</option>
+                  <option value="other">سایر</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-bold text-brand">سایز بدن</p>
+              <MeasurementGuide defaultOpen={false} />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="oc-arm">۲ · دور بازو</Label>
+                  <DigitsInput
+                    id="oc-arm"
+                    mode="decimal"
+                    className="h-12 rounded-2xl bg-white"
+                    value={armCm}
+                    onValueChange={setArmCm}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="oc-waist">۳ · دور کمر</Label>
+                  <DigitsInput
+                    id="oc-waist"
+                    mode="decimal"
+                    className="h-12 rounded-2xl bg-white"
+                    value={waistCm}
+                    onValueChange={setWaistCm}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="oc-hip">۴ · دور باسن</Label>
+                  <DigitsInput
+                    id="oc-hip"
+                    mode="decimal"
+                    className="h-12 rounded-2xl bg-white"
+                    value={hipCm}
+                    onValueChange={setHipCm}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="oc-thigh">۵ · دور ران</Label>
+                  <DigitsInput
+                    id="oc-thigh"
+                    mode="decimal"
+                    className="h-12 rounded-2xl bg-white"
+                    value={thighCm}
+                    onValueChange={setThighCm}
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="oc-calf">۶ · دور ساق</Label>
+                  <DigitsInput
+                    id="oc-calf"
+                    mode="decimal"
+                    className="h-12 rounded-2xl bg-white"
+                    value={calfCm}
+                    onValueChange={setCalfCm}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm font-bold text-brand">زمان و توضیح</p>
+              <div className="space-y-2">
+                <Label>تاریخ پیشنهادی شمسی</Label>
+                {preferredDate ? (
+                  <>
+                    <ShamsiDateInput
+                      value={preferredDate}
+                      onChange={setPreferredDate}
+                    />
+                    <button
+                      type="button"
+                      className="text-xs text-muted-foreground"
+                      onClick={() => setPreferredDate("")}
+                    >
+                      پاک کردن تاریخ
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    className="h-12 w-full rounded-2xl border border-dashed border-[#D7E2D9] bg-white text-sm text-brand"
+                    onClick={() =>
+                      setPreferredDate(jalaliPartsToIsoDate(todayJalaliParts()))
+                    }
+                  >
+                    انتخاب تاریخ شمسی
+                  </button>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="oc-note">توضیح یا هدف شما</Label>
+                <Textarea
+                  id="oc-note"
+                  className="min-h-24 rounded-2xl bg-white"
+                  placeholder="مثلاً هدف کاهش وزن، سابقه رژیم، سوال خاص..."
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 

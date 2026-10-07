@@ -57,19 +57,26 @@ export async function POST(request: Request) {
     ? (genderRaw as Gender)
     : undefined;
 
-  if (name.length < 2 || !/^09\d{9}$/.test(phone)) {
+  const positive = (n?: number) => (n && n > 0 ? n : undefined);
+  const requiredHeight = positive(heightCm);
+  const requiredWeight = positive(weightKg);
+
+  if (
+    name.length < 2 ||
+    !/^09\d{9}$/.test(phone) ||
+    !requiredHeight ||
+    !requiredWeight
+  ) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
   }
-
-  const positive = (n?: number) => (n && n > 0 ? n : undefined);
 
   const item = await createOnlineConsult({
     name,
     phone,
     age: age && age > 0 ? Math.round(age) : undefined,
     gender,
-    heightCm: positive(heightCm),
-    weightKg: positive(weightKg),
+    heightCm: requiredHeight,
+    weightKg: requiredWeight,
     armCm: positive(armCm),
     waistCm: positive(waistCm),
     hipCm: positive(hipCm),

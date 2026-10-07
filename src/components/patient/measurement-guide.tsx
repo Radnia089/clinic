@@ -14,8 +14,14 @@ const POINTS = [
   { n: 6, title: "دور ساق", hint: "بین زانو و قوزک" },
 ] as const;
 
-export function MeasurementGuide({ className }: { className?: string }) {
-  const [open, setOpen] = useState(true);
+export function MeasurementGuide({
+  className,
+  defaultOpen = true,
+}: {
+  className?: string;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
 
   return (
     <div
