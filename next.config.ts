@@ -1,8 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // برای Preview / Forwarded Ports در Cursor
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  // Preview / Forwarded Ports در Cursor Cloud Agent
+  allowedDevOrigins: [
+    "127.0.0.1",
+    "localhost",
+    "*.cursor.sh",
+    "*.cursor.com",
+    "*.cursorusercontent.com",
+    "*.gitpod.dev",
+  ],
 };
 
 export default nextConfig;
