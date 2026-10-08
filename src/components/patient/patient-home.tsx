@@ -117,7 +117,7 @@ export function PatientHomeScreen({
             <div>
               <ClinicLogo compact />
               <p className="mt-1 text-[11px] text-muted-foreground">
-                کلینیک لاغری تندیس یزد
+                کلینیک تخصصی لاغری و رژیم درمانی تندیس
               </p>
             </div>
             <div className="text-left">
