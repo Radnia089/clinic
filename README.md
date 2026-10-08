@@ -74,6 +74,10 @@ npm run dev -- --port 3847 --hostname 127.0.0.1
 | `/clinic` | داشبورد مدیریت |
 | `/clinic/champions` | مدیریت قهرمانان (فقط مدیر) |
 | `/clinic/banners` | بنرهای تبلیغاتی اپ مشتری (فقط مدیر) |
+| `/magazine` | مجله و مقالات (سئو) |
+| `/magazine/[slug]` | صفحه تک‌مقاله |
+| `/patient/magazine` | مجله در اپ مشتری |
+| `/clinic/magazine` | مدیریت مقالات (فقط مدیر) |
 | `/clinic/reception` | میز پذیرش (تقویم شناور) |
 | `/clinic/reception/new` | ثبت مراجعه‌کننده |
 | `/clinic/reception/customers` | لیست مشتریان |

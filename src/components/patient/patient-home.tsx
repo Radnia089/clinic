@@ -7,7 +7,7 @@ import {
   Home,
   ClipboardList,
   BarChart3,
-  MoreHorizontal,
+  BookOpen,
   Scale,
   Video,
   Gift,
@@ -237,22 +237,33 @@ export function PatientHomeScreen({
       <nav className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-[430px] border-t border-black/5 bg-white/95 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur">
         <ul className="grid grid-cols-4">
           {[
-            { id: "home", label: "خانه", icon: Home },
-            { id: "plan", label: "برنامه من", icon: ClipboardList },
-            { id: "progress", label: "پیشرفت", icon: BarChart3 },
-            { id: "more", label: "بیشتر", icon: MoreHorizontal },
+            { id: "home", label: "خانه", icon: Home, href: undefined as string | undefined },
+            { id: "plan", label: "برنامه من", icon: ClipboardList, href: undefined },
+            { id: "progress", label: "پیشرفت", icon: BarChart3, href: undefined },
+            { id: "magazine", label: "مجله", icon: BookOpen, href: "/patient/magazine" },
           ].map((item) => {
             const Icon = item.icon;
             const active = tab === item.id;
+            const className = cn(
+              "flex w-full flex-col items-center gap-1 rounded-2xl py-2 text-[11px]",
+              active ? "text-brand" : "text-muted-foreground"
+            );
+            if (item.href) {
+              return (
+                <li key={item.id}>
+                  <Link href={item.href} className={className}>
+                    <Icon className="size-5" />
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            }
             return (
               <li key={item.id}>
                 <button
                   type="button"
                   onClick={() => setTab(item.id)}
-                  className={cn(
-                    "flex w-full flex-col items-center gap-1 rounded-2xl py-2 text-[11px]",
-                    active ? "text-brand" : "text-muted-foreground"
-                  )}
+                  className={className}
                 >
                   <Icon className={cn("size-5", active && "stroke-[2.25]")} />
                   {item.label}

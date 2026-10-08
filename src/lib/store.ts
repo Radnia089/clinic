@@ -6,6 +6,7 @@ import {
   Champion,
   DEFAULT_CLINIC,
   DEFAULT_REMINDER_SETTINGS,
+  MagazineArticle,
   OnlineConsultRequest,
   Patient,
   Payment,
@@ -16,6 +17,7 @@ import {
   Visit,
 } from "@/lib/types";
 import { defaultChampions, sortChampions } from "@/lib/champions";
+import { defaultArticles, sortArticles } from "@/lib/magazine";
 import {
   defaultPromoBanners,
   sortPromoBanners,
@@ -37,6 +39,7 @@ const emptyData = (): AppData => ({
   personalLedger: [],
   champions: defaultChampions(),
   promoBanners: defaultPromoBanners(),
+  articles: defaultArticles(),
 });
 
 async function ensureStore(): Promise<AppData> {
@@ -95,13 +98,19 @@ async function ensureStore(): Promise<AppData> {
         parsed.promoBanners && parsed.promoBanners.length > 0
           ? parsed.promoBanners
           : defaultPromoBanners(),
+      articles:
+        parsed.articles && parsed.articles.length > 0
+          ? parsed.articles
+          : defaultArticles(),
     };
     if (
       !parsed.champions ||
       parsed.champions.length === 0 ||
       needsWaistPersist ||
       !parsed.promoBanners ||
-      parsed.promoBanners.length === 0
+      parsed.promoBanners.length === 0 ||
+      !parsed.articles ||
+      parsed.articles.length === 0
     ) {
       await writeStore(data);
     }
@@ -562,6 +571,87 @@ export async function deletePromoBanner(id: string) {
   if ((data.promoBanners.length ?? 0) === before) return false;
   await writeStore(data);
   return true;
+}
+
+export async function listArticles(options?: { publishedOnly?: boolean }) {
+  const items = (await ensureStore()).articles ?? [];
+  const filtered = options?.publishedOnly
+    ? items.filter((item) => item.published)
+    : items;
+  return sortArticles(filtered);
+}
+
+export async function getArticleBySlug(slug: string) {
+  const items = await listArticles({ publishedOnly: false });
+  return items.find((item) => item.slug === slug) ?? null;
+}
+
+export async function createArticle(
+  input: Omit<MagazineArticle, "id" | "createdAt" | "updatedAt" | "views"> & {
+    views?: number;
+  }
+) {
+  const data = await ensureStore();
+  const now = new Date().toISOString();
+  const item: MagazineArticle = {
+    ...input,
+    views: input.views ?? 0,
+    id: crypto.randomUUID(),
+    createdAt: now,
+    updatedAt: now,
+  };
+  data.articles = data.articles ?? [];
+  const slugTaken = data.articles.some((a) => a.slug === item.slug);
+  if (slugTaken) {
+    item.slug = `${item.slug}-${item.id.slice(0, 6)}`;
+  }
+  data.articles.unshift(item);
+  await writeStore(data);
+  return item;
+}
+
+export async function updateArticle(id: string, patch: Partial<MagazineArticle>) {
+  const data = await ensureStore();
+  const index = (data.articles ?? []).findIndex((item) => item.id === id);
+  if (index < 0) return null;
+  if (patch.slug) {
+    const conflict = data.articles.some(
+      (a) => a.slug === patch.slug && a.id !== id
+    );
+    if (conflict) {
+      patch.slug = `${patch.slug}-${id.slice(0, 6)}`;
+    }
+  }
+  data.articles[index] = {
+    ...data.articles[index],
+    ...patch,
+    id,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeStore(data);
+  return data.articles[index];
+}
+
+export async function deleteArticle(id: string) {
+  const data = await ensureStore();
+  const before = data.articles?.length ?? 0;
+  data.articles = (data.articles ?? []).filter((item) => item.id !== id);
+  if ((data.articles.length ?? 0) === before) return false;
+  await writeStore(data);
+  return true;
+}
+
+export async function incrementArticleViews(slug: string) {
+  const data = await ensureStore();
+  const index = (data.articles ?? []).findIndex((item) => item.slug === slug);
+  if (index < 0) return null;
+  data.articles[index] = {
+    ...data.articles[index],
+    views: (data.articles[index].views ?? 0) + 1,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeStore(data);
+  return data.articles[index];
 }
 
 export async function getDashboardStats() {

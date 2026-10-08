@@ -28,6 +28,8 @@
 !/public/uploads/champions/.gitkeep
 /public/uploads/promos/*
 !/public/uploads/promos/.gitkeep
+/public/uploads/articles/*
+!/public/uploads/articles/.gitkeep
 
 # debug
 npm-debug.log*

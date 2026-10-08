@@ -256,6 +256,23 @@ export interface PromoBanner {
   updatedAt: string;
 }
 
+export interface MagazineArticle {
+  id: string;
+  /** اسلاگ یکتا برای URL سئو */
+  slug: string;
+  title: string;
+  excerpt: string;
+  /** بدنه مقاله؛ پاراگراف‌ها با خط خالی جدا می‌شوند */
+  body: string;
+  category: string;
+  coverImage: string;
+  views: number;
+  published: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AppData {
   clinic: ClinicProfile;
   patients: Patient[];
@@ -268,6 +285,7 @@ export interface AppData {
   personalLedger: PersonalLedgerEntry[];
   champions: Champion[];
   promoBanners: PromoBanner[];
+  articles: MagazineArticle[];
 }
 
 export const PERSONAL_INCOME_CATEGORIES = [

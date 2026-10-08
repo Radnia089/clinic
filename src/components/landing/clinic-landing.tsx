@@ -3,7 +3,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { BmiCalculator } from "@/components/bmi/bmi-calculator";
 import { ChampionsSection } from "@/components/champions/champions-section";
-import type { Champion } from "@/lib/types";
+import { MagazineLandingSection } from "@/components/magazine/magazine-landing-section";
+import type { Champion, MagazineArticle } from "@/lib/types";
 
 const services = [
   {
@@ -52,11 +53,13 @@ export function ClinicLanding({
   address,
   hours,
   champions = [],
+  articles = [],
 }: {
   phone: string;
   address: string;
   hours: string;
   champions?: Champion[];
+  articles?: MagazineArticle[];
 }) {
   const tel = phone.replace(/[^0-9+]/g, "");
 
@@ -97,6 +100,9 @@ export function ClinicLanding({
             </a>
             <a href="#champions" className="hover:text-[#14352A]">
               قهرمانان
+            </a>
+            <a href="#magazine" className="hover:text-[#14352A]">
+              مجله
             </a>
             <a href="#path" className="hover:text-[#14352A]">
               مسیر درمان
@@ -200,6 +206,8 @@ export function ClinicLanding({
       <BmiCalculator variant="landing" />
 
       <ChampionsSection variant="landing" items={champions} />
+
+      <MagazineLandingSection items={articles} />
 
       {/* Devices — کمک لاغری */}
       <section id="devices" className="relative overflow-hidden">
@@ -512,6 +520,9 @@ export function ClinicLanding({
             <a href="#champions" className="hover:text-white">
               قهرمانان
             </a>
+            <Link href="/magazine" className="hover:text-white">
+              مجله
+            </Link>
             <Link href="/patient" className="hover:text-white">
               اپ مشتری
             </Link>
