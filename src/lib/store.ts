@@ -3,6 +3,7 @@ import path from "path";
 import {
   AppData,
   AppointmentRequest,
+  Champion,
   DEFAULT_CLINIC,
   DEFAULT_REMINDER_SETTINGS,
   OnlineConsultRequest,
@@ -13,6 +14,7 @@ import {
   SmsLogEntry,
   Visit,
 } from "@/lib/types";
+import { defaultChampions, sortChampions } from "@/lib/champions";
 import { mergeReminderSettings } from "@/lib/sms";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -28,6 +30,7 @@ const emptyData = (): AppData => ({
   measurements: [],
   smsLogs: [],
   personalLedger: [],
+  champions: defaultChampions(),
 });
 
 async function ensureStore(): Promise<AppData> {
@@ -35,7 +38,11 @@ async function ensureStore(): Promise<AppData> {
   try {
     const raw = await fs.readFile(DATA_FILE, "utf8");
     const parsed = JSON.parse(raw) as AppData;
-    return {
+    const champions =
+      parsed.champions && parsed.champions.length > 0
+        ? parsed.champions
+        : defaultChampions();
+    const data: AppData = {
       clinic: {
         ...DEFAULT_CLINIC,
         ...parsed.clinic,
@@ -54,7 +61,12 @@ async function ensureStore(): Promise<AppData> {
       measurements: parsed.measurements ?? [],
       smsLogs: parsed.smsLogs ?? [],
       personalLedger: parsed.personalLedger ?? [],
+      champions,
     };
+    if (!parsed.champions || parsed.champions.length === 0) {
+      await writeStore(data);
+    }
+    return data;
   } catch {
     const data = emptyData();
     await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf8");
@@ -412,6 +424,54 @@ export async function ensureDemoPatientProgress() {
           new Date(a.recordedAt).getTime() - new Date(b.recordedAt).getTime()
       ),
   };
+}
+
+export async function listChampions(options?: { publishedOnly?: boolean }) {
+  const items = (await ensureStore()).champions ?? [];
+  const filtered = options?.publishedOnly
+    ? items.filter((item) => item.published)
+    : items;
+  return sortChampions(filtered);
+}
+
+export async function createChampion(
+  input: Omit<Champion, "id" | "createdAt" | "updatedAt">
+) {
+  const data = await ensureStore();
+  const now = new Date().toISOString();
+  const item: Champion = {
+    ...input,
+    id: crypto.randomUUID(),
+    createdAt: now,
+    updatedAt: now,
+  };
+  data.champions = data.champions ?? [];
+  data.champions.unshift(item);
+  await writeStore(data);
+  return item;
+}
+
+export async function updateChampion(id: string, patch: Partial<Champion>) {
+  const data = await ensureStore();
+  const index = (data.champions ?? []).findIndex((item) => item.id === id);
+  if (index < 0) return null;
+  data.champions[index] = {
+    ...data.champions[index],
+    ...patch,
+    id,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeStore(data);
+  return data.champions[index];
+}
+
+export async function deleteChampion(id: string) {
+  const data = await ensureStore();
+  const before = data.champions?.length ?? 0;
+  data.champions = (data.champions ?? []).filter((item) => item.id !== id);
+  if ((data.champions.length ?? 0) === before) return false;
+  await writeStore(data);
+  return true;
 }
 
 export async function getDashboardStats() {

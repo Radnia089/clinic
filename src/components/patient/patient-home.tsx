@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { ClinicLogo } from "@/components/brand/clinic-logo";
 import { ChampionsSection } from "@/components/champions/champions-section";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
+import type { Champion } from "@/lib/types";
 
 const meals = [
   {
@@ -88,7 +89,11 @@ function ProgressRing({ value }: { value: number }) {
   );
 }
 
-export function PatientHomeScreen() {
+export function PatientHomeScreen({
+  champions = [],
+}: {
+  champions?: Champion[];
+}) {
   const searchParams = useSearchParams();
   const [done, setDone] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState("home");
@@ -141,8 +146,6 @@ export function PatientHomeScreen() {
             </div>
           </div>
         </section>
-
-        <ChampionsSection variant="patient" />
 
         <section className="grid grid-cols-4 gap-2.5">
           {quickActions.map((action) => {
@@ -246,6 +249,8 @@ export function PatientHomeScreen() {
             })}
           </ul>
         </section>
+
+        <ChampionsSection variant="patient" items={champions} />
 
         <section className="flex items-center justify-between gap-3 rounded-[28px] bg-[#F6E6E1] px-4 py-4">
           <div className="flex items-center gap-3">

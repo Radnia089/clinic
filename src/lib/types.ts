@@ -224,6 +224,21 @@ export interface PersonalLedgerEntry {
   createdAt: string;
 }
 
+export interface Champion {
+  id: string;
+  name: string;
+  quote: string;
+  startKg: number;
+  endKg: number;
+  beforeImage: string;
+  afterImage: string;
+  /** اگر false باشد فقط در پنل مدیریت دیده می‌شود */
+  published: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AppData {
   clinic: ClinicProfile;
   patients: Patient[];
@@ -234,6 +249,7 @@ export interface AppData {
   measurements: ProgressMeasurement[];
   smsLogs: SmsLogEntry[];
   personalLedger: PersonalLedgerEntry[];
+  champions: Champion[];
 }
 
 export const PERSONAL_INCOME_CATEGORIES = [

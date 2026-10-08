@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { BmiCalculator } from "@/components/bmi/bmi-calculator";
 import { ChampionsSection } from "@/components/champions/champions-section";
+import type { Champion } from "@/lib/types";
 
 const services = [
   {
@@ -50,10 +51,12 @@ export function ClinicLanding({
   phone,
   address,
   hours,
+  champions = [],
 }: {
   phone: string;
   address: string;
   hours: string;
+  champions?: Champion[];
 }) {
   const tel = phone.replace(/[^0-9+]/g, "");
 
@@ -196,7 +199,7 @@ export function ClinicLanding({
 
       <BmiCalculator variant="landing" />
 
-      <ChampionsSection variant="landing" />
+      <ChampionsSection variant="landing" items={champions} />
 
       {/* Devices — کمک لاغری */}
       <section id="devices" className="relative overflow-hidden">

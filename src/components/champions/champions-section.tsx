@@ -2,41 +2,154 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type ReactNode,
+  type WheelEvent,
+} from "react";
 import { ArrowLeft } from "lucide-react";
-import { champions, lostKg, type Champion } from "@/lib/champions";
+import { lostKg, type Champion } from "@/lib/champions";
 import { cn } from "@/lib/utils";
 
 function faNum(n: number) {
   return new Intl.NumberFormat("fa-IR").format(n);
 }
 
+function DragScroll({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const drag = useRef<{
+    active: boolean;
+    startX: number;
+    scrollLeft: number;
+    moved: boolean;
+  }>({ active: false, startX: 0, scrollLeft: 0, moved: false });
+  const [grabbing, setGrabbing] = useState(false);
+
+  function onPointerDown(event: PointerEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el) return;
+    drag.current = {
+      active: true,
+      startX: event.clientX,
+      scrollLeft: el.scrollLeft,
+      moved: false,
+    };
+    setGrabbing(true);
+    el.setPointerCapture(event.pointerId);
+  }
+
+  function onPointerMove(event: PointerEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el || !drag.current.active) return;
+    const dx = event.clientX - drag.current.startX;
+    if (Math.abs(dx) > 4) drag.current.moved = true;
+    el.scrollLeft = drag.current.scrollLeft - dx;
+  }
+
+  function endDrag(event: PointerEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el) return;
+    drag.current.active = false;
+    setGrabbing(false);
+    try {
+      el.releasePointerCapture(event.pointerId);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function onWheel(event: WheelEvent<HTMLDivElement>) {
+    const el = ref.current;
+    if (!el) return;
+    if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+      el.scrollLeft += event.deltaY;
+      event.preventDefault();
+    }
+  }
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const handler = (event: globalThis.WheelEvent) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      el.scrollLeft += event.deltaY;
+      event.preventDefault();
+    };
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => el.removeEventListener("wheel", handler);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onWheel={onWheel}
+      onClickCapture={(event) => {
+        if (drag.current.moved) {
+          event.preventDefault();
+          event.stopPropagation();
+          drag.current.moved = false;
+        }
+      }}
+      className={cn(
+        "flex cursor-grab gap-3 overflow-x-auto pb-1 select-none [scrollbar-width:thin] active:cursor-grabbing",
+        grabbing && "cursor-grabbing",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
 function ChampionCard({
   champion,
-  compact,
+  size = "md",
 }: {
   champion: Champion;
-  compact?: boolean;
+  size?: "sm" | "md";
 }) {
   const lost = lostKg(champion);
+  const compact = size === "sm";
 
   return (
     <article
       className={cn(
-        "shrink-0 overflow-hidden rounded-[1.5rem] bg-white shadow-[0_12px_36px_rgba(20,53,42,0.08)]",
-        compact ? "w-[270px]" : "w-[300px] sm:w-[320px]"
+        "shrink-0 overflow-hidden rounded-[1.25rem] bg-white shadow-[0_8px_24px_rgba(20,53,42,0.08)]",
+        compact ? "w-[188px]" : "w-[280px] sm:w-[300px]"
       )}
     >
-      <div className="relative aspect-[4/5] overflow-hidden">
+      <div className={cn("relative overflow-hidden", compact ? "aspect-[5/6]" : "aspect-[4/5]")}>
         <div className="absolute inset-0 grid grid-cols-2">
           <div className="relative">
             <Image
               src={champion.beforeImage}
               alt={`${champion.name} — قبل`}
               fill
-              className="object-cover object-top grayscale-[35%]"
-              sizes="160px"
+              className="pointer-events-none object-cover object-top grayscale-[35%]"
+              sizes={compact ? "94px" : "150px"}
+              draggable={false}
             />
-            <span className="absolute bottom-3 right-2 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+            <span
+              className={cn(
+                "absolute right-1.5 rounded-full bg-black/45 font-bold text-white backdrop-blur-sm",
+                compact
+                  ? "bottom-1.5 px-1.5 py-0.5 text-[8px]"
+                  : "bottom-3 right-2 px-2.5 py-1 text-[10px]"
+              )}
+            >
               قبل
             </span>
           </div>
@@ -45,52 +158,91 @@ function ChampionCard({
               src={champion.afterImage}
               alt={`${champion.name} — بعد`}
               fill
-              className="object-cover object-top"
-              sizes="160px"
+              className="pointer-events-none object-cover object-top"
+              sizes={compact ? "94px" : "150px"}
+              draggable={false}
             />
-            <span className="absolute bottom-3 left-2 rounded-full bg-[#14352A]/80 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+            <span
+              className={cn(
+                "absolute left-1.5 rounded-full bg-[#14352A]/80 font-bold text-white backdrop-blur-sm",
+                compact
+                  ? "bottom-1.5 px-1.5 py-0.5 text-[8px]"
+                  : "bottom-3 left-2 px-2.5 py-1 text-[10px]"
+              )}
+            >
               بعد
             </span>
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
 
-        <div className="absolute inset-x-3 bottom-3 flex items-end justify-center gap-1.5">
-          <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A] shadow-sm">
-            شروع {faNum(champion.startKg)} kg
+        <div
+          className={cn(
+            "absolute inset-x-1.5 flex flex-wrap items-end justify-center gap-1",
+            compact ? "bottom-1.5" : "inset-x-3 bottom-3 gap-1.5"
+          )}
+        >
+          {!compact ? (
+            <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A] shadow-sm">
+              شروع {faNum(champion.startKg)} kg
+            </span>
+          ) : null}
+          <span
+            className={cn(
+              "rounded-full bg-[#14352A] font-extrabold text-white shadow-md",
+              compact ? "px-2 py-1 text-[9px]" : "px-3 py-1.5 text-[11px]"
+            )}
+          >
+            {faNum(lost)} kg کاهش
           </span>
-          <span className="rounded-full bg-[#14352A] px-3 py-1.5 text-[11px] font-extrabold text-white shadow-md">
-            {faNum(lost)} kg کاهش وزن
-          </span>
-          <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A] shadow-sm">
-            پایان {faNum(champion.endKg)} kg
-          </span>
+          {!compact ? (
+            <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A] shadow-sm">
+              پایان {faNum(champion.endKg)} kg
+            </span>
+          ) : null}
         </div>
       </div>
 
-      <div className={cn("space-y-1.5", compact ? "p-3.5" : "p-4")}>
-        <h3 className="text-sm font-extrabold text-[#14352A] sm:text-base">
+      <div className={cn(compact ? "space-y-0.5 p-2.5" : "space-y-1.5 p-4")}>
+        <h3
+          className={cn(
+            "font-extrabold text-[#14352A]",
+            compact ? "text-xs" : "text-sm sm:text-base"
+          )}
+        >
           {champion.name}
         </h3>
-        <p className="line-clamp-2 text-xs leading-6 text-[#1A2E26]/65">
+        <p
+          className={cn(
+            "text-[#1A2E26]/65",
+            compact ? "line-clamp-2 text-[10px] leading-4" : "line-clamp-2 text-xs leading-6"
+          )}
+        >
           {champion.quote}
         </p>
+        {compact ? (
+          <p className="pt-0.5 text-[10px] font-semibold text-[#14352A]/70">
+            {faNum(champion.startKg)} → {faNum(champion.endKg)} kg
+          </p>
+        ) : null}
       </div>
     </article>
   );
 }
 
 export function ChampionsSection({
+  items,
   variant = "landing",
 }: {
+  items: Champion[];
   variant?: "landing" | "patient";
 }) {
-  const compact = variant === "patient";
+  if (items.length === 0) return null;
 
-  if (compact) {
+  if (variant === "patient") {
     return (
-      <section className="space-y-3">
+      <section className="space-y-2.5">
         <div className="flex items-center justify-between gap-3 px-0.5">
           <h2 className="text-sm font-bold text-brand">قهرمانان تندیس</h2>
           <Link
@@ -100,11 +252,11 @@ export function ChampionsSection({
             مشاهده همه
           </Link>
         </div>
-        <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {champions.map((item) => (
-            <ChampionCard key={item.id} champion={item} compact />
+        <DragScroll className="-mx-4 px-4">
+          {items.map((item) => (
+            <ChampionCard key={item.id} champion={item} size="sm" />
           ))}
-        </div>
+        </DragScroll>
       </section>
     );
   }
@@ -142,11 +294,14 @@ export function ChampionsSection({
           </Link>
         </div>
 
-        <div className="mt-10 flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:grid md:grid-cols-3 md:overflow-visible">
-          {champions.map((item) => (
-            <ChampionCard key={item.id} champion={item} />
+        <DragScroll className="mt-10">
+          {items.map((item) => (
+            <ChampionCard key={item.id} champion={item} size="md" />
           ))}
-        </div>
+        </DragScroll>
+        <p className="mt-3 text-xs text-[#1A2E26]/45">
+          برای دیدن بقیه، بکشید یا با چرخ موس افقی اسکرول کنید.
+        </p>
       </div>
     </section>
   );

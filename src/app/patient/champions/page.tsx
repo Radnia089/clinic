@@ -1,12 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
-import { champions, lostKg } from "@/lib/champions";
+import { lostKg } from "@/lib/champions";
+import { listChampions } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 function faNum(n: number) {
   return new Intl.NumberFormat("fa-IR").format(n);
 }
 
-export default function PatientChampionsPage() {
+export default async function PatientChampionsPage() {
+  const champions = await listChampions({ publishedOnly: true });
+
   return (
     <div className="mx-auto min-h-[100svh] w-full max-w-[430px] bg-[#F7F8F6] px-4 py-6">
       <div className="mb-6 flex items-center justify-between">
@@ -20,66 +25,72 @@ export default function PatientChampionsPage() {
         نتیجه واقعی مسیر رژیم و پیگیری — قبل و بعد مراجعه‌کنندگان.
       </p>
 
-      <div className="space-y-4 pb-8">
-        {champions.map((champion) => {
-          const lost = lostKg(champion);
-          return (
-            <article
-              key={champion.id}
-              className="overflow-hidden rounded-[1.5rem] bg-white shadow-[0_8px_24px_rgba(35,70,55,0.08)]"
-            >
-              <div className="relative aspect-[4/5]">
-                <div className="absolute inset-0 grid grid-cols-2">
-                  <div className="relative">
-                    <Image
-                      src={champion.beforeImage}
-                      alt={`${champion.name} — قبل`}
-                      fill
-                      className="object-cover object-top grayscale-[35%]"
-                      sizes="215px"
-                    />
-                    <span className="absolute bottom-3 right-2 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold text-white">
-                      قبل
-                    </span>
+      {champions.length === 0 ? (
+        <p className="rounded-[1.5rem] bg-white p-6 text-center text-sm text-muted-foreground">
+          هنوز قهرمانی منتشر نشده است.
+        </p>
+      ) : (
+        <div className="space-y-4 pb-8">
+          {champions.map((champion) => {
+            const lost = lostKg(champion);
+            return (
+              <article
+                key={champion.id}
+                className="overflow-hidden rounded-[1.5rem] bg-white shadow-[0_8px_24px_rgba(35,70,55,0.08)]"
+              >
+                <div className="relative aspect-[4/5]">
+                  <div className="absolute inset-0 grid grid-cols-2">
+                    <div className="relative">
+                      <Image
+                        src={champion.beforeImage}
+                        alt={`${champion.name} — قبل`}
+                        fill
+                        className="object-cover object-top grayscale-[35%]"
+                        sizes="215px"
+                      />
+                      <span className="absolute bottom-3 right-2 rounded-full bg-black/45 px-2.5 py-1 text-[10px] font-bold text-white">
+                        قبل
+                      </span>
+                    </div>
+                    <div className="relative border-r border-white/40">
+                      <Image
+                        src={champion.afterImage}
+                        alt={`${champion.name} — بعد`}
+                        fill
+                        className="object-cover object-top"
+                        sizes="215px"
+                      />
+                      <span className="absolute bottom-3 left-2 rounded-full bg-[#14352A]/80 px-2.5 py-1 text-[10px] font-bold text-white">
+                        بعد
+                      </span>
+                    </div>
                   </div>
-                  <div className="relative border-r border-white/40">
-                    <Image
-                      src={champion.afterImage}
-                      alt={`${champion.name} — بعد`}
-                      fill
-                      className="object-cover object-top"
-                      sizes="215px"
-                    />
-                    <span className="absolute bottom-3 left-2 rounded-full bg-[#14352A]/80 px-2.5 py-1 text-[10px] font-bold text-white">
-                      بعد
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />
+                  <div className="absolute inset-x-3 bottom-3 flex items-end justify-center gap-1.5">
+                    <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A]">
+                      شروع {faNum(champion.startKg)} kg
+                    </span>
+                    <span className="rounded-full bg-[#14352A] px-3 py-1.5 text-[11px] font-extrabold text-white">
+                      {faNum(lost)} kg کاهش وزن
+                    </span>
+                    <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A]">
+                      پایان {faNum(champion.endKg)} kg
                     </span>
                   </div>
                 </div>
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />
-                <div className="absolute inset-x-3 bottom-3 flex items-end justify-center gap-1.5">
-                  <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A]">
-                    شروع {faNum(champion.startKg)} kg
-                  </span>
-                  <span className="rounded-full bg-[#14352A] px-3 py-1.5 text-[11px] font-extrabold text-white">
-                    {faNum(lost)} kg کاهش وزن
-                  </span>
-                  <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A]">
-                    پایان {faNum(champion.endKg)} kg
-                  </span>
+                <div className="space-y-1.5 p-4">
+                  <h2 className="text-base font-extrabold text-brand">
+                    {champion.name}
+                  </h2>
+                  <p className="text-sm leading-7 text-muted-foreground">
+                    {champion.quote}
+                  </p>
                 </div>
-              </div>
-              <div className="space-y-1.5 p-4">
-                <h2 className="text-base font-extrabold text-brand">
-                  {champion.name}
-                </h2>
-                <p className="text-sm leading-7 text-muted-foreground">
-                  {champion.quote}
-                </p>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       <Link
         href="/patient/book"

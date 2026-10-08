@@ -24,6 +24,8 @@
 .DS_Store
 *.pem
 .data/
+/public/uploads/champions/*
+!/public/uploads/champions/.gitkeep
 
 # debug
 npm-debug.log*
