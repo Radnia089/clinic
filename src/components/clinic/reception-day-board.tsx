@@ -354,17 +354,19 @@ export function ReceptionDayBoard({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="flex h-full min-h-0 flex-col gap-3 md:gap-4">
+      {/* بالای تقویم ثابت؛ فقط شبکه ساعت‌ها اسکرول می‌شود */}
+      <div className="shrink-0 space-y-3 md:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-medium text-muted-foreground">تقویم روزانه پذیرش</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-brand">تقویم شناور نوبت‌ها</h1>
+          <h1 className="mt-1 text-xl font-extrabold text-brand sm:text-2xl">تقویم شناور نوبت‌ها</h1>
           <p className="mt-1 text-xs text-muted-foreground">
             بازه شناور {formatTimeFa(clinic.workStart)} تا {formatTimeFa(clinic.workEnd)} · واحد{" "}
             {toFaNumber(gridMinutes)} دقیقه · ویزیت معمولاً {toFaNumber(clinic.visitSlotMinutes)} دقیقه ·
             دستگاه/پکیج معمولاً {toFaNumber(clinic.packageSlotMinutes)} دقیقه
           </p>
-          <p className="mt-1 text-[11px] text-muted-foreground">
+          <p className="mt-1 hidden text-[11px] text-muted-foreground sm:block">
             خانه خالی را بکشید تا نوبت جدید بسازید · نوبت را بکشید تا جابه‌جا شود · از لبه پایین
             اندازه را عوض کنید · تیک سبز = مراجعه کرد · ضربدر قرمز = لغو / نیامد.
           </p>
@@ -375,21 +377,21 @@ export function ReceptionDayBoard({
         <div className="flex flex-wrap gap-2">
           <Link
             href="/clinic/reception/customers"
-            className="inline-flex h-11 items-center gap-2 rounded-2xl bg-white px-4 text-sm font-semibold text-brand shadow-[0_6px_18px_rgba(35,70,55,0.06)]"
+            className="inline-flex h-10 items-center gap-2 rounded-2xl bg-white px-3 text-sm font-semibold text-brand shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:h-11 sm:px-4"
           >
             <Users className="size-4" />
             لیست مشتریان
           </Link>
           <Link
             href={`/clinic/reception/new?date=${day}&channel=phone`}
-            className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#3B5BDB] px-4 text-sm font-semibold text-white"
+            className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#3B5BDB] px-3 text-sm font-semibold text-white sm:h-11 sm:px-4"
           >
             <Phone className="size-4" />
             نوبت تلفنی
           </Link>
           <Link
             href={`/clinic/reception/new?date=${day}`}
-            className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#D86B5C] px-4 text-sm font-semibold text-white"
+            className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[#D86B5C] px-3 text-sm font-semibold text-white sm:h-11 sm:px-4"
           >
             <UserPlus className="size-4" />
             ثبت جدید
@@ -430,9 +432,10 @@ export function ReceptionDayBoard({
           <ChevronLeft className="size-5" />
         </button>
       </div>
+      </div>
 
-      <div className="overflow-hidden rounded-[28px] bg-white shadow-[0_6px_18px_rgba(35,70,55,0.06)] select-none">
-        <div className="grid grid-cols-[4.25rem_1fr_1fr] border-b border-black/5 bg-[#F7F8F6] text-center text-xs font-bold text-brand">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_6px_18px_rgba(35,70,55,0.06)] select-none">
+        <div className="grid shrink-0 grid-cols-[4.25rem_1fr_1fr] border-b border-black/5 bg-[#F7F8F6] text-center text-xs font-bold text-brand">
           <div className="px-1 py-3">ساعت</div>
           <div className="border-r border-black/5 px-2 py-3">
             ویزیت
@@ -448,6 +451,7 @@ export function ReceptionDayBoard({
           </div>
         </div>
 
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         <div className="grid grid-cols-[4.25rem_1fr_1fr]">
           <div className="relative bg-[#FAFBFA]">
             {gridSlots.map((slot) => (
@@ -504,10 +508,11 @@ export function ReceptionDayBoard({
             onAttendance={setAttendance}
           />
         </div>
+        </div>
       </div>
 
       {untimed.length > 0 ? (
-        <section className="rounded-[28px] bg-[#FFF8F5] p-4">
+        <section className="max-h-40 shrink-0 overflow-y-auto rounded-[28px] bg-[#FFF8F5] p-4">
           <h2 className="text-sm font-bold text-[#9A4E42]">
             نوبت‌های بدون ساعت / تلفنی
           </h2>

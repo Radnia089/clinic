@@ -92,6 +92,8 @@ export function ClinicShell({
   const router = useRouter();
   const isReceptionArea =
     pathname.startsWith("/clinic/reception") || pathname.startsWith("/clinic/progress");
+  const isReceptionCalendar =
+    pathname === "/clinic/reception" || pathname === "/clinic/reception/";
   const isManager = userRole === "management";
   const visibleManagementLinks = managementLinks.filter(
     (link) => !("managerOnly" in link && link.managerOnly) || isManager
@@ -104,8 +106,18 @@ export function ClinicShell({
   }
 
   return (
-    <div className="min-h-screen bg-[#EEF1EE] text-foreground">
-      <div className="mx-auto flex min-h-screen max-w-[1200px]">
+    <div
+      className={cn(
+        "bg-[#EEF1EE] text-foreground",
+        isReceptionCalendar ? "h-dvh overflow-hidden" : "min-h-screen"
+      )}
+    >
+      <div
+        className={cn(
+          "mx-auto flex max-w-[1200px]",
+          isReceptionCalendar ? "h-full" : "min-h-screen"
+        )}
+      >
         <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col border-l border-black/5 bg-[#F7F8F6] p-5 md:flex">
           <div>
             <ClinicLogo />
@@ -186,8 +198,13 @@ export function ClinicShell({
           </button>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-20 border-b border-black/5 bg-[#F7F8F6]/90 px-4 py-3 backdrop-blur md:px-8">
+        <div
+          className={cn(
+            "flex min-w-0 flex-1 flex-col",
+            isReceptionCalendar && "min-h-0"
+          )}
+        >
+          <header className="sticky top-0 z-20 shrink-0 border-b border-black/5 bg-[#F7F8F6]/90 px-4 py-3 backdrop-blur md:px-8">
             <div className="flex items-center justify-between gap-3">
               <div className="md:hidden">
                 <ClinicLogo compact />
@@ -233,7 +250,18 @@ export function ClinicShell({
             </div>
           </header>
 
-          <main className="flex-1 px-4 py-5 md:px-8 md:py-8">{children}</main>
+          <main
+            className={cn(
+              "flex-1 px-4 py-5 md:px-8 md:py-8",
+              isReceptionCalendar && "flex min-h-0 flex-col overflow-hidden py-3 md:py-4"
+            )}
+          >
+            {isReceptionCalendar ? (
+              <div className="min-h-0 flex-1">{children}</div>
+            ) : (
+              children
+            )}
+          </main>
         </div>
       </div>
     </div>
