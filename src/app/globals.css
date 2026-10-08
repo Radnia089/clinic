@@ -141,6 +141,7 @@
   .animate-underline-draw {
     animation: underline-draw 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
   }
+
 }
 
 @keyframes rise-in {

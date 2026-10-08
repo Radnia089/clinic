@@ -11,20 +11,17 @@ import type { Champion, MagazineArticle, PromoBanner } from "@/lib/types";
 const services = [
   {
     title: "رژیم شخصی",
-    text: "برنامه غذایی دقیق بر اساس هدف، عادت‌ها و اندازه‌های شما.",
-    image: "/images/landing-food-fresh.jpg",
+    text: "برنامه غذایی دقیق بر اساس هدف و اندازه‌های شما.",
     href: "/patient/book",
   },
   {
     title: "نوبت حضوری",
-    text: "ویزیت در کلینیک یزد با اندازه‌گیری و تنظیم مسیر لاغری.",
-    image: "/images/clinic-care.jpg",
+    text: "ویزیت در کلینیک یزد با اندازه‌گیری و تنظیم مسیر.",
     href: "/patient/book",
   },
   {
     title: "مشاوره آنلاین",
-    text: "ثبت سایز از خانه، رزرو وقت تماس و راهنمایی تلفنی مشاور.",
-    image: "/images/landing-consult-desk.jpg",
+    text: "ثبت سایز از خانه و رزرو وقت تماس با مشاور.",
     href: "/patient/consult",
   },
 ];
@@ -32,21 +29,18 @@ const services = [
 const devices = [
   {
     name: "آر‌اف (RF)",
-    full: "رادیوفرکوئنسی",
+    text: "سفتی پوست و فرم‌دهی موضعی با رادیوفرکوئنسی.",
     image: "/images/device-rf.jpg",
-    text: "امواج رادیویی گرمای کنترل‌شده به لایه‌های پوست و بافت زیرین می‌رسانند. این روش به سفت‌شدن پوست، تحریک کلاژن و کمک به فرم‌دهی موضعی کمک می‌کند — به‌ویژه وقتی با رژیم و پیگیری همراه باشد.",
   },
   {
     name: "کویتیشن",
-    full: "اولتراسوند کاویتاسیون",
+    text: "کمک به کاهش چربی موضعی در نواحی مقاوم.",
     image: "/images/device-cavitation.jpg",
-    text: "امواج اولتراسوند حباب‌های میکروسکوپی در بافت چربی ایجاد می‌کنند و به شکستن سلول‌های چربی موضعی کمک می‌کنند. معمولاً برای نواحی مقاوم مثل شکم، پهلو و ران پیشنهاد می‌شود.",
   },
   {
     name: "ایندرمولوژی",
-    full: "اندومولوژی / LPG",
+    text: "ماساژ مکانیکی برای گردش لنفاوی و پوست یکدست‌تر.",
     image: "/images/device-endermologie.jpg",
-    text: "ماساژ مکانیکی با مکش و غلتک که گردش لنفاوی را بهتر می‌کند، ظاهر سلولیت را کاهش می‌دهد و پوست را نرم‌تر و یکدست‌تر نشان می‌دهد. مکمل خوبی برای مسیر لاغری و فرم‌دهی بدن است.",
   },
 ];
 
@@ -68,97 +62,111 @@ export function ClinicLanding({
   const tel = phone.replace(/[^0-9+]/g, "");
 
   return (
-    <div className="min-h-screen bg-[#F6F8F5] text-[#1A2E26]">
-      {/* Top bar */}
-      <div className="border-b border-[#1A2E26]/08 bg-[#14352A] text-[#E8F2EA]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-xs sm:px-6">
-          <p>کلینیک لاغری تندیس · یزد</p>
-          <a href={`tel:${tel}`} className="font-semibold tracking-wide" dir="ltr">
-            {phone}
-          </a>
-        </div>
-      </div>
-
-      {/* Nav */}
-      <header className="sticky top-0 z-40 border-b border-[#1A2E26]/06 bg-[#F6F8F5]/90 backdrop-blur-md">
-        <div className="mx-auto flex h-auto min-h-14 max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:min-h-[4.5rem] sm:gap-4 sm:px-6">
-          <Link href="/" className="min-w-0 flex flex-col items-start gap-0.5">
+    <div className="min-h-screen bg-[#F7F8F6] text-[#1A2E26]">
+      <header className="sticky top-0 z-40 border-b border-[#14352A]/08 bg-[#F7F8F6]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <Link href="/" className="min-w-0">
             <Image
               src="/tandis-logo.png"
               alt="کلینیک تندیس"
-              width={160}
-              height={67}
-              className="h-8 w-auto object-contain sm:h-11"
+              width={140}
+              height={58}
+              className="h-8 w-auto object-contain sm:h-9"
               priority
             />
-            <p className="max-w-[12rem] text-[9px] font-semibold leading-snug text-[#14352A]/75 sm:max-w-none sm:text-[11px]">
-              کلینیک تخصصی لاغری و رژیم درمانی تندیس یزد
+            <p className="mt-0.5 text-[10px] font-medium text-[#14352A]/65 sm:text-[11px]">
+              کلینیک تخصصی لاغری و رژیم درمانی · یزد
             </p>
           </Link>
-          <nav className="hidden items-center gap-5 text-sm font-medium text-[#1A2E26]/75 lg:flex xl:gap-6">
-            <a href="#services" className="hover:text-[#14352A]">
-              خدمات
-            </a>
-            <a href="#devices" className="hover:text-[#14352A]">
-              دستگاه‌ها
-            </a>
-            <a href="#bmi" className="hover:text-[#14352A]">
-              محاسبه BMI
-            </a>
-            <a href="#champions" className="hover:text-[#14352A]">
-              قهرمانان
-            </a>
-            <a href="#magazine" className="hover:text-[#14352A]">
-              مجله
-            </a>
-            <a href="#path" className="hover:text-[#14352A]">
-              مسیر درمان
-            </a>
-            <a href="#contact" className="hover:text-[#14352A]">
-              تماس
-            </a>
-          </nav>
-          <LandingLoginMenu />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <nav className="hidden items-center gap-4 text-sm text-[#14352A]/75 md:flex">
+              <a href="#services" className="hover:text-[#14352A]">
+                خدمات
+              </a>
+              <a href="#devices" className="hover:text-[#14352A]">
+                دستگاه‌ها
+              </a>
+              <a href="#bmi" className="hover:text-[#14352A]">
+                BMI
+              </a>
+              <a href="#contact" className="hover:text-[#14352A]">
+                تماس
+              </a>
+            </nav>
+            <LandingLoginMenu />
+          </div>
         </div>
       </header>
 
-      {/* Hero = اسلایدر بنرهای مدیر */}
-      <PromoBannerSlider variant="landing" items={promoBanners} />
+      {/* Hero — simple */}
+      <section className="border-b border-[#14352A]/06 bg-[#E8F2EA]">
+        <div className="mx-auto grid max-w-5xl items-center gap-8 px-4 py-14 sm:px-6 sm:py-20 md:grid-cols-2 md:gap-12">
+          <div>
+            <p className="text-sm font-bold text-[#14352A]">تندیس</p>
+            <h1 className="mt-3 text-3xl font-extrabold leading-snug text-[#14352A] sm:text-4xl">
+              مسیر لاغری با پیگیری منظم
+            </h1>
+            <p className="mt-4 max-w-md text-sm leading-8 text-[#1A2E26]/70">
+              رژیم شخصی، دستگاه‌های کمک لاغری و مشاوره حضوری یا آنلاین در یزد.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/patient/book"
+                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#14352A] px-5 text-sm font-bold text-white hover:bg-[#1f4a3a]"
+              >
+                رزرو نوبت
+                <ArrowLeft className="size-4" />
+              </Link>
+              <Link
+                href="/patient/consult"
+                className="inline-flex h-11 items-center rounded-xl border border-[#14352A]/20 bg-white px-5 text-sm font-bold text-[#14352A] hover:bg-[#F7F8F6]"
+              >
+                مشاوره آنلاین
+              </Link>
+            </div>
+          </div>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl md:aspect-[5/4]">
+            <Image
+              src="/images/clinic-care.jpg"
+              alt="کلینیک تندیس"
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 480px"
+            />
+          </div>
+        </div>
+      </section>
 
-      {/* Services — image-forward strips, not heavy cards */}
-      <section id="services" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-        <p className="text-sm font-bold tracking-wide text-[#C48A12]">خدمات</p>
-        <h2 className="mt-2 max-w-lg text-3xl font-extrabold text-[#14352A] sm:text-4xl">
-          سه راه برای شروع مسیر لاغری
-        </h2>
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
-          {services.map((item, index) => (
+      {promoBanners.length > 0 ? (
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
+          <PromoBannerSlider variant="landing" items={promoBanners} />
+        </div>
+      ) : null}
+
+      {/* Services */}
+      <section id="services" className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
+        <h2 className="text-2xl font-extrabold text-[#14352A]">خدمات</h2>
+        <p className="mt-2 text-sm text-[#1A2E26]/65">
+          هر طور راحت‌ترید شروع کنید.
+        </p>
+        <div className="mt-8 grid gap-6 sm:grid-cols-3">
+          {services.map((item) => (
             <Link
               key={item.title}
               href={item.href}
-              className="group relative block min-h-[360px] overflow-hidden rounded-[1.75rem]"
+              className="group block border-t border-[#14352A]/12 pt-4"
             >
-              <Image
-                src={item.image}
-                alt={item.title}
-                fill
-                className="object-cover transition duration-700 group-hover:scale-105"
-                sizes="(max-width: 768px) 100vw, 33vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0F241C]/92 via-[#0F241C]/35 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-6">
-                <span className="text-xs font-bold text-[#F0B429]">
-                  {new Intl.NumberFormat("fa-IR").format(index + 1)}
-                </span>
-                <h3 className="mt-2 text-2xl font-extrabold text-white">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-7 text-white/85">{item.text}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[#F0B429]">
-                  ادامه
-                  <ArrowLeft className="size-4 transition group-hover:-translate-x-1" />
-                </span>
-              </div>
+              <h3 className="text-lg font-extrabold text-[#14352A] group-hover:text-[#1f4a3a]">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm leading-7 text-[#1A2E26]/65">
+                {item.text}
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-[#14352A]">
+                ادامه
+                <ArrowLeft className="size-3.5 transition group-hover:-translate-x-0.5" />
+              </span>
             </Link>
           ))}
         </div>
@@ -170,243 +178,111 @@ export function ClinicLanding({
 
       <MagazineLandingSection items={articles} />
 
-      {/* Devices — کمک لاغری */}
-      <section id="devices" className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="/images/clinic-care.jpg"
-            alt=""
-            fill
-            className="object-cover opacity-[0.12]"
-            sizes="100vw"
-            aria-hidden
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#F6F8F5] via-[#F6F8F5]/92 to-[#E8F0EA]" />
-        </div>
-
-        <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-          <p className="text-sm font-bold tracking-wide text-[#C48A12]">
+      {/* Devices */}
+      <section id="devices" className="border-y border-[#14352A]/06 bg-white">
+        <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
+          <h2 className="text-2xl font-extrabold text-[#14352A]">
             دستگاه‌های کمک لاغری
-          </p>
-          <h2 className="mt-2 max-w-2xl text-3xl font-extrabold text-[#14352A] sm:text-4xl">
-            آر‌اف، کویتیشن و ایندرمولوژی در کنار رژیم
           </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-8 text-[#1A2E26]/70 sm:text-base">
-            در کلینیک تندیس، علاوه بر رژیم شخصی، از دستگاه‌های کمک لاغری برای
-            فرم‌دهی موضعی، سفتی پوست و کاهش ظاهر سلولیت استفاده می‌شود. انتخاب
-            روش مناسب بعد از ویزیت و اندازه‌گیری انجام می‌گیرد.
+          <p className="mt-2 max-w-xl text-sm leading-7 text-[#1A2E26]/65">
+            آر‌اف، کویتیشن و ایندرمولوژی به‌عنوان مکمل رژیم — بعد از ویزیت انتخاب
+            می‌شوند.
           </p>
-
-          <div className="mt-14 grid gap-8 md:grid-cols-3 md:gap-6">
-            {devices.map((device, index) => (
-              <article key={device.name} className="group">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[1.75rem]">
+          <div className="mt-10 grid gap-8 sm:grid-cols-3">
+            {devices.map((device) => (
+              <article key={device.name}>
+                <div className="relative aspect-[4/3] overflow-hidden rounded-xl">
                   <Image
                     src={device.image}
                     alt={device.name}
                     fill
-                    className="object-cover transition duration-700 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 30vw"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0F241C]/35 to-transparent" />
-                  <span className="absolute bottom-4 right-4 font-[family-name:var(--font-playfair)] text-3xl font-bold text-[#F0B429]">
-                    {new Intl.NumberFormat("fa-IR").format(index + 1)}
-                  </span>
                 </div>
-                <h3 className="mt-5 text-2xl font-extrabold text-[#14352A]">
+                <h3 className="mt-4 text-lg font-extrabold text-[#14352A]">
                   {device.name}
                 </h3>
-                <p className="mt-1 text-xs font-semibold tracking-wide text-[#C48A12]">
-                  {device.full}
-                </p>
-                <p className="mt-3 text-sm leading-8 text-[#1A2E26]/70">
+                <p className="mt-2 text-sm leading-7 text-[#1A2E26]/65">
                   {device.text}
                 </p>
               </article>
             ))}
           </div>
-
-          <div className="mt-12 flex flex-wrap items-center gap-4">
-            <Link
-              href="/patient/book"
-              className="inline-flex h-12 items-center gap-2 rounded-full bg-[#14352A] px-6 text-sm font-bold text-white transition hover:bg-[#1f4a3a]"
-            >
-              رزرو برای مشاوره دستگاه
-              <ArrowLeft className="size-4" />
-            </Link>
-            <p className="text-sm text-[#1A2E26]/55">
-              دستگاه‌ها جایگزین رژیم نیستند؛ مکمل مسیر لاغری‌اند.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Split story */}
-      <section className="overflow-hidden bg-[#14352A] text-white">
-        <div className="mx-auto grid max-w-6xl md:grid-cols-2">
-          <div className="relative min-h-[320px] md:min-h-[480px]">
-            <Image
-              src="/images/landing-food-fresh.jpg"
-              alt="غذای سالم برنامه رژیم"
-              fill
-              className="object-cover"
-              sizes="50vw"
-            />
-          </div>
-          <div className="flex flex-col justify-center px-6 py-14 sm:px-12 sm:py-20">
-            <p className="text-sm font-bold text-[#F0B429]">فلسفه تندیس</p>
-            <h2 className="mt-3 text-3xl font-extrabold leading-tight sm:text-4xl">
-              رژیم کاغذی نیست؛ مسیر قابل اندازه‌گیری است
-            </h2>
-            <p className="mt-5 text-sm leading-8 text-white/80 sm:text-base">
-              وزن، سایز و هدف شما ثبت می‌شود تا مشاور برنامه را مرحله‌به‌مرحله
-              تنظیم کند — از رژیم تا جلسات دستگاه‌های کمک لاغری. همین دقت، تفاوت
-              مسیر پایدار با رژیم‌های کوتاه‌مدت است.
-            </p>
-            <Link
-              href="/patient"
-              className="mt-8 inline-flex w-fit items-center gap-2 text-sm font-bold text-[#F0B429]"
-            >
-              مشاهده اپ مشتری
-              <ArrowLeft className="size-4" />
-            </Link>
-          </div>
+          <Link
+            href="/patient/book"
+            className="mt-10 inline-flex h-11 items-center gap-2 rounded-xl bg-[#14352A] px-5 text-sm font-bold text-white"
+          >
+            رزرو مشاوره
+            <ArrowLeft className="size-4" />
+          </Link>
         </div>
       </section>
 
       {/* Path */}
-      <section id="path" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-        <p className="text-sm font-bold tracking-wide text-[#C48A12]">مسیر درمان</p>
-        <h2 className="mt-2 text-3xl font-extrabold text-[#14352A] sm:text-4xl">
-          از اولین درخواست تا پیگیری
-        </h2>
-        <ol className="mt-12 grid gap-6 sm:grid-cols-3">
+      <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
+        <h2 className="text-2xl font-extrabold text-[#14352A]">مسیر درمان</h2>
+        <ol className="mt-8 grid gap-6 sm:grid-cols-3">
           {[
-            {
-              n: "۰۱",
-              t: "درخواست",
-              d: "نوبت حضوری یا مشاوره آنلاین را از سایت ثبت کنید.",
-            },
-            {
-              n: "۰۲",
-              t: "هماهنگی",
-              d: "کلینیک وقت را تأیید می‌کند و در صورت نیاز پیامک می‌فرستد.",
-            },
-            {
-              n: "۰۳",
-              t: "شروع",
-              d: "با برنامه غذایی و پیگیری منظم به سمت هدف حرکت کنید.",
-            },
+            { n: "۱", t: "درخواست", d: "نوبت حضوری یا مشاوره آنلاین ثبت کنید." },
+            { n: "۲", t: "هماهنگی", d: "کلینیک وقت را تأیید می‌کند." },
+            { n: "۳", t: "شروع", d: "با برنامه و پیگیری به سمت هدف می‌روید." },
           ].map((step) => (
-            <li
-              key={step.n}
-              className="rounded-[1.75rem] bg-white p-6 shadow-[0_12px_40px_rgba(20,53,42,0.06)]"
-            >
-              <span className="font-[family-name:var(--font-playfair)] text-3xl font-bold text-[#F0B429]">
-                {step.n}
-              </span>
-              <h3 className="mt-4 text-xl font-extrabold text-[#14352A]">
+            <li key={step.n}>
+              <span className="text-sm font-bold text-[#B8860B]">{step.n}</span>
+              <h3 className="mt-1 text-lg font-extrabold text-[#14352A]">
                 {step.t}
               </h3>
-              <p className="mt-2 text-sm leading-7 text-[#1A2E26]/65">{step.d}</p>
+              <p className="mt-1 text-sm leading-7 text-[#1A2E26]/65">{step.d}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      {/* Online CTA with image */}
-      <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">
-        <div className="grid overflow-hidden rounded-[2rem] bg-[#E8F0EA] md:grid-cols-[1.1fr_0.9fr]">
-          <div className="flex flex-col justify-center px-6 py-12 sm:px-10 sm:py-16">
-            <h2 className="text-3xl font-extrabold text-[#14352A] sm:text-4xl">
-              از خانه سایز بگیرید
-            </h2>
-            <p className="mt-4 max-w-md text-sm leading-8 text-[#1A2E26]/70">
-              راهنمای تصویری اندازه‌گیری را ببینید، مشخصات را بفرستید و وقت تماس
-              مشاوره آنلاین بگیرید.
-            </p>
-            <Link
-              href="/patient/consult"
-              className="mt-8 inline-flex h-12 w-fit items-center rounded-full bg-[#14352A] px-6 text-sm font-bold text-white"
-            >
-              شروع مشاوره آنلاین
-            </Link>
-          </div>
-          <div className="relative min-h-[280px]">
-            <Image
-              src="/images/landing-consult-desk.jpg"
-              alt="میز مشاوره رژیم"
-              fill
-              className="object-cover"
-              sizes="40vw"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* Contact */}
-      <section id="contact" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-28">
-        <div className="grid gap-8 sm:gap-10 md:grid-cols-[1fr_1.1fr] md:items-end">
+      <section id="contact" className="bg-[#E8F2EA]">
+        <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-14 sm:flex-row sm:items-end sm:justify-between sm:px-6 sm:py-16">
           <div>
-            <p className="text-sm font-bold tracking-wide text-[#C48A12]">تماس</p>
-            <h2 className="mt-2 text-3xl font-extrabold text-[#14352A] sm:text-4xl">
-              تندیس در یزد
-            </h2>
-            <p className="mt-4 text-sm leading-8 text-[#1A2E26]/70">{address}</p>
+            <h2 className="text-2xl font-extrabold text-[#14352A]">تماس</h2>
+            <p className="mt-3 max-w-md text-sm leading-7 text-[#1A2E26]/70">
+              {address}
+            </p>
             <a
               href={`tel:${tel}`}
-              className="mt-3 inline-block text-xl font-extrabold text-[#14352A] sm:text-2xl"
+              className="mt-3 inline-block text-xl font-extrabold text-[#14352A]"
               dir="ltr"
             >
               {phone}
             </a>
-            <p className="mt-2 text-sm text-[#1A2E26]/60">{hours}</p>
+            <p className="mt-1 text-sm text-[#1A2E26]/55">{hours}</p>
           </div>
-          <div className="flex flex-wrap gap-3 md:justify-end">
+          <div className="flex flex-wrap gap-3">
             <Link
               href="/patient/book"
-              className="inline-flex h-11 items-center rounded-full bg-[#F0B429] px-5 text-sm font-extrabold text-[#14352A] sm:h-12 sm:px-6"
+              className="inline-flex h-11 items-center rounded-xl bg-[#F0B429] px-5 text-sm font-extrabold text-[#14352A]"
             >
-              رزرو نوبت حضوری
+              رزرو نوبت
             </Link>
             <Link
               href="/patient/consult"
-              className="inline-flex h-11 items-center rounded-full bg-[#14352A] px-5 text-sm font-bold text-white sm:h-12 sm:px-6"
+              className="inline-flex h-11 items-center rounded-xl bg-[#14352A] px-5 text-sm font-bold text-white"
             >
               مشاوره آنلاین
             </Link>
-            <LandingLoginMenu variant="outline" className="h-11 px-5 sm:h-12 sm:px-6" />
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-[#1A2E26]/08 bg-[#0F241C] text-white">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="shrink-0 rounded-xl bg-white px-2.5 py-1.5">
-              <Image
-                src="/tandis-logo.png"
-                alt="تندیس"
-                width={120}
-                height={50}
-                className="h-8 w-auto object-contain"
-              />
-            </div>
-            <p className="text-xs text-white/65">کلینیک لاغری تندیس یزد</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/75">
-            <LandingLoginMenu variant="footer" />
-            <a href="#bmi" className="hover:text-white">
-              محاسبه BMI
-            </a>
-            <a href="#champions" className="hover:text-white">
-              قهرمانان
-            </a>
-            <Link href="/magazine" className="hover:text-white">
+      <footer className="border-t border-[#14352A]/08 bg-[#F7F8F6]">
+        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-8 text-sm text-[#1A2E26]/60 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <p>کلینیک لاغری تندیس یزد</p>
+          <div className="flex flex-wrap gap-4">
+            <LandingLoginMenu variant="footer" className="text-[#1A2E26]/60 hover:text-[#14352A]" />
+            <Link href="/magazine" className="hover:text-[#14352A]">
               مجله
             </Link>
-            <Link href="/patient/consult" className="hover:text-white">
-              مشاوره آنلاین
+            <Link href="/patient" className="hover:text-[#14352A]">
+              اپ مشتری
             </Link>
           </div>
         </div>
