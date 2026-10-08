@@ -8,26 +8,60 @@ import {
   type ProgressMeasurement,
 } from "@/lib/types";
 
+async function fetchPatientMe() {
+  const res = await fetch("/api/patient-auth/me", {
+    cache: "no-store",
+    headers: { "Cache-Control": "no-cache" },
+  });
+  if (res.status === 401) {
+    window.location.href = "/patient/login";
+    return null;
+  }
+  if (!res.ok) return null;
+  return res.json() as Promise<{
+    patient?: Patient | null;
+    measurements?: ProgressMeasurement[];
+  }>;
+}
+
 export function PatientProgressScreen() {
   const [patient, setPatient] = useState<Patient | null>(null);
   const [measurements, setMeasurements] = useState<ProgressMeasurement[]>([]);
   const [loading, setLoading] = useState(true);
+  const [reloadTick, setReloadTick] = useState(0);
 
   useEffect(() => {
-    fetch("/api/patient-auth/me")
-      .then(async (r) => {
-        if (r.status === 401) {
-          window.location.href = "/patient/login";
-          return null;
-        }
-        return r.json();
-      })
+    let alive = true;
+    setLoading(true);
+    fetchPatientMe()
       .then((data) => {
-        if (!data) return;
+        if (!alive || !data) return;
         setPatient(data.patient ?? null);
         setMeasurements(data.measurements ?? []);
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [reloadTick]);
+
+  useEffect(() => {
+    function bump() {
+      setReloadTick((n) => n + 1);
+    }
+    function onVisible() {
+      if (document.visibilityState === "visible") bump();
+    }
+    window.addEventListener("focus", bump);
+    window.addEventListener("pageshow", bump);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", bump);
+      window.removeEventListener("pageshow", bump);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   const first = measurements[0];

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { DigitsInput } from "@/components/ui/digits-input";
@@ -13,7 +12,6 @@ const fieldClass =
   "h-12 rounded-2xl border-[#D7E2D9] bg-white focus-visible:border-brand focus-visible:ring-brand/20";
 
 export function PatientCompleteProfile({ patient }: { patient: Patient }) {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [firstName, setFirstName] = useState(patient.firstName || "");
@@ -51,11 +49,10 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
         }),
       });
       if (!res.ok) throw new Error("failed");
-      router.replace("/patient");
-      router.refresh();
+      window.location.assign("/patient");
+      return;
     } catch {
       setError("ذخیره اطلاعات انجام نشد. دوباره تلاش کنید.");
-    } finally {
       setLoading(false);
     }
   }

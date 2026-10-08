@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useRef, useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DigitsInput } from "@/components/ui/digits-input";
@@ -38,7 +37,6 @@ export function PatientProfile({
   patient: Patient;
   measurements: ProgressMeasurement[];
 }) {
-  const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const latest = measurements[measurements.length - 1];
   const [loading, setLoading] = useState(false);
@@ -124,11 +122,11 @@ export function PatientProfile({
         }),
       });
       if (!res.ok) throw new Error("failed");
-      router.replace("/patient");
-      router.refresh();
+      // Hard navigation so home always reloads fresh weight/goal/avatar
+      window.location.assign("/patient");
+      return;
     } catch {
       setError("ذخیره انجام نشد. دوباره تلاش کنید.");
-    } finally {
       setLoading(false);
     }
   }

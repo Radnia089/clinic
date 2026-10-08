@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Home,
   ClipboardList,
@@ -26,6 +26,22 @@ import type {
   ProgressMeasurement,
   PromoBanner,
 } from "@/lib/types";
+
+async function fetchPatientMe() {
+  const res = await fetch("/api/patient-auth/me", {
+    cache: "no-store",
+    headers: { "Cache-Control": "no-cache" },
+  });
+  if (res.status === 401) {
+    window.location.href = "/patient/login";
+    return null;
+  }
+  if (!res.ok) return null;
+  return res.json() as Promise<{
+    patient?: Patient | null;
+    measurements?: ProgressMeasurement[];
+  }>;
+}
 
 const quickActions = [
   {
@@ -119,11 +135,13 @@ export function PatientHomeScreen({
   champions?: Champion[];
   promoBanners?: PromoBanner[];
 }) {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [tab, setTab] = useState("home");
   const [patient, setPatient] = useState<Patient | null>(null);
   const [measurements, setMeasurements] = useState<ProgressMeasurement[]>([]);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [reloadTick, setReloadTick] = useState(0);
 
   useEffect(() => {
     const initial = searchParams.get("tab");
@@ -139,14 +157,8 @@ export function PatientHomeScreen({
 
   useEffect(() => {
     let alive = true;
-    fetch("/api/patient-auth/me")
-      .then(async (r) => {
-        if (r.status === 401) {
-          window.location.href = "/patient/login";
-          return null;
-        }
-        return r.json();
-      })
+    setStatsLoading(true);
+    fetchPatientMe()
       .then((data) => {
         if (!alive || !data) return;
         setPatient(data.patient ?? null);
@@ -159,7 +171,24 @@ export function PatientHomeScreen({
     return () => {
       alive = false;
     };
-  }, [tab]);
+  }, [tab, pathname, reloadTick]);
+
+  useEffect(() => {
+    function bump() {
+      setReloadTick((n) => n + 1);
+    }
+    function onVisible() {
+      if (document.visibilityState === "visible") bump();
+    }
+    window.addEventListener("focus", bump);
+    window.addEventListener("pageshow", bump);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", bump);
+      window.removeEventListener("pageshow", bump);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, []);
 
   const currentWeight = measurements[measurements.length - 1]?.weightKg;
   const goalWeight = patient?.goalWeightKg;
