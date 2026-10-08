@@ -1,13 +1,19 @@
 import { ClinicLanding } from "@/components/landing/clinic-landing";
-import { getAppData, listArticles, listChampions } from "@/lib/store";
+import {
+  getAppData,
+  listArticles,
+  listChampions,
+  listPromoBanners,
+} from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [{ clinic }, champions, articles] = await Promise.all([
+  const [{ clinic }, champions, articles, promoBanners] = await Promise.all([
     getAppData(),
     listChampions({ publishedOnly: true }),
     listArticles({ publishedOnly: true }),
+    listPromoBanners({ publishedOnly: true }),
   ]);
 
   return (
@@ -17,6 +23,7 @@ export default async function HomePage() {
       hours={clinic.hours}
       champions={champions}
       articles={articles}
+      promoBanners={promoBanners}
     />
   );
 }

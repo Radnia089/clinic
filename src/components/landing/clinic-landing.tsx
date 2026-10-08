@@ -4,7 +4,8 @@ import { ArrowLeft } from "lucide-react";
 import { BmiCalculator } from "@/components/bmi/bmi-calculator";
 import { ChampionsSection } from "@/components/champions/champions-section";
 import { MagazineLandingSection } from "@/components/magazine/magazine-landing-section";
-import type { Champion, MagazineArticle } from "@/lib/types";
+import { PromoBannerSlider } from "@/components/patient/promo-banner-slider";
+import type { Champion, MagazineArticle, PromoBanner } from "@/lib/types";
 
 const services = [
   {
