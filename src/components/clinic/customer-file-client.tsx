@@ -197,8 +197,23 @@ export function CustomerFileClient({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-xs font-medium text-muted-foreground">پرونده مشتری</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-brand">
-            {patientFullName(patient)}
+          <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-extrabold text-brand">
+            {patientFullName(patient) || "بدون نام"}
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-[10px] font-bold",
+                patient.source === "app"
+                  ? "bg-[#EEF2FF] text-[#3B5BDB]"
+                  : "bg-[#E8F2EA] text-[#2F6B4F]"
+              )}
+            >
+              {patient.source === "app" ? "ثبت‌نام اپ" : "مراجع حضوری"}
+            </span>
+            {!patient.profileComplete ? (
+              <span className="rounded-full bg-[#FFF4D6] px-2.5 py-0.5 text-[10px] font-bold text-[#9A6B10]">
+                پروفایل ناقص
+              </span>
+            ) : null}
           </h1>
           {latest ? (
             <p className="mt-1 text-xs text-muted-foreground">
@@ -206,6 +221,11 @@ export function CustomerFileClient({
               {patient.goalWeightKg != null
                 ? ` · هدف ${patient.goalWeightKg} kg`
                 : ""}
+            </p>
+          ) : null}
+          {patient.welcomeSmsSentAt ? (
+            <p className="mt-1 text-[11px] text-[#2F6B4F]">
+              پیامک خوشامد و لینک اپ ارسال شده
             </p>
           ) : null}
         </div>

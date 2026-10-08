@@ -15,8 +15,8 @@ import { cn } from "@/lib/utils";
 const entries = [
   {
     label: "مشتری",
-    href: "/patient",
-    hint: "اپ مراجعه‌کننده",
+    href: "/patient/login",
+    hint: "ورود با کد یکبارمصرف",
     icon: UserRound,
   },
   {

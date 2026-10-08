@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import {
   createPatient,
   findPatientByPhone,
+  listAppSignups,
   listPatients,
   updatePatient,
 } from "@/lib/store";
 import { normalizeIntegerInput, parseNormalizedNumber } from "@/lib/digits";
+import { sendWelcomeSms } from "@/lib/welcome-sms";
 import type { Gender, Patient } from "@/lib/types";
 
 function parseOptionalNumber(raw: unknown) {
@@ -17,6 +19,11 @@ function parseOptionalNumber(raw: unknown) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
+  const source = searchParams.get("source");
+  if (source === "app") {
+    const patients = await listAppSignups();
+    return NextResponse.json({ patients });
+  }
   const patients = await listPatients();
   if (id) {
     const patient = patients.find((p) => p.id === id) ?? null;
@@ -88,9 +95,17 @@ export async function POST(request: Request) {
       goalWeightKg !== undefined && Number.isFinite(goalWeightKg)
         ? goalWeightKg
         : undefined,
+    source: "clinic",
+    profileComplete: Boolean(firstName && lastName),
   });
 
-  return NextResponse.json({ patient }, { status: 201 });
+  // خوشامدگویی + لینک اپ برای مراجع حضوری
+  const welcome = await sendWelcomeSms(patient, request.url);
+  const fresh = welcome.skipped
+    ? patient
+    : (await listPatients()).find((p) => p.id === patient.id) ?? patient;
+
+  return NextResponse.json({ patient: fresh, welcomeSms: welcome }, { status: 201 });
 }
 
 export async function PATCH(request: Request) {
@@ -163,6 +178,22 @@ export async function PATCH(request: Request) {
 
   if (patch.lastName !== undefined && !patch.lastName) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
+  }
+
+  if (body.appReviewed === true) {
+    patch.appReviewedAt = new Date().toISOString();
+  }
+  if (body.profileComplete !== undefined) {
+    patch.profileComplete = Boolean(body.profileComplete);
+  }
+  if (body.firstName !== undefined || body.lastName !== undefined) {
+    // بعد از تکمیل نام در پرونده، پروفایل را کامل علامت بزن اگر نام کامل شد
+    const current = (await listPatients()).find((p) => p.id === id);
+    const nextFirst =
+      patch.firstName !== undefined ? patch.firstName : current?.firstName ?? "";
+    const nextLast =
+      patch.lastName !== undefined ? patch.lastName : current?.lastName ?? "";
+    if (nextFirst && nextLast) patch.profileComplete = true;
   }
 
   const patient = await updatePatient(id, patch);

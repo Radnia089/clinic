@@ -138,10 +138,16 @@ export function PatientHomeScreen({
 
   useEffect(() => {
     let alive = true;
-    fetch("/api/measurements?demo=1")
-      .then((r) => r.json())
+    fetch("/api/patient-auth/me")
+      .then(async (r) => {
+        if (r.status === 401) {
+          window.location.href = "/patient/login";
+          return null;
+        }
+        return r.json();
+      })
       .then((data) => {
-        if (!alive) return;
+        if (!alive || !data) return;
         setPatient(data.patient ?? null);
         setMeasurements(data.measurements ?? []);
       })
@@ -157,7 +163,12 @@ export function PatientHomeScreen({
   const currentWeight = measurements[measurements.length - 1]?.weightKg;
   const goalWeight = patient?.goalWeightKg;
   const progressValue = goalProgressPercent(measurements, goalWeight);
-  const firstName = patient?.firstName?.trim() || "سارا";
+  const firstName = patient?.firstName?.trim() || "دوست";
+
+  async function logout() {
+    await fetch("/api/patient-auth/logout", { method: "POST" });
+    window.location.href = "/patient/login";
+  }
 
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-[430px] flex-col bg-[#F7F8F6] text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.04)]">
@@ -177,6 +188,13 @@ export function PatientHomeScreen({
               <p className="mt-0.5 text-[11px] text-muted-foreground">
                 امروز یک قدم به هدف نزدیک‌تری
               </p>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="mt-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline"
+              >
+                خروج
+              </button>
             </div>
           </header>
 

@@ -18,17 +18,30 @@ import {
   Trophy,
   ImageIcon,
   BookMarked,
+  Smartphone,
 } from "lucide-react";
 
 const receptionLinks = [
   { href: "/clinic/reception", label: "میز پذیرش", icon: Stethoscope, short: "پذیرش" },
   { href: "/clinic/reception/new", label: "ثبت جدید", icon: UserPlus, short: "ثبت" },
   { href: "/clinic/reception/customers", label: "لیست مشتریان", icon: Users, short: "مشتریان" },
+  {
+    href: "/clinic/app-signups",
+    label: "ثبت‌نام اپ",
+    icon: Smartphone,
+    short: "اپ",
+  },
 ];
 
 const managementLinks = [
   { href: "/clinic", label: "داشبورد", icon: LayoutDashboard, short: "مدیریت" },
   { href: "/clinic/reminders", label: "پیامک و تبلیغات", icon: MessageSquare, short: "پیامک" },
+  {
+    href: "/clinic/app-signups",
+    label: "ثبت‌نام اپ",
+    icon: Smartphone,
+    short: "اپ",
+  },
   { href: "/clinic/finance", label: "مالی کلینیک", icon: Wallet, short: "مالی" },
   {
     href: "/clinic/personal-accounting",

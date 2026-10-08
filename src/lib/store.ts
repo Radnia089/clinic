@@ -42,6 +42,23 @@ const emptyData = (): AppData => ({
   articles: defaultArticles(),
 });
 
+function normalizePatientRecord(raw: Patient): Patient {
+  const firstName = String(raw.firstName ?? "").trim();
+  const lastName = String(raw.lastName ?? "").trim();
+  const source = raw.source === "app" ? "app" : "clinic";
+  const profileComplete =
+    typeof raw.profileComplete === "boolean"
+      ? raw.profileComplete
+      : Boolean(firstName && lastName);
+  return {
+    ...raw,
+    firstName,
+    lastName,
+    source,
+    profileComplete,
+  };
+}
+
 async function ensureStore(): Promise<AppData> {
   await fs.mkdir(DATA_DIR, { recursive: true });
   try {
@@ -82,7 +99,7 @@ async function ensureStore(): Promise<AppData> {
           parsed.clinic?.reminderSettings ?? DEFAULT_REMINDER_SETTINGS
         ),
       },
-      patients: parsed.patients ?? [],
+      patients: (parsed.patients ?? []).map(normalizePatientRecord),
       visits: parsed.visits ?? [],
       payments: parsed.payments ?? [],
       appointments: (parsed.appointments ?? []).map((item) => ({
@@ -217,15 +234,23 @@ export async function createPatient(
 ) {
   const data = await ensureStore();
   const now = new Date().toISOString();
-  const patient: Patient = {
+  const patient: Patient = normalizePatientRecord({
     ...input,
     id: crypto.randomUUID(),
     createdAt: now,
     updatedAt: now,
-  };
+  });
   data.patients.unshift(patient);
   await writeStore(data);
   return patient;
+}
+
+/** مشتریان ثبت‌نام‌شده از اپ (برای صندوق مدیریت) */
+export async function listAppSignups() {
+  const patients = await listPatients();
+  return patients
+    .filter((p) => p.source === "app")
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function updatePatient(
@@ -451,6 +476,10 @@ export async function ensureDemoPatientProgress() {
       address: "یزد",
       heightCm: 165,
       goalWeightKg: 65,
+      source: "clinic",
+      profileComplete: true,
+      phoneVerifiedAt: now,
+      welcomeSmsSentAt: now,
       createdAt: now,
       updatedAt: now,
     };

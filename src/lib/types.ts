@@ -12,6 +12,9 @@ export type PaymentMethod = "cash" | "card" | "transfer";
 
 export type ClinicRole = "reception" | "management";
 
+/** منشأ تشکیل پرونده: حضوری در کلینیک یا ثبت‌نام مستقیم از اپ */
+export type PatientSource = "clinic" | "app";
+
 export interface Patient {
   id: string;
   firstName: string;
@@ -26,6 +29,16 @@ export interface Patient {
   heightCm?: number;
   /** وزن هدف (kg) — در اپ مشتری و پرونده مشترک است */
   goalWeightKg?: number;
+  /** حضوری یا ثبت‌نام از اپ */
+  source: PatientSource;
+  /** پروفایل تکمیلی در اپ کامل شده است */
+  profileComplete: boolean;
+  /** زمان تأیید موبایل با OTP */
+  phoneVerifiedAt?: string;
+  /** زمان ارسال پیامک خوشامد / لینک اپ */
+  welcomeSmsSentAt?: string;
+  /** زمان بررسی در بخش «ثبت‌نام اپ» توسط کارکنان */
+  appReviewedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -134,7 +147,9 @@ export type ReminderKind =
   | "hours_before"
   | "promo"
   | "test"
-  | "online_consult";
+  | "online_consult"
+  | "welcome"
+  | "otp";
 
 /** درخواست مشاوره آنلاین از اپ مشتری */
 export type OnlineConsultStatus =

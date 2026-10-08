@@ -14,9 +14,16 @@ export function PatientProgressScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/measurements?demo=1")
-      .then((r) => r.json())
+    fetch("/api/patient-auth/me")
+      .then(async (r) => {
+        if (r.status === 401) {
+          window.location.href = "/patient/login";
+          return null;
+        }
+        return r.json();
+      })
       .then((data) => {
+        if (!data) return;
         setPatient(data.patient ?? null);
         setMeasurements(data.measurements ?? []);
       })
