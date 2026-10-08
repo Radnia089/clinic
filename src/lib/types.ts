@@ -24,6 +24,12 @@ export interface Patient {
   gender: Gender;
   phone: string;
   address: string;
+  /** استان محل سکونت */
+  province?: string;
+  /** شهر محل سکونت */
+  city?: string;
+  /** تاریخ تولد میلادی YYYY-MM-DD (نمایش شمسی در فرم) */
+  birthDate?: string;
   notes?: string;
   /** قد ثابت مشتری (cm) — در اپ مشتری و پرونده مشترک است */
   heightCm?: number;

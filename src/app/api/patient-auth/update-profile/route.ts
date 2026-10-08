@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseNormalizedNumber } from "@/lib/digits";
+import { citiesForProvince } from "@/lib/iran-locations";
+import { ageFromIsoBirthDate } from "@/lib/jalali";
 import { getCurrentPatient } from "@/lib/patient-auth";
 import { patientHasRegisteredInfo } from "@/lib/patient-profile";
 import { createMeasurement, listMeasurements, updatePatient } from "@/lib/store";
@@ -35,6 +37,41 @@ export async function POST(request: Request) {
       ? String(body.address).trim()
       : patient.address;
 
+  let province =
+    body.province !== undefined
+      ? String(body.province).trim() || undefined
+      : patient.province;
+  let city =
+    body.city !== undefined
+      ? String(body.city).trim() || undefined
+      : patient.city;
+
+  if (province) {
+    const cities = citiesForProvince(province);
+    if (cities.length === 0) {
+      return NextResponse.json({ error: "invalid_province" }, { status: 400 });
+    }
+    if (city && !cities.includes(city)) {
+      return NextResponse.json({ error: "invalid_city" }, { status: 400 });
+    }
+  } else {
+    city = undefined;
+  }
+
+  let birthDate =
+    body.birthDate !== undefined
+      ? String(body.birthDate).trim() || undefined
+      : patient.birthDate;
+  if (birthDate) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+      return NextResponse.json({ error: "invalid_birth_date" }, { status: 400 });
+    }
+    const parsed = new Date(`${birthDate}T12:00:00`);
+    if (Number.isNaN(parsed.getTime()) || parsed.getTime() > Date.now()) {
+      return NextResponse.json({ error: "invalid_birth_date" }, { status: 400 });
+    }
+  }
+
   let gender: Gender = patient.gender;
   if (body.gender !== undefined && body.gender !== "") {
     if (!["female", "male"].includes(String(body.gender))) {
@@ -54,6 +91,10 @@ export async function POST(request: Request) {
       }
       age = parsed;
     }
+  }
+  if (birthDate) {
+    const fromBirth = ageFromIsoBirthDate(birthDate);
+    if (fromBirth != null) age = fromBirth;
   }
 
   let heightCm = patient.heightCm;
@@ -103,6 +144,9 @@ export async function POST(request: Request) {
     gender,
     age,
     address,
+    province,
+    city,
+    birthDate,
     heightCm,
     goalWeightKg,
     avatarUrl,
@@ -114,6 +158,9 @@ export async function POST(request: Request) {
     gender,
     age,
     address,
+    province,
+    city,
+    birthDate,
     heightCm,
     goalWeightKg,
     avatarUrl,

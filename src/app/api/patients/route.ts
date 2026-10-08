@@ -7,6 +7,8 @@ import {
   updatePatient,
 } from "@/lib/store";
 import { normalizeIntegerInput, parseNormalizedNumber } from "@/lib/digits";
+import { citiesForProvince } from "@/lib/iran-locations";
+import { ageFromIsoBirthDate } from "@/lib/jalali";
 import { sendWelcomeSms } from "@/lib/welcome-sms";
 import type { Gender, Patient } from "@/lib/types";
 
@@ -151,6 +153,46 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "invalid_age" }, { status: 400 });
       }
       patch.age = age;
+    }
+  }
+  if (body.province !== undefined) {
+    const province = String(body.province ?? "").trim();
+    patch.province = province || undefined;
+    if (!province) patch.city = undefined;
+  }
+  if (body.city !== undefined && patch.city === undefined) {
+    const city = String(body.city ?? "").trim();
+    patch.city = city || undefined;
+  }
+  if (body.birthDate !== undefined) {
+    const birthDate = String(body.birthDate ?? "").trim();
+    if (!birthDate) {
+      patch.birthDate = undefined;
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
+      return NextResponse.json({ error: "invalid_birth_date" }, { status: 400 });
+    } else {
+      const parsed = new Date(`${birthDate}T12:00:00`);
+      if (Number.isNaN(parsed.getTime()) || parsed.getTime() > Date.now()) {
+        return NextResponse.json({ error: "invalid_birth_date" }, { status: 400 });
+      }
+      patch.birthDate = birthDate;
+      const fromBirth = ageFromIsoBirthDate(birthDate);
+      if (fromBirth != null) patch.age = fromBirth;
+    }
+  }
+  if (body.province !== undefined || body.city !== undefined) {
+    const current = (await listPatients()).find((p) => p.id === id);
+    const nextProvince =
+      patch.province !== undefined ? patch.province : current?.province;
+    const nextCity = patch.city !== undefined ? patch.city : current?.city;
+    if (nextProvince) {
+      const cities = citiesForProvince(nextProvince);
+      if (cities.length === 0) {
+        return NextResponse.json({ error: "invalid_province" }, { status: 400 });
+      }
+      if (nextCity && !cities.includes(nextCity)) {
+        return NextResponse.json({ error: "invalid_city" }, { status: 400 });
+      }
     }
   }
   if (body.heightCm !== undefined) {

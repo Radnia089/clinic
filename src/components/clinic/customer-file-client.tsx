@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import {
   AttendanceButtons,
   AttendanceMark,
@@ -13,7 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
 import { Textarea } from "@/components/ui/textarea";
-import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
+import { citiesForProvince, IRAN_PROVINCES } from "@/lib/iran-locations";
+import {
+  ageFromIsoBirthDate,
+  formatJalaliDate,
+  jalaliPartsToIsoDate,
+  todayJalaliParts,
+} from "@/lib/jalali";
 import Image from "next/image";
 import {
   formatDateFa,
@@ -34,6 +40,9 @@ import { cn } from "@/lib/utils";
 
 const fieldClass =
   "h-11 rounded-xl border-[#D7E2D9] bg-[#F7F8F6] focus-visible:border-brand focus-visible:ring-brand/20";
+
+const selectClass =
+  "h-11 w-full rounded-xl border border-[#D7E2D9] bg-[#F7F8F6] px-3 text-sm outline-none focus:border-brand focus:ring-3 focus:ring-brand/20";
 
 function numToStr(value?: number) {
   return value === undefined || value === null || Number.isNaN(value)
@@ -65,11 +74,18 @@ export function CustomerFileClient({
   const [phone, setPhone] = useState(initialPatient.phone);
   const [age, setAge] = useState(numToStr(initialPatient.age));
   const [gender, setGender] = useState<Gender>(initialPatient.gender);
+  const [province, setProvince] = useState(initialPatient.province || "");
+  const [city, setCity] = useState(initialPatient.city || "");
+  const [birthDate, setBirthDate] = useState(initialPatient.birthDate || "");
   const [address, setAddress] = useState(initialPatient.address);
   const [notes, setNotes] = useState(initialPatient.notes ?? "");
   const [heightCm, setHeightCm] = useState(numToStr(initialPatient.heightCm));
   const [goalWeightKg, setGoalWeightKg] = useState(
     numToStr(initialPatient.goalWeightKg)
+  );
+  const cityOptions = useMemo(
+    () => (province ? citiesForProvince(province) : []),
+    [province]
   );
 
   const [sizeSaving, setSizeSaving] = useState(false);
@@ -123,6 +139,9 @@ export function CustomerFileClient({
           phone,
           age: age || null,
           gender,
+          province: province || null,
+          city: city || null,
+          birthDate: birthDate || null,
           address,
           notes,
           heightCm: heightCm || null,
@@ -133,6 +152,9 @@ export function CustomerFileClient({
       if (!res.ok) {
         if (data.error === "invalid_phone") throw new Error("موبایل معتبر نیست.");
         if (data.error === "phone_exists") throw new Error("این موبایل برای مشتری دیگری ثبت شده.");
+        if (data.error === "invalid_province") throw new Error("استان معتبر نیست.");
+        if (data.error === "invalid_city") throw new Error("شهر با استان هم‌خوان نیست.");
+        if (data.error === "invalid_birth_date") throw new Error("تاریخ تولد معتبر نیست.");
         throw new Error("ذخیره اطلاعات انجام نشد.");
       }
       setPatient(data.patient);
@@ -307,6 +329,94 @@ export function CustomerFileClient({
               <option value="male">مرد</option>
             </select>
           </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <div className="flex items-center justify-between gap-2">
+              <Label>تاریخ تولد</Label>
+              {birthDate ? (
+                <button
+                  type="button"
+                  className="text-xs text-muted-foreground"
+                  onClick={() => setBirthDate("")}
+                >
+                  پاک کردن
+                </button>
+              ) : null}
+            </div>
+            {birthDate ? (
+              <>
+                <ShamsiDateInput
+                  variant="birth"
+                  value={birthDate}
+                  onChange={(iso) => {
+                    setBirthDate(iso);
+                    const nextAge = ageFromIsoBirthDate(iso);
+                    if (nextAge != null) setAge(String(nextAge));
+                  }}
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  {formatJalaliDate(birthDate, { withMonthName: true })}
+                </p>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="h-11 w-full rounded-xl border border-dashed border-[#D7E2D9] text-sm text-brand"
+                onClick={() => {
+                  const t = todayJalaliParts();
+                  const iso = jalaliPartsToIsoDate({
+                    jy: t.jy - 30,
+                    jm: 1,
+                    jd: 1,
+                  });
+                  setBirthDate(iso);
+                  const nextAge = ageFromIsoBirthDate(iso);
+                  if (nextAge != null) setAge(String(nextAge));
+                }}
+              >
+                انتخاب تاریخ شمسی
+              </button>
+            )}
+          </div>
+          <div className="space-y-1.5">
+            <Label>استان</Label>
+            <select
+              className={selectClass}
+              value={province}
+              onChange={(e) => {
+                const next = e.target.value;
+                setProvince(next);
+                const cities = citiesForProvince(next);
+                setCity((prev) =>
+                  cities.includes(prev) ? prev : cities[0] || ""
+                );
+              }}
+            >
+              <option value="">انتخاب استان</option>
+              {IRAN_PROVINCES.map((item) => (
+                <option key={item.name} value={item.name}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label>شهر</Label>
+            <select
+              className={selectClass}
+              value={city}
+              disabled={!province}
+              onChange={(e) => setCity(e.target.value)}
+            >
+              <option value="">
+                {province ? "انتخاب شهر" : "ابتدا استان"}
+              </option>
+              {cityOptions.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="space-y-1.5">
             <Label>قد (cm)</Label>
             <DigitsInput
@@ -331,6 +441,7 @@ export function CustomerFileClient({
               className={fieldClass}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
+              placeholder="خیابان، پلاک، ..."
             />
           </div>
           <div className="space-y-1.5 sm:col-span-2">

@@ -273,6 +273,15 @@ export async function updatePatient(
   if ("avatarUrl" in patch && !patch.avatarUrl) {
     delete next.avatarUrl;
   }
+  if ("province" in patch && !patch.province) {
+    delete next.province;
+  }
+  if ("city" in patch && !patch.city) {
+    delete next.city;
+  }
+  if ("birthDate" in patch && !patch.birthDate) {
+    delete next.birthDate;
+  }
   data.patients[index] = next;
   await writeStore(data);
   return data.patients[index];

@@ -129,4 +129,26 @@ export function jalaliYearOptions(centerYear?: number) {
   return Array.from({ length: 12 }, (_, i) => current - 8 + i);
 }
 
+/** بازه سال برای تاریخ تولد (حدود ۱۳۰ سال گذشته تا امسال) */
+export function jalaliBirthYearOptions() {
+  const current = todayJalaliParts().jy;
+  const start = current - 100;
+  return Array.from({ length: current - start + 1 }, (_, i) => current - i);
+}
+
+/** سن تقریبی از تاریخ تولد میلادی YYYY-MM-DD */
+export function ageFromIsoBirthDate(isoDate: string): number | undefined {
+  if (!isoDate) return undefined;
+  const birth = new Date(
+    isoDate.includes("T") ? isoDate : `${isoDate}T12:00:00`
+  );
+  if (Number.isNaN(birth.getTime())) return undefined;
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age -= 1;
+  if (age < 0 || age > 120) return undefined;
+  return age;
+}
+
 export { JALALI_MONTHS };

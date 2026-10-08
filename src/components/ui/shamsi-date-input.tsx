@@ -4,12 +4,14 @@ import { useMemo } from "react";
 import {
   daysInJalaliMonth,
   isoDateToJalaliParts,
+  jalaliBirthYearOptions,
   jalaliPartsToIsoDate,
   jalaliYearOptions,
   JALALI_MONTHS,
   todayJalaliParts,
   type JalaliParts,
 } from "@/lib/jalali";
+import { cn } from "@/lib/utils";
 
 const selectClass =
   "h-12 w-full rounded-2xl border border-[#D7E2D9] bg-[#F7F8F6] px-3 text-sm outline-none focus:border-brand focus:ring-3 focus:ring-brand/20";
@@ -19,23 +21,35 @@ export function ShamsiDateInput({
   onChange,
   id,
   required,
+  variant = "default",
+  className,
 }: {
   /** Gregorian ISO date YYYY-MM-DD for storage */
   value: string;
   onChange: (isoDate: string) => void;
   id?: string;
   required?: boolean;
+  /** birth = بازه سال مناسب تاریخ تولد */
+  variant?: "default" | "birth";
+  className?: string;
 }) {
   const parts: JalaliParts = useMemo(() => {
-    if (!value) return todayJalaliParts();
+    if (!value) {
+      if (variant === "birth") {
+        const t = todayJalaliParts();
+        return { jy: t.jy - 30, jm: 1, jd: 1 };
+      }
+      return todayJalaliParts();
+    }
     try {
       return isoDateToJalaliParts(value);
     } catch {
       return todayJalaliParts();
     }
-  }, [value]);
+  }, [value, variant]);
 
-  const years = jalaliYearOptions(parts.jy);
+  const years =
+    variant === "birth" ? jalaliBirthYearOptions() : jalaliYearOptions(parts.jy);
   const maxDay = daysInJalaliMonth(parts.jy, parts.jm);
 
   function update(next: Partial<JalaliParts>) {
@@ -46,7 +60,11 @@ export function ShamsiDateInput({
   }
 
   return (
-    <div id={id} className="grid grid-cols-3 gap-2" dir="rtl">
+    <div
+      id={id}
+      className={cn("grid grid-cols-3 gap-2", className)}
+      dir="rtl"
+    >
       <label className="space-y-1">
         <span className="sr-only">روز</span>
         <select

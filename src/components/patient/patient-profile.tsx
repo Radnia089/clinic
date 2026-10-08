@@ -2,13 +2,21 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DigitsInput } from "@/components/ui/digits-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
+import { citiesForProvince, IRAN_PROVINCES } from "@/lib/iran-locations";
+import {
+  ageFromIsoBirthDate,
+  formatJalaliDate,
+  jalaliPartsToIsoDate,
+  todayJalaliParts,
+} from "@/lib/jalali";
 import {
   patientAvatarSrc,
   type Gender,
@@ -19,6 +27,9 @@ import { cn } from "@/lib/utils";
 
 const fieldClass =
   "h-12 rounded-2xl border-[#D7E2D9] bg-white focus-visible:border-brand focus-visible:ring-brand/20";
+
+const selectClass =
+  "h-12 w-full rounded-2xl border border-[#D7E2D9] bg-white px-3 text-sm outline-none focus:border-brand focus:ring-3 focus:ring-brand/20";
 
 export function PatientProfile({
   patient,
@@ -38,8 +49,16 @@ export function PatientProfile({
   const [lastName, setLastName] = useState(patient.lastName || "");
   const [age, setAge] = useState(patient.age != null ? String(patient.age) : "");
   const [gender, setGender] = useState<Gender>(patient.gender || "female");
+  const [province, setProvince] = useState(patient.province || "");
+  const [city, setCity] = useState(patient.city || "");
+  const [birthDate, setBirthDate] = useState(patient.birthDate || "");
   const [address, setAddress] = useState(patient.address || "");
   const [avatarUrl, setAvatarUrl] = useState(patient.avatarUrl);
+
+  const cityOptions = useMemo(
+    () => (province ? citiesForProvince(province) : []),
+    [province]
+  );
   const [heightCm, setHeightCm] = useState(
     patient.heightCm != null ? String(patient.heightCm) : ""
   );
@@ -93,6 +112,9 @@ export function PatientProfile({
           lastName,
           age,
           gender,
+          province,
+          city,
+          birthDate,
           address,
           heightCm,
           weightKg,
@@ -233,11 +255,104 @@ export function PatientProfile({
           </div>
 
           <div className="space-y-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <Label>تاریخ تولد</Label>
+              {birthDate ? (
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-[#14352A]/55"
+                  onClick={() => setBirthDate("")}
+                >
+                  پاک کردن
+                </button>
+              ) : null}
+            </div>
+            {birthDate ? (
+              <>
+                <ShamsiDateInput
+                  variant="birth"
+                  value={birthDate}
+                  onChange={(iso) => {
+                    setBirthDate(iso);
+                    const nextAge = ageFromIsoBirthDate(iso);
+                    if (nextAge != null) setAge(String(nextAge));
+                  }}
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  {formatJalaliDate(birthDate, { withMonthName: true })}
+                </p>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="h-12 w-full rounded-2xl border border-dashed border-[#D7E2D9] text-sm font-bold text-brand"
+                onClick={() => {
+                  const iso = jalaliPartsToIsoDate({
+                    ...todayJalaliParts(),
+                    jy: todayJalaliParts().jy - 30,
+                    jm: 1,
+                    jd: 1,
+                  });
+                  setBirthDate(iso);
+                  const nextAge = ageFromIsoBirthDate(iso);
+                  if (nextAge != null) setAge(String(nextAge));
+                }}
+              >
+                انتخاب تاریخ شمسی
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>استان</Label>
+              <select
+                className={selectClass}
+                value={province}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setProvince(next);
+                  const cities = citiesForProvince(next);
+                  setCity((prev) =>
+                    cities.includes(prev) ? prev : cities[0] || ""
+                  );
+                }}
+              >
+                <option value="">انتخاب استان</option>
+                {IRAN_PROVINCES.map((item) => (
+                  <option key={item.name} value={item.name}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>شهر</Label>
+              <select
+                className={selectClass}
+                value={city}
+                disabled={!province}
+                onChange={(e) => setCity(e.target.value)}
+              >
+                <option value="">
+                  {province ? "انتخاب شهر" : "ابتدا استان"}
+                </option>
+                {cityOptions.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
             <Label>آدرس</Label>
             <Input
               className={fieldClass}
               value={address}
               onChange={(e) => setAddress(e.target.value)}
+              placeholder="خیابان، پلاک، ..."
             />
           </div>
 
