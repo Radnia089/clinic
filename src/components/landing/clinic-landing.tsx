@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { BmiCalculator } from "@/components/bmi/bmi-calculator";
+import { ChampionsSection } from "@/components/champions/champions-section";
 
 const services = [
   {
@@ -90,6 +91,9 @@ export function ClinicLanding({
             </a>
             <a href="#bmi" className="hover:text-[#14352A]">
               محاسبه BMI
+            </a>
+            <a href="#champions" className="hover:text-[#14352A]">
+              قهرمانان
             </a>
             <a href="#path" className="hover:text-[#14352A]">
               مسیر درمان
@@ -191,6 +195,8 @@ export function ClinicLanding({
       </section>
 
       <BmiCalculator variant="landing" />
+
+      <ChampionsSection variant="landing" />
 
       {/* Devices — کمک لاغری */}
       <section id="devices" className="relative overflow-hidden">
@@ -499,6 +505,9 @@ export function ClinicLanding({
             </a>
             <a href="#bmi" className="hover:text-white">
               محاسبه BMI
+            </a>
+            <a href="#champions" className="hover:text-white">
+              قهرمانان
             </a>
             <Link href="/patient" className="hover:text-white">
               اپ مشتری

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ClinicLogo } from "@/components/brand/clinic-logo";
+import { ChampionsSection } from "@/components/champions/champions-section";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
 
 const meals = [
@@ -140,6 +141,8 @@ export function PatientHomeScreen() {
             </div>
           </div>
         </section>
+
+        <ChampionsSection variant="patient" />
 
         <section className="grid grid-cols-4 gap-2.5">
           {quickActions.map((action) => {
