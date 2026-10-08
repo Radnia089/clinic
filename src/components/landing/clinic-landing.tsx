@@ -80,14 +80,17 @@ export function ClinicLanding({
 
       {/* Nav */}
       <header className="sticky top-0 z-40 border-b border-[#1A2E26]/06 bg-[#F6F8F5]/90 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-[4.5rem] sm:px-6">
-          <Link href="/" className="flex items-center">
+        <div className="mx-auto flex h-auto min-h-16 max-w-6xl items-center justify-between gap-4 px-4 py-2 sm:min-h-[4.5rem] sm:px-6">
+          <Link href="/" className="flex flex-col items-start gap-0.5">
+            <p className="max-w-[14rem] text-[10px] font-semibold leading-4 text-[#14352A]/75 sm:max-w-none sm:text-[11px]">
+              کلینیک تخصصی لاغری و رژیم درمانی تندیس یزد
+            </p>
             <Image
               src="/tandis-logo.png"
               alt="کلینیک تندیس"
               width={160}
               height={67}
-              className="h-10 w-auto object-contain sm:h-12"
+              className="h-9 w-auto object-contain sm:h-11"
               priority
             />
           </Link>
