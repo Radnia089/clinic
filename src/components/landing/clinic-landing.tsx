@@ -98,51 +98,7 @@ export function ClinicLanding({
         </div>
       </header>
 
-      {/* Hero — simple */}
-      <section className="border-b border-[#14352A]/06 bg-[#E8F2EA]">
-        <div className="mx-auto grid max-w-5xl items-center gap-8 px-4 py-14 sm:px-6 sm:py-20 md:grid-cols-2 md:gap-12">
-          <div>
-            <p className="text-sm font-bold text-[#14352A]">تندیس</p>
-            <h1 className="mt-3 text-3xl font-extrabold leading-snug text-[#14352A] sm:text-4xl">
-              مسیر لاغری با پیگیری منظم
-            </h1>
-            <p className="mt-4 max-w-md text-sm leading-8 text-[#1A2E26]/70">
-              رژیم شخصی، دستگاه‌های کمک لاغری و مشاوره حضوری یا آنلاین در یزد.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/patient/book"
-                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#14352A] px-5 text-sm font-bold text-white hover:bg-[#1f4a3a]"
-              >
-                رزرو نوبت
-                <ArrowLeft className="size-4" />
-              </Link>
-              <Link
-                href="/patient/consult"
-                className="inline-flex h-11 items-center rounded-xl border border-[#14352A]/20 bg-white px-5 text-sm font-bold text-[#14352A] hover:bg-[#F7F8F6]"
-              >
-                مشاوره آنلاین
-              </Link>
-            </div>
-          </div>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl md:aspect-[5/4]">
-            <Image
-              src="/images/clinic-care.jpg"
-              alt="کلینیک تندیس"
-              fill
-              priority
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 480px"
-            />
-          </div>
-        </div>
-      </section>
-
-      {promoBanners.length > 0 ? (
-        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
-          <PromoBannerSlider variant="landing" items={promoBanners} />
-        </div>
-      ) : null}
+      <PromoBannerSlider variant="landing" items={promoBanners} />
 
       {/* Services */}
       <section id="services" className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
@@ -219,71 +175,44 @@ export function ClinicLanding({
         </div>
       </section>
 
-      {/* Path */}
-      <section className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
-        <h2 className="text-2xl font-extrabold text-[#14352A]">مسیر درمان</h2>
-        <ol className="mt-8 grid gap-6 sm:grid-cols-3">
-          {[
-            { n: "۱", t: "درخواست", d: "نوبت حضوری یا مشاوره آنلاین ثبت کنید." },
-            { n: "۲", t: "هماهنگی", d: "کلینیک وقت را تأیید می‌کند." },
-            { n: "۳", t: "شروع", d: "با برنامه و پیگیری به سمت هدف می‌روید." },
-          ].map((step) => (
-            <li key={step.n}>
-              <span className="text-sm font-bold text-[#B8860B]">{step.n}</span>
-              <h3 className="mt-1 text-lg font-extrabold text-[#14352A]">
-                {step.t}
-              </h3>
-              <p className="mt-1 text-sm leading-7 text-[#1A2E26]/65">{step.d}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* Contact */}
-      <section id="contact" className="bg-[#E8F2EA]">
-        <div className="mx-auto flex max-w-5xl flex-col gap-8 px-4 py-14 sm:flex-row sm:items-end sm:justify-between sm:px-6 sm:py-16">
+      <footer id="contact" className="border-t border-[#14352A]/08 bg-[#0F241C] text-white">
+        <div className="mx-auto grid max-w-5xl gap-8 px-4 py-10 sm:grid-cols-[1.2fr_auto] sm:items-start sm:px-6 sm:py-12">
           <div>
-            <h2 className="text-2xl font-extrabold text-[#14352A]">تماس</h2>
-            <p className="mt-3 max-w-md text-sm leading-7 text-[#1A2E26]/70">
-              {address}
-            </p>
+            <p className="text-sm font-extrabold text-[#F0B429]">تندیس</p>
+            <p className="mt-2 text-sm leading-7 text-white/75">{address}</p>
             <a
               href={`tel:${tel}`}
-              className="mt-3 inline-block text-xl font-extrabold text-[#14352A]"
+              className="mt-3 inline-block text-lg font-extrabold text-white"
               dir="ltr"
             >
               {phone}
             </a>
-            <p className="mt-1 text-sm text-[#1A2E26]/55">{hours}</p>
+            <p className="mt-1 text-sm text-white/55">{hours}</p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/patient/book"
-              className="inline-flex h-11 items-center rounded-xl bg-[#F0B429] px-5 text-sm font-extrabold text-[#14352A]"
-            >
-              رزرو نوبت
-            </Link>
-            <Link
-              href="/patient/consult"
-              className="inline-flex h-11 items-center rounded-xl bg-[#14352A] px-5 text-sm font-bold text-white"
-            >
-              مشاوره آنلاین
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <footer className="border-t border-[#14352A]/08 bg-[#F7F8F6]">
-        <div className="mx-auto flex max-w-5xl flex-col gap-4 px-4 py-8 text-sm text-[#1A2E26]/60 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p>کلینیک لاغری تندیس یزد</p>
-          <div className="flex flex-wrap gap-4">
-            <LandingLoginMenu variant="footer" className="text-[#1A2E26]/60 hover:text-[#14352A]" />
-            <Link href="/magazine" className="hover:text-[#14352A]">
-              مجله
-            </Link>
-            <Link href="/patient" className="hover:text-[#14352A]">
-              اپ مشتری
-            </Link>
+          <div className="flex flex-col gap-3 sm:items-end">
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/patient/book"
+                className="inline-flex h-10 items-center rounded-xl bg-[#F0B429] px-4 text-sm font-extrabold text-[#14352A]"
+              >
+                رزرو نوبت
+              </Link>
+              <Link
+                href="/patient/consult"
+                className="inline-flex h-10 items-center rounded-xl bg-white/10 px-4 text-sm font-bold text-white ring-1 ring-white/20"
+              >
+                مشاوره آنلاین
+              </Link>
+            </div>
+            <div className="flex flex-wrap gap-4 text-sm text-white/65">
+              <LandingLoginMenu variant="footer" />
+              <Link href="/magazine" className="hover:text-white">
+                مجله
+              </Link>
+              <Link href="/patient" className="hover:text-white">
+                اپ مشتری
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
