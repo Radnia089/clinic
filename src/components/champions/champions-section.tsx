@@ -11,7 +11,7 @@ import {
   type WheelEvent,
 } from "react";
 import { ArrowLeft } from "lucide-react";
-import { lostKg, type Champion } from "@/lib/champions";
+import { lostKg, lostSizeCm, type Champion } from "@/lib/champions";
 import { cn } from "@/lib/utils";
 
 function faNum(n: number) {
@@ -122,13 +122,14 @@ function ChampionCard({
   size?: "sm" | "md";
 }) {
   const lost = lostKg(champion);
+  const sizeLost = lostSizeCm(champion);
   const compact = size === "sm";
 
   return (
     <article
       className={cn(
         "shrink-0 overflow-hidden rounded-[1.25rem] bg-white shadow-[0_8px_24px_rgba(20,53,42,0.08)]",
-        compact ? "w-[188px]" : "w-[280px] sm:w-[300px]"
+        compact ? "w-[200px]" : "w-[280px] sm:w-[300px]"
       )}
     >
       <div className={cn("relative overflow-hidden", compact ? "aspect-[5/6]" : "aspect-[4/5]")}>
@@ -139,7 +140,7 @@ function ChampionCard({
               alt={`${champion.name} — قبل`}
               fill
               className="pointer-events-none object-cover object-top grayscale-[35%]"
-              sizes={compact ? "94px" : "150px"}
+              sizes={compact ? "100px" : "150px"}
               draggable={false}
             />
             <span
@@ -159,7 +160,7 @@ function ChampionCard({
               alt={`${champion.name} — بعد`}
               fill
               className="pointer-events-none object-cover object-top"
-              sizes={compact ? "94px" : "150px"}
+              sizes={compact ? "100px" : "150px"}
               draggable={false}
             />
             <span
@@ -175,30 +176,30 @@ function ChampionCard({
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/55 to-transparent" />
 
         <div
           className={cn(
             "absolute inset-x-1.5 flex flex-wrap items-end justify-center gap-1",
-            compact ? "bottom-1.5" : "inset-x-3 bottom-3 gap-1.5"
+            compact ? "bottom-1.5" : "inset-x-2.5 bottom-3 gap-1.5"
           )}
         >
-          {!compact ? (
-            <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A] shadow-sm">
-              شروع {faNum(champion.startKg)} kg
-            </span>
-          ) : null}
           <span
             className={cn(
               "rounded-full bg-[#14352A] font-extrabold text-white shadow-md",
-              compact ? "px-2 py-1 text-[9px]" : "px-3 py-1.5 text-[11px]"
+              compact ? "px-2 py-1 text-[9px]" : "px-2.5 py-1.5 text-[11px]"
             )}
           >
-            {faNum(lost)} kg کاهش
+            {faNum(lost)} kg وزن
           </span>
-          {!compact ? (
-            <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A] shadow-sm">
-              پایان {faNum(champion.endKg)} kg
+          {sizeLost !== undefined && sizeLost > 0 ? (
+            <span
+              className={cn(
+                "rounded-full bg-[#F0B429] font-extrabold text-[#14352A] shadow-md",
+                compact ? "px-2 py-1 text-[9px]" : "px-2.5 py-1.5 text-[11px]"
+              )}
+            >
+              {faNum(sizeLost)} سم سایز
             </span>
           ) : null}
         </div>
@@ -221,11 +222,18 @@ function ChampionCard({
         >
           {champion.quote}
         </p>
-        {compact ? (
-          <p className="pt-0.5 text-[10px] font-semibold text-[#14352A]/70">
-            {faNum(champion.startKg)} → {faNum(champion.endKg)} kg
-          </p>
-        ) : null}
+        <p
+          className={cn(
+            "font-semibold text-[#14352A]/70",
+            compact ? "pt-0.5 text-[10px]" : "text-xs"
+          )}
+        >
+          وزن {faNum(champion.startKg)}→{faNum(champion.endKg)} kg
+          {champion.startWaistCm !== undefined &&
+          champion.endWaistCm !== undefined
+            ? ` · کمر ${faNum(champion.startWaistCm)}→${faNum(champion.endWaistCm)} سم`
+            : ""}
+        </p>
       </div>
     </article>
   );
@@ -282,7 +290,8 @@ export function ChampionsSection({
               قهرمانان تندیس
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-8 text-[#1A2E26]/70 sm:text-base">
-              نتیجه واقعی مسیر رژیم و پیگیری — قبل و بعد مراجعه‌کنندگان تندیس.
+              در تندیس هم کاهش وزن مهم است، هم کاهش سایز — نتیجه واقعی
+              مراجعه‌کنندگان را ببینید.
             </p>
           </div>
           <Link

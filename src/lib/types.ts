@@ -230,6 +230,10 @@ export interface Champion {
   quote: string;
   startKg: number;
   endKg: number;
+  /** دور کمر شروع (سانتی‌متر) — برای نمایش کاهش سایز */
+  startWaistCm?: number;
+  /** دور کمر پایان (سانتی‌متر) */
+  endWaistCm?: number;
   beforeImage: string;
   afterImage: string;
   /** اگر false باشد فقط در پنل مدیریت دیده می‌شود */

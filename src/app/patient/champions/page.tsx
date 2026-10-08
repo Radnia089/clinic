@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { lostKg } from "@/lib/champions";
+import { lostKg, lostSizeCm } from "@/lib/champions";
 import { listChampions } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export default async function PatientChampionsPage() {
       </div>
 
       <p className="mb-5 text-sm leading-7 text-muted-foreground">
-        نتیجه واقعی مسیر رژیم و پیگیری — قبل و بعد مراجعه‌کنندگان.
+        در تندیس هم کاهش وزن مهم است، هم کاهش سایز — قبل و بعد واقعی را ببینید.
       </p>
 
       {champions.length === 0 ? (
@@ -33,6 +33,7 @@ export default async function PatientChampionsPage() {
         <div className="space-y-4 pb-8">
           {champions.map((champion) => {
             const lost = lostKg(champion);
+            const sizeLost = lostSizeCm(champion);
             return (
               <article
                 key={champion.id}
@@ -66,16 +67,15 @@ export default async function PatientChampionsPage() {
                     </div>
                   </div>
                   <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />
-                  <div className="absolute inset-x-3 bottom-3 flex items-end justify-center gap-1.5">
-                    <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A]">
-                      شروع {faNum(champion.startKg)} kg
-                    </span>
+                  <div className="absolute inset-x-3 bottom-3 flex flex-wrap items-end justify-center gap-1.5">
                     <span className="rounded-full bg-[#14352A] px-3 py-1.5 text-[11px] font-extrabold text-white">
-                      {faNum(lost)} kg کاهش وزن
+                      {faNum(lost)} kg وزن
                     </span>
-                    <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold text-[#14352A]">
-                      پایان {faNum(champion.endKg)} kg
-                    </span>
+                    {sizeLost !== undefined && sizeLost > 0 ? (
+                      <span className="rounded-full bg-[#F0B429] px-3 py-1.5 text-[11px] font-extrabold text-[#14352A]">
+                        {faNum(sizeLost)} سم سایز
+                      </span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="space-y-1.5 p-4">
@@ -84,6 +84,13 @@ export default async function PatientChampionsPage() {
                   </h2>
                   <p className="text-sm leading-7 text-muted-foreground">
                     {champion.quote}
+                  </p>
+                  <p className="text-xs font-semibold text-brand/80">
+                    وزن {faNum(champion.startKg)}→{faNum(champion.endKg)} kg
+                    {champion.startWaistCm !== undefined &&
+                    champion.endWaistCm !== undefined
+                      ? ` · کمر ${faNum(champion.startWaistCm)}→${faNum(champion.endWaistCm)} سم`
+                      : ""}
                   </p>
                 </div>
               </article>

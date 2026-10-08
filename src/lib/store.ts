@@ -38,10 +38,33 @@ async function ensureStore(): Promise<AppData> {
   try {
     const raw = await fs.readFile(DATA_FILE, "utf8");
     const parsed = JSON.parse(raw) as AppData;
+    const defaultsById = Object.fromEntries(
+      defaultChampions().map((item) => [item.id, item])
+    );
     const champions =
       parsed.champions && parsed.champions.length > 0
-        ? parsed.champions
+        ? parsed.champions.map((item) => {
+            const demo = defaultsById[item.id];
+            return {
+              ...item,
+              startWaistCm:
+                item.startWaistCm !== undefined
+                  ? Number(item.startWaistCm)
+                  : demo?.startWaistCm,
+              endWaistCm:
+                item.endWaistCm !== undefined
+                  ? Number(item.endWaistCm)
+                  : demo?.endWaistCm,
+            };
+          })
         : defaultChampions();
+    const needsWaistPersist = champions.some(
+      (item) =>
+        item.startWaistCm !== undefined &&
+        !(parsed.champions ?? []).some(
+          (old) => old.id === item.id && old.startWaistCm !== undefined
+        )
+    );
     const data: AppData = {
       clinic: {
         ...DEFAULT_CLINIC,
@@ -63,7 +86,7 @@ async function ensureStore(): Promise<AppData> {
       personalLedger: parsed.personalLedger ?? [],
       champions,
     };
-    if (!parsed.champions || parsed.champions.length === 0) {
+    if (!parsed.champions || parsed.champions.length === 0 || needsWaistPersist) {
       await writeStore(data);
     }
     return data;

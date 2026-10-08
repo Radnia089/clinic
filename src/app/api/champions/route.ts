@@ -35,6 +35,16 @@ export async function POST(request: Request) {
   const afterImage = String(body.afterImage ?? "").trim();
   const startKg = parseNormalizedNumber(String(body.startKg ?? ""));
   const endKg = parseNormalizedNumber(String(body.endKg ?? ""));
+  const startWaistRaw = body.startWaistCm;
+  const endWaistRaw = body.endWaistCm;
+  const startWaistCm =
+    startWaistRaw === undefined || startWaistRaw === "" || startWaistRaw === null
+      ? undefined
+      : parseNormalizedNumber(String(startWaistRaw));
+  const endWaistCm =
+    endWaistRaw === undefined || endWaistRaw === "" || endWaistRaw === null
+      ? undefined
+      : parseNormalizedNumber(String(endWaistRaw));
   const sortOrder = Number.isFinite(Number(body.sortOrder))
     ? Number(body.sortOrder)
     : 0;
@@ -48,7 +58,14 @@ export async function POST(request: Request) {
     !Number.isFinite(endKg) ||
     startKg <= 0 ||
     endKg <= 0 ||
-    endKg > startKg
+    endKg > startKg ||
+    startWaistCm === undefined ||
+    endWaistCm === undefined ||
+    !Number.isFinite(startWaistCm) ||
+    !Number.isFinite(endWaistCm) ||
+    startWaistCm <= 0 ||
+    endWaistCm <= 0 ||
+    endWaistCm > startWaistCm
   ) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
   }
@@ -60,6 +77,8 @@ export async function POST(request: Request) {
     afterImage,
     startKg,
     endKg,
+    startWaistCm,
+    endWaistCm,
     published,
     sortOrder,
   });
@@ -92,6 +111,18 @@ export async function PATCH(request: Request) {
   }
   if (body.endKg !== undefined) {
     patch.endKg = parseNormalizedNumber(String(body.endKg));
+  }
+  if (body.startWaistCm !== undefined) {
+    patch.startWaistCm =
+      body.startWaistCm === "" || body.startWaistCm === null
+        ? undefined
+        : parseNormalizedNumber(String(body.startWaistCm));
+  }
+  if (body.endWaistCm !== undefined) {
+    patch.endWaistCm =
+      body.endWaistCm === "" || body.endWaistCm === null
+        ? undefined
+        : parseNormalizedNumber(String(body.endWaistCm));
   }
   if (body.sortOrder !== undefined) patch.sortOrder = Number(body.sortOrder) || 0;
   if (body.published !== undefined) patch.published = Boolean(body.published);

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DigitsInput } from "@/components/ui/digits-input";
-import { lostKg, type Champion } from "@/lib/champions";
+import { lostKg, lostSizeCm, type Champion } from "@/lib/champions";
 import { cn } from "@/lib/utils";
 
 function faNum(n: number) {
@@ -44,6 +44,8 @@ export function ChampionsManager({
   const [quote, setQuote] = useState("");
   const [startKg, setStartKg] = useState("");
   const [endKg, setEndKg] = useState("");
+  const [startWaistCm, setStartWaistCm] = useState("");
+  const [endWaistCm, setEndWaistCm] = useState("");
   const [beforeImage, setBeforeImage] = useState("");
   const [afterImage, setAfterImage] = useState("");
   const [published, setPublished] = useState(true);
@@ -54,6 +56,8 @@ export function ChampionsManager({
     setQuote("");
     setStartKg("");
     setEndKg("");
+    setStartWaistCm("");
+    setEndWaistCm("");
     setBeforeImage("");
     setAfterImage("");
     setPublished(true);
@@ -90,6 +94,8 @@ export function ChampionsManager({
           quote,
           startKg,
           endKg,
+          startWaistCm: startWaistCm || undefined,
+          endWaistCm: endWaistCm || undefined,
           beforeImage,
           afterImage,
           published,
@@ -101,7 +107,9 @@ export function ChampionsManager({
       setItems((prev) => [data.item, ...prev]);
       resetForm();
     } catch {
-      setError("ثبت قهرمان انجام نشد. فیلدها و تصاویر را بررسی کنید.");
+      setError(
+        "ثبت قهرمان انجام نشد. وزن، دور کمر (در صورت وارد کردن هر دو) و تصاویر را بررسی کنید."
+      );
     } finally {
       setSaving(false);
     }
@@ -134,8 +142,8 @@ export function ChampionsManager({
       <div>
         <h2 className="text-2xl font-extrabold text-brand">قهرمانان تندیس</h2>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          عکس قبل و بعد و مشخصات را اینجا بگذارید تا در لندینگ و اپ مشتری نمایش
-          داده شود.
+          عکس قبل و بعد، وزن و دور کمر را اینجا بگذارید تا کاهش وزن و کاهش سایز
+          در لندینگ و اپ مشتری دیده شود.
         </p>
       </div>
 
@@ -184,6 +192,34 @@ export function ChampionsManager({
             </div>
           </div>
         </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="ch-waist-start">دور کمر شروع (سم)</Label>
+            <DigitsInput
+              id="ch-waist-start"
+              mode="decimal"
+              className="h-11 rounded-2xl"
+              value={startWaistCm}
+              onValueChange={setStartWaistCm}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ch-waist-end">دور کمر پایان (سم)</Label>
+            <DigitsInput
+              id="ch-waist-end"
+              mode="decimal"
+              className="h-11 rounded-2xl"
+              value={endWaistCm}
+              onValueChange={setEndWaistCm}
+              required
+            />
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          کاهش سایز از روی دور کمر محاسبه و کنار کاهش وزن نمایش داده می‌شود.
+        </p>
 
         <div className="space-y-2">
           <Label htmlFor="ch-quote">توضیح کوتاه</Label>
@@ -322,8 +358,11 @@ export function ChampionsManager({
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {faNum(item.startKg)} → {faNum(item.endKg)} kg · کاهش{" "}
-                  {faNum(lostKg(item))} kg
+                  وزن {faNum(item.startKg)}→{faNum(item.endKg)} kg (−
+                  {faNum(lostKg(item))})
+                  {lostSizeCm(item) !== undefined
+                    ? ` · سایز کمر −${faNum(lostSizeCm(item)!)} سم`
+                    : ""}
                 </p>
                 {item.quote ? (
                   <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">

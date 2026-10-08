@@ -6,6 +6,20 @@ export function lostKg(champion: Pick<Champion, "startKg" | "endKg">) {
   return Math.max(0, champion.startKg - champion.endKg);
 }
 
+export function lostSizeCm(
+  champion: Pick<Champion, "startWaistCm" | "endWaistCm">
+) {
+  if (
+    champion.startWaistCm === undefined ||
+    champion.endWaistCm === undefined ||
+    !Number.isFinite(champion.startWaistCm) ||
+    !Number.isFinite(champion.endWaistCm)
+  ) {
+    return undefined;
+  }
+  return Math.max(0, champion.startWaistCm - champion.endWaistCm);
+}
+
 export function sortChampions(items: Champion[]) {
   return [...items].sort((a, b) => {
     if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
@@ -20,9 +34,11 @@ export function defaultChampions(): Champion[] {
     {
       id: "demo-sara",
       name: "سارا محمدی",
-      quote: "با رژیم شخصی تندیس هم وزن کم کردم، هم انرژی‌ام برگشت.",
+      quote: "هم وزن کم کردم، هم سایز کمرم جمع شد؛ انرژی‌ام برگشت.",
       startKg: 92,
       endKg: 71,
+      startWaistCm: 98,
+      endWaistCm: 78,
       beforeImage: "/images/champions/champion-1-before.jpg",
       afterImage: "/images/champions/champion-1-after.jpg",
       published: true,
@@ -33,9 +49,11 @@ export function defaultChampions(): Champion[] {
     {
       id: "demo-mehdi",
       name: "مهدی رضایی",
-      quote: "جلسات پیگیری باعث شد مسیرم قطع نشود و نتیجه بماند.",
+      quote: "کاهش وزن و سایز با هم پیش رفت؛ مسیرم قطع نشد.",
       startKg: 114,
       endKg: 80,
+      startWaistCm: 118,
+      endWaistCm: 92,
       beforeImage: "/images/champions/champion-2-before.jpg",
       afterImage: "/images/champions/champion-2-after.jpg",
       published: true,
@@ -46,9 +64,11 @@ export function defaultChampions(): Champion[] {
     {
       id: "demo-neda",
       name: "ندا احمدی",
-      quote: "علاوه بر رژیم، دستگاه‌های کمک لاغری فرم بدنم را بهتر کرد.",
+      quote: "رژیم و دستگاه‌ها هم وزن را آورد پایین، هم فرم بدنم را بهتر کرد.",
       startKg: 86,
       endKg: 67,
+      startWaistCm: 94,
+      endWaistCm: 76,
       beforeImage: "/images/champions/champion-3-before.jpg",
       afterImage: "/images/champions/champion-3-after.jpg",
       published: true,
