@@ -6,6 +6,7 @@ import {
   encodePatientSession,
 } from "@/lib/patient-auth";
 import { verifyPatientOtp } from "@/lib/patient-otp";
+import { patientHasRegisteredInfo } from "@/lib/patient-profile";
 import {
   createPatient,
   findPatientByPhone,
@@ -45,12 +46,18 @@ export async function POST(request: Request) {
       phoneVerifiedAt: now,
     });
   } else {
+    const alreadyRegistered = patientHasRegisteredInfo(patient);
     patient =
       (await updatePatient(patient.id, {
         phoneVerifiedAt: now,
-        // اگر قبلاً از کلینیک آمده، منبع را عوض نکن
+        // اگر اطلاعات از قبل ثبت شده، دیگر فرم تکمیل لازم نیست
+        ...(alreadyRegistered && !patient.profileComplete
+          ? { profileComplete: true }
+          : {}),
       })) ?? patient;
   }
+
+  const needsProfile = !patientHasRegisteredInfo(patient);
 
   const jar = await cookies();
   jar.set(
@@ -67,6 +74,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     patient,
     isNew,
-    needsProfile: !patient.profileComplete,
+    needsProfile,
+    alreadyRegistered: !needsProfile,
   });
 }

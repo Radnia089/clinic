@@ -15,6 +15,7 @@ export function PatientOtpLogin() {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [devCode, setDevCode] = useState<string | undefined>();
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -34,6 +35,7 @@ export function PatientOtpLogin() {
         throw new Error("ارسال کد انجام نشد. دوباره تلاش کنید.");
       }
       setDevCode(data.devCode);
+      setAlreadyRegistered(Boolean(data.alreadyRegistered));
       setStep("code");
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا در ارسال کد");
@@ -143,6 +145,17 @@ export function PatientOtpLogin() {
             </form>
           ) : (
             <form onSubmit={verifyOtp} className="space-y-4">
+              {alreadyRegistered ? (
+                <p className="rounded-xl bg-[#E8F2EA] px-3 py-2 text-sm leading-7 text-[#2F6B4F]">
+                  شماره شما قبلاً ثبت شده. فقط کد را وارد کنید؛ دوباره اطلاعات
+                  گرفته نمی‌شود.
+                </p>
+              ) : (
+                <p className="rounded-xl bg-[#F7F8F6] px-3 py-2 text-sm leading-7 text-muted-foreground">
+                  اولین ورود شماست؛ بعد از تأیید کد، اطلاعات تکمیلی یک‌بار گرفته
+                  می‌شود.
+                </p>
+              )}
               <p className="text-sm leading-7 text-muted-foreground">
                 کد ۵ رقمی به{" "}
                 <span className="font-bold text-[#14352A]" dir="ltr">
@@ -179,6 +192,7 @@ export function PatientOtpLogin() {
                   setCode("");
                   setError("");
                   setDevCode(undefined);
+                  setAlreadyRegistered(false);
                 }}
               >
                 تغییر شماره موبایل
