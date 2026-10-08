@@ -164,8 +164,6 @@ export function PatientHomeScreen({
   const currentWeight = measurements[measurements.length - 1]?.weightKg;
   const goalWeight = patient?.goalWeightKg;
   const progressValue = goalProgressPercent(measurements, goalWeight);
-  const firstName = patient?.firstName?.trim() || "دوست";
-
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-[430px] flex-col bg-[#F7F8F6] text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.04)]">
       {tab === "progress" ? (
@@ -179,7 +177,7 @@ export function PatientHomeScreen({
                 کلینیک تخصصی لاغری و رژیم درمانی تندیس
               </p>
             </div>
-            <PatientUserMenu firstName={firstName} />
+            <PatientUserMenu patient={patient} />
           </header>
 
           <section className="rounded-[28px] bg-[#E8F2EA] p-5">
