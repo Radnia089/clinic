@@ -12,16 +12,19 @@ const services = [
   {
     title: "رژیم شخصی",
     text: "برنامه غذایی دقیق بر اساس هدف و اندازه‌های شما.",
+    image: "/images/landing-food-fresh.jpg",
     href: "/patient/book",
   },
   {
     title: "نوبت حضوری",
     text: "ویزیت در کلینیک یزد با اندازه‌گیری و تنظیم مسیر.",
+    image: "/images/clinic-care.jpg",
     href: "/patient/book",
   },
   {
     title: "مشاوره آنلاین",
     text: "ثبت سایز از خانه و رزرو وقت تماس با مشاور.",
+    image: "/images/landing-consult-desk.jpg",
     href: "/patient/consult",
   },
 ];
@@ -101,30 +104,55 @@ export function ClinicLanding({
       <PromoBannerSlider variant="landing" items={promoBanners} />
 
       {/* Services */}
-      <section id="services" className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
-        <h2 className="text-2xl font-extrabold text-[#14352A]">خدمات</h2>
-        <p className="mt-2 text-sm text-[#1A2E26]/65">
-          هر طور راحت‌ترید شروع کنید.
-        </p>
-        <div className="mt-8 grid gap-6 sm:grid-cols-3">
-          {services.map((item) => (
-            <Link
-              key={item.title}
-              href={item.href}
-              className="group block border-t border-[#14352A]/12 pt-4"
-            >
-              <h3 className="text-lg font-extrabold text-[#14352A] group-hover:text-[#1f4a3a]">
-                {item.title}
-              </h3>
-              <p className="mt-2 text-sm leading-7 text-[#1A2E26]/65">
-                {item.text}
+      <section id="services" className="bg-[#F0F4F1]">
+        <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6 sm:py-20">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-bold tracking-wide text-[#B8860B]">
+                شروع مسیر
               </p>
-              <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-[#14352A]">
-                ادامه
-                <ArrowLeft className="size-3.5 transition group-hover:-translate-x-0.5" />
-              </span>
-            </Link>
-          ))}
+              <h2 className="mt-1 text-2xl font-extrabold text-[#14352A] sm:text-3xl">
+                خدمات
+              </h2>
+            </div>
+            <p className="max-w-xs text-sm leading-7 text-[#1A2E26]/60">
+              هر طور راحت‌ترید شروع کنید.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-3 sm:gap-5">
+            {services.map((item, index) => (
+              <Link
+                key={item.title}
+                href={item.href}
+                className="group relative block min-h-[280px] overflow-hidden rounded-2xl sm:min-h-[340px]"
+              >
+                <Image
+                  src={item.image}
+                  alt={item.title}
+                  fill
+                  className="object-cover transition duration-700 ease-out group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0F241C]/92 via-[#0F241C]/35 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+                  <span className="text-xs font-bold text-[#F0B429]">
+                    {new Intl.NumberFormat("fa-IR").format(index + 1)}
+                  </span>
+                  <h3 className="mt-1.5 text-xl font-extrabold text-white sm:text-2xl">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-7 text-white/80">
+                    {item.text}
+                  </p>
+                  <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-bold text-[#F0B429]">
+                    ادامه
+                    <ArrowLeft className="size-3.5 transition group-hover:-translate-x-1" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
