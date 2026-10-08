@@ -53,13 +53,24 @@ export function PatientUserMenu({ patient }: { patient: Patient | null }) {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "rounded-full px-2 py-1 transition",
+          "flex flex-col items-center gap-1.5 rounded-2xl px-1.5 py-1 transition",
           open ? "bg-[#E8F2EA]" : "hover:bg-[#E8F2EA]/70"
         )}
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <p className="text-sm font-bold text-brand">سلام {firstName} 🍃</p>
+        <span className="relative size-12 overflow-hidden rounded-full bg-[#E8F2EA] shadow-sm ring-2 ring-white">
+          <Image
+            src={avatarSrc}
+            alt=""
+            fill
+            className="object-cover"
+            sizes="48px"
+            unoptimized={avatarSrc.endsWith(".svg")}
+            priority
+          />
+        </span>
+        <p className="text-sm font-bold text-brand">سلام {firstName}</p>
       </button>
 
       {open ? (
@@ -68,10 +79,10 @@ export function PatientUserMenu({ patient }: { patient: Patient | null }) {
           className="absolute left-0 top-[calc(100%+0.45rem)] z-50 w-[13.5rem] origin-top-left animate-in fade-in-0 zoom-in-95"
         >
           <div className="relative rounded-[1.75rem] bg-white p-3 shadow-[0_14px_40px_rgba(20,53,42,0.18)] ring-1 ring-[#14352A]/08">
-            <span className="absolute -top-1.5 left-6 size-3 rotate-45 rounded-sm bg-white ring-1 ring-[#14352A]/08" />
+            <span className="absolute -top-1.5 left-7 size-3 rotate-45 rounded-sm bg-white ring-1 ring-[#14352A]/08" />
 
             <div className="relative z-10 mb-2 flex flex-col items-center px-1 pb-2 pt-1 text-center">
-              <div className="relative size-16 overflow-hidden rounded-full bg-[#E8F2EA] ring-2 ring-[#F0B429]/35">
+              <div className="relative size-16 overflow-hidden rounded-full bg-[#E8F2EA] ring-2 ring-[#F0B429]/40">
                 <Image
                   src={avatarSrc}
                   alt=""
@@ -87,7 +98,10 @@ export function PatientUserMenu({ patient }: { patient: Patient | null }) {
                 </p>
               ) : null}
               {phone ? (
-                <p className="mt-0.5 text-xs font-semibold text-[#14352A]/65" dir="ltr">
+                <p
+                  className="mt-0.5 text-xs font-semibold text-[#14352A]/65"
+                  dir="ltr"
+                >
                   {phone}
                 </p>
               ) : null}
