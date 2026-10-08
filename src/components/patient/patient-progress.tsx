@@ -64,9 +64,11 @@ export function PatientProgressScreen() {
               <div className="rounded-3xl bg-[#F6E6E1] p-4">
                 <p className="text-xs text-[#9A4E42]/80">کاهش سایز کمر</p>
                 <p className="mt-1 text-xl font-extrabold text-[#9A4E42]">
-                  {new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 }).format(
-                    Math.max(0, first.waistCm - last.waistCm)
-                  )}{" "}
+                  {first.waistCm != null && last.waistCm != null
+                    ? new Intl.NumberFormat("fa-IR", {
+                        maximumFractionDigits: 1,
+                      }).format(Math.max(0, first.waistCm - last.waistCm))
+                    : "—"}{" "}
                   <span className="text-sm">cm</span>
                 </p>
               </div>
@@ -119,13 +121,14 @@ export function PatientProgressScreen() {
                         {new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 }).format(
                           row.weightKg
                         )}{" "}
-                        کیلو
+                        kg
                       </td>
                       <td className="px-4 py-3">
-                        {new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 }).format(
-                          row.waistCm
-                        )}{" "}
-                        سم
+                        {row.waistCm != null
+                          ? `${new Intl.NumberFormat("fa-IR", {
+                              maximumFractionDigits: 1,
+                            }).format(row.waistCm)} cm`
+                          : "—"}
                       </td>
                     </tr>
                   ))}

@@ -48,7 +48,6 @@ export function PatientUserMenu({ firstName }: { firstName: string }) {
         aria-haspopup="menu"
       >
         <p className="text-sm font-bold text-brand">سلام {firstName} 🍃</p>
-        <p className="mt-0.5 text-[11px] text-muted-foreground">حساب من</p>
       </button>
 
       {open ? (

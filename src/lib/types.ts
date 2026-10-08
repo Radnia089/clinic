@@ -111,7 +111,8 @@ export interface ProgressMeasurement {
   patientId: string;
   recordedAt: string;
   weightKg: number;
-  waistCm: number;
+  /** اختیاری — ممکن است فقط وزن از اپ ثبت شود */
+  waistCm?: number;
   hipCm?: number;
   armCm?: number;
   thighCm?: number;

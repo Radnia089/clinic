@@ -120,15 +120,13 @@ export async function POST(request: Request) {
     const last = existing[existing.length - 1];
     const nextWaist =
       waistCm != null && waistCm > 0 ? waistCm : last?.waistCm;
-    if (nextWaist != null && nextWaist > 0) {
-      await createMeasurement({
-        patientId: updated.id,
-        recordedAt: new Date().toISOString(),
-        weightKg,
-        waistCm: nextWaist,
-        note: "به‌روزرسانی از اپ مشتری",
-      });
-    }
+    await createMeasurement({
+      patientId: updated.id,
+      recordedAt: new Date().toISOString(),
+      weightKg,
+      waistCm: nextWaist != null && nextWaist > 0 ? nextWaist : undefined,
+      note: "به‌روزرسانی از اپ مشتری",
+    });
   }
 
   const measurements = await listMeasurements(updated!.id);

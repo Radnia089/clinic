@@ -59,13 +59,22 @@ export function TrendChart({
   const pad = 28;
 
   const chart = useMemo(() => {
-    const values = measurements.map((m) => m[metric]);
-    const labels = measurements.map((m) => formatJalaliShort(m.recordedAt));
+    const pairs = measurements
+      .map((m) => ({
+        value: m[metric],
+        label: formatJalaliShort(m.recordedAt),
+      }))
+      .filter(
+        (item): item is { value: number; label: string } =>
+          item.value != null && Number.isFinite(item.value)
+      );
+    const values = pairs.map((p) => p.value);
+    const labels = pairs.map((p) => p.label);
     const points = buildPoints(values, labels, width, height, pad);
     return { values, labels, points };
   }, [measurements, metric]);
 
-  if (measurements.length === 0) {
+  if (chart.values.length === 0) {
     return (
       <div className="flex h-[180px] items-center justify-center rounded-2xl bg-[#F3F6F3] text-sm text-muted-foreground">
         هنوز اندازه‌گیری ثبت نشده است
@@ -73,8 +82,8 @@ export function TrendChart({
     );
   }
 
-  const first = chart.values[0];
-  const last = chart.values[chart.values.length - 1];
+  const first = chart.values[0]!;
+  const last = chart.values[chart.values.length - 1]!;
   const delta = Number((last - first).toFixed(1));
   const improved = delta < 0;
 

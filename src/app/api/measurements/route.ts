@@ -46,21 +46,21 @@ export async function POST(request: Request) {
   const patientId = String(body.patientId ?? "");
   const recordedAt = String(body.recordedAt ?? new Date().toISOString());
   const weightKg = parseNormalizedNumber(String(body.weightKg ?? ""));
-  const waistCm = parseNormalizedNumber(String(body.waistCm ?? ""));
+  const waistRaw =
+    body.waistCm !== undefined && body.waistCm !== ""
+      ? parseNormalizedNumber(String(body.waistCm))
+      : undefined;
   const hipCm = parseOptionalPositive(body.hipCm);
   const armCm = parseOptionalPositive(body.armCm);
   const thighCm = parseOptionalPositive(body.thighCm);
   const calfCm = parseOptionalPositive(body.calfCm);
   const note = body.note ? String(body.note).trim() : undefined;
 
-  if (
-    !patientId ||
-    !Number.isFinite(weightKg) ||
-    weightKg <= 0 ||
-    !Number.isFinite(waistCm) ||
-    waistCm <= 0
-  ) {
+  if (!patientId || !Number.isFinite(weightKg) || weightKg <= 0) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
+  }
+  if (waistRaw !== undefined && (!Number.isFinite(waistRaw) || waistRaw <= 0)) {
+    return NextResponse.json({ error: "invalid_waist" }, { status: 400 });
   }
 
   for (const [key, value] of Object.entries({ hipCm, armCm, thighCm, calfCm })) {
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
     patientId,
     recordedAt,
     weightKg,
-    waistCm,
+    waistCm: waistRaw,
     hipCm: hipCm !== undefined && Number.isFinite(hipCm) ? hipCm : undefined,
     armCm: armCm !== undefined && Number.isFinite(armCm) ? armCm : undefined,
     thighCm:

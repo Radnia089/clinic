@@ -217,7 +217,8 @@ export function CustomerFileClient({
           </h1>
           {latest ? (
             <p className="mt-1 text-xs text-muted-foreground">
-              آخرین سایز: {latest.weightKg} kg · کمر {latest.waistCm} cm
+              آخرین سایز: {latest.weightKg} kg
+              {latest.waistCm != null ? ` · کمر ${latest.waistCm} cm` : ""}
               {patient.goalWeightKg != null
                 ? ` · هدف ${patient.goalWeightKg} kg`
                 : ""}
@@ -436,7 +437,8 @@ export function CustomerFileClient({
               <li key={m.id} className="rounded-2xl bg-[#F7F8F6] px-3 py-3 text-sm">
                 <p className="font-semibold">{formatDateFa(m.recordedAt)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  وزن {m.weightKg} kg · کمر {m.waistCm} cm
+                  وزن {m.weightKg} kg
+                  {m.waistCm != null ? ` · کمر ${m.waistCm} cm` : ""}
                   {m.hipCm != null ? ` · باسن ${m.hipCm} cm` : ""}
                   {m.armCm != null ? ` · بازو ${m.armCm} cm` : ""}
                   {m.thighCm != null ? ` · ران ${m.thighCm} cm` : ""}
