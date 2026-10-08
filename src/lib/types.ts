@@ -22,6 +22,10 @@ export interface Patient {
   phone: string;
   address: string;
   notes?: string;
+  /** قد ثابت مشتری (cm) — در اپ مشتری و پرونده مشترک است */
+  heightCm?: number;
+  /** وزن هدف (kg) — در اپ مشتری و پرونده مشترک است */
+  goalWeightKg?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,7 +92,7 @@ export interface AppointmentRequest {
   createdAt: string;
 }
 
-/** اندازه‌گیری‌های دوره‌ای که از پنل کلینیک ثبت می‌شود */
+/** اندازه‌گیری‌های دوره‌ای که از پنل کلینیک ثبت می‌شود و در اپ مشتری هم دیده می‌شود */
 export interface ProgressMeasurement {
   id: string;
   patientId: string;
@@ -96,6 +100,9 @@ export interface ProgressMeasurement {
   weightKg: number;
   waistCm: number;
   hipCm?: number;
+  armCm?: number;
+  thighCm?: number;
+  calfCm?: number;
   note?: string;
   createdAt: string;
 }

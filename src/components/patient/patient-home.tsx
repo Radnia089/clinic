@@ -19,7 +19,12 @@ import { ClinicLogo } from "@/components/brand/clinic-logo";
 import { ChampionsSection } from "@/components/champions/champions-section";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
 import { PromoBannerSlider } from "@/components/patient/promo-banner-slider";
-import type { Champion, PromoBanner } from "@/lib/types";
+import type {
+  Champion,
+  Patient,
+  ProgressMeasurement,
+  PromoBanner,
+} from "@/lib/types";
 
 const quickActions = [
   {
@@ -85,6 +90,27 @@ function ProgressRing({ value }: { value: number }) {
   );
 }
 
+function faWeight(value?: number) {
+  if (value == null || !Number.isFinite(value)) return "—";
+  return new Intl.NumberFormat("fa-IR", {
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+function goalProgressPercent(
+  measurements: ProgressMeasurement[],
+  goalWeightKg?: number
+) {
+  if (!goalWeightKg || measurements.length === 0) return 0;
+  const start = measurements[0]?.weightKg;
+  const current = measurements[measurements.length - 1]?.weightKg;
+  if (start == null || current == null) return 0;
+  const span = start - goalWeightKg;
+  if (span <= 0) return current <= goalWeightKg ? 100 : 0;
+  const lost = start - current;
+  return Math.max(0, Math.min(100, Math.round((lost / span) * 100)));
+}
+
 export function PatientHomeScreen({
   champions = [],
   promoBanners = [],
@@ -94,6 +120,9 @@ export function PatientHomeScreen({
 }) {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState("home");
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [measurements, setMeasurements] = useState<ProgressMeasurement[]>([]);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     const initial = searchParams.get("tab");
@@ -106,6 +135,29 @@ export function PatientHomeScreen({
       setTab(initial);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/measurements?demo=1")
+      .then((r) => r.json())
+      .then((data) => {
+        if (!alive) return;
+        setPatient(data.patient ?? null);
+        setMeasurements(data.measurements ?? []);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (alive) setStatsLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [tab]);
+
+  const currentWeight = measurements[measurements.length - 1]?.weightKg;
+  const goalWeight = patient?.goalWeightKg;
+  const progressValue = goalProgressPercent(measurements, goalWeight);
+  const firstName = patient?.firstName?.trim() || "سارا";
 
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-[430px] flex-col bg-[#F7F8F6] text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.04)]">
@@ -121,7 +173,7 @@ export function PatientHomeScreen({
               </p>
             </div>
             <div className="text-left">
-              <p className="text-sm font-bold text-brand">سلام سارا 🍃</p>
+              <p className="text-sm font-bold text-brand">سلام {firstName} 🍃</p>
               <p className="mt-0.5 text-[11px] text-muted-foreground">
                 امروز یک قدم به هدف نزدیک‌تری
               </p>
@@ -134,18 +186,20 @@ export function PatientHomeScreen({
                 <div>
                   <p className="text-xs text-muted-foreground">وزن فعلی</p>
                   <p className="text-xl font-extrabold text-brand">
-                    ۷۱٫۲ <span className="text-sm font-semibold">kg</span>
+                    {statsLoading ? "…" : faWeight(currentWeight)}{" "}
+                    <span className="text-sm font-semibold">kg</span>
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">هدف</p>
                   <p className="text-xl font-extrabold text-brand">
-                    ۶۵ <span className="text-sm font-semibold">kg</span>
+                    {statsLoading ? "…" : faWeight(goalWeight)}{" "}
+                    <span className="text-sm font-semibold">kg</span>
                   </p>
                 </div>
               </div>
               <div className="flex flex-col items-center gap-2">
-                <ProgressRing value={62} />
+                <ProgressRing value={progressValue} />
                 <p className="text-[11px] text-muted-foreground">
                   در مسیر بهتر شدن
                 </p>

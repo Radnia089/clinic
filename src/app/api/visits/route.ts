@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import {
+  createMeasurement,
   createVisit,
   getPatient,
   listPatients,
   listVisits,
+  updatePatient,
   updateVisit,
 } from "@/lib/store";
 import type { AdmissionForm, VisitStatus, VisitType } from "@/lib/types";
@@ -98,6 +100,48 @@ export async function PATCH(request: Request) {
   const visit = await updateVisit(id, patch);
   if (!visit) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  // سایز پذیرش → پرونده مشتری + سری اندازه‌گیری (همگام با اپ مشتری)
+  if (patch.admission) {
+    const admission = patch.admission;
+    const patientPatch: {
+      heightCm?: number;
+      goalWeightKg?: number;
+    } = {};
+    if (
+      admission.heightCm != null &&
+      Number.isFinite(admission.heightCm) &&
+      admission.heightCm > 0
+    ) {
+      patientPatch.heightCm = Number(admission.heightCm);
+    }
+    if (
+      admission.goalWeightKg != null &&
+      Number.isFinite(admission.goalWeightKg) &&
+      admission.goalWeightKg > 0
+    ) {
+      patientPatch.goalWeightKg = Number(admission.goalWeightKg);
+    }
+    if (Object.keys(patientPatch).length > 0) {
+      await updatePatient(visit.patientId, patientPatch);
+    }
+
+    const weightKg = Number(admission.weightKg);
+    const waistCm = Number(admission.waistCm);
+    if (Number.isFinite(weightKg) && weightKg > 0 && Number.isFinite(waistCm) && waistCm > 0) {
+      await createMeasurement({
+        patientId: visit.patientId,
+        recordedAt: visit.visitDate || new Date().toISOString(),
+        weightKg,
+        waistCm,
+        hipCm:
+          admission.hipCm != null && Number.isFinite(Number(admission.hipCm))
+            ? Number(admission.hipCm)
+            : undefined,
+        note: "ثبت از فرم پذیرش",
+      });
+    }
   }
 
   return NextResponse.json({ visit });

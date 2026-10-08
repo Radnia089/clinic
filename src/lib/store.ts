@@ -228,6 +228,23 @@ export async function createPatient(
   return patient;
 }
 
+export async function updatePatient(
+  id: string,
+  patch: Partial<Omit<Patient, "id" | "createdAt">>
+) {
+  const data = await ensureStore();
+  const index = data.patients.findIndex((p) => p.id === id);
+  if (index < 0) return null;
+  data.patients[index] = {
+    ...data.patients[index],
+    ...patch,
+    id,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeStore(data);
+  return data.patients[index];
+}
+
 export async function findPatientByPhone(phone: string) {
   const normalized = phone.replace(/\s|-/g, "");
   return (
@@ -432,10 +449,27 @@ export async function ensureDemoPatientProgress() {
       gender: "female",
       phone: "09130000001",
       address: "یزد",
+      heightCm: 165,
+      goalWeightKg: 65,
       createdAt: now,
       updatedAt: now,
     };
     data.patients.unshift(patient);
+  } else {
+    let touched = false;
+    if (patient.goalWeightKg == null) {
+      patient.goalWeightKg = 65;
+      touched = true;
+    }
+    if (patient.heightCm == null) {
+      patient.heightCm = 165;
+      touched = true;
+    }
+    if (touched) {
+      patient.updatedAt = new Date().toISOString();
+      const idx = data.patients.findIndex((p) => p.id === patient!.id);
+      if (idx >= 0) data.patients[idx] = patient;
+    }
   }
 
   const existing = data.measurements.filter((m) => m.patientId === patient!.id);

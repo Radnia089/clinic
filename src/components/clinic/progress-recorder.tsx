@@ -142,7 +142,7 @@ export function ProgressRecorder() {
           />
         </div>
         <div className="space-y-2">
-          <Label>دور باسن (اختیاری)</Label>
+          <Label>دور باسن (cm)</Label>
           <DigitsInput
             mode="decimal"
             className="h-11 rounded-xl"
@@ -192,9 +192,9 @@ export function ProgressRecorder() {
                     {row.patient ? patientFullName(row.patient) : "—"}
                   </TableCell>
                   <TableCell>{formatDateFa(row.recordedAt)}</TableCell>
-                  <TableCell>{row.weightKg} کیلو</TableCell>
-                  <TableCell>{row.waistCm} سم</TableCell>
-                  <TableCell>{row.hipCm ? `${row.hipCm} سم` : "—"}</TableCell>
+                  <TableCell>{row.weightKg} kg</TableCell>
+                  <TableCell>{row.waistCm} cm</TableCell>
+                  <TableCell>{row.hipCm ? `${row.hipCm} cm` : "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

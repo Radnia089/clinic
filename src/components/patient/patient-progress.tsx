@@ -32,7 +32,8 @@ export function PatientProgressScreen() {
         <p className="text-xs font-medium text-muted-foreground">پیشرفت مسیر</p>
         <h1 className="mt-1 text-2xl font-extrabold text-brand">نمودار رشد من</h1>
         <p className="mt-2 text-sm leading-7 text-muted-foreground">
-          هر بار که در کلینیک وزن و سایز ثبت شود، اینجا روند کاهش را می‌بینی.
+          هر بار که در پرونده مشتری کلینیک وزن و سایز ثبت شود، همین‌جا به‌روز
+          می‌شود.
         </p>
       </header>
 

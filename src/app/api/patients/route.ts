@@ -1,10 +1,30 @@
 import { NextResponse } from "next/server";
-import { createPatient, findPatientByPhone, listPatients } from "@/lib/store";
+import {
+  createPatient,
+  findPatientByPhone,
+  listPatients,
+  updatePatient,
+} from "@/lib/store";
 import { normalizeIntegerInput, parseNormalizedNumber } from "@/lib/digits";
-import type { Gender } from "@/lib/types";
+import type { Gender, Patient } from "@/lib/types";
 
-export async function GET() {
+function parseOptionalNumber(raw: unknown) {
+  if (raw === undefined || raw === null || raw === "") return undefined;
+  const n = parseNormalizedNumber(String(raw));
+  return Number.isFinite(n) ? n : NaN;
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
   const patients = await listPatients();
+  if (id) {
+    const patient = patients.find((p) => p.id === id) ?? null;
+    if (!patient) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+    return NextResponse.json({ patient });
+  }
   return NextResponse.json({ patients });
 }
 
@@ -18,6 +38,8 @@ export async function POST(request: Request) {
   const phone = normalizeIntegerInput(String(body.phone ?? ""));
   const address = String(body.address ?? "").trim();
   const notes = String(body.notes ?? "").trim();
+  const heightCm = parseOptionalNumber(body.heightCm);
+  const goalWeightKg = parseOptionalNumber(body.goalWeightKg);
 
   // فقط نام‌خانوادگی و موبایل اجباری‌اند
   if (!lastName || !/^09\d{9}$/.test(phone)) {
@@ -33,6 +55,16 @@ export async function POST(request: Request) {
 
   if (!["female", "male", "other"].includes(gender)) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
+  }
+
+  if (heightCm !== undefined && (!Number.isFinite(heightCm) || heightCm < 100 || heightCm > 230)) {
+    return NextResponse.json({ error: "invalid_height" }, { status: 400 });
+  }
+  if (
+    goalWeightKg !== undefined &&
+    (!Number.isFinite(goalWeightKg) || goalWeightKg < 30 || goalWeightKg > 250)
+  ) {
+    return NextResponse.json({ error: "invalid_goal" }, { status: 400 });
   }
 
   const existing = await findPatientByPhone(phone);
@@ -51,7 +83,92 @@ export async function POST(request: Request) {
     phone,
     address,
     notes: notes || undefined,
+    heightCm: heightCm !== undefined && Number.isFinite(heightCm) ? heightCm : undefined,
+    goalWeightKg:
+      goalWeightKg !== undefined && Number.isFinite(goalWeightKg)
+        ? goalWeightKg
+        : undefined,
   });
 
   return NextResponse.json({ patient }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const body = await request.json();
+  const id = String(body.id ?? "").trim();
+  if (!id) {
+    return NextResponse.json({ error: "missing_id" }, { status: 400 });
+  }
+
+  const patch: Partial<Omit<Patient, "id" | "createdAt">> = {};
+
+  if (body.firstName !== undefined) patch.firstName = String(body.firstName).trim();
+  if (body.lastName !== undefined) patch.lastName = String(body.lastName).trim();
+  if (body.address !== undefined) patch.address = String(body.address).trim();
+  if (body.notes !== undefined) {
+    const notes = String(body.notes).trim();
+    patch.notes = notes || undefined;
+  }
+  if (body.gender !== undefined) {
+    const gender = body.gender as Gender;
+    if (!["female", "male", "other"].includes(gender)) {
+      return NextResponse.json({ error: "validation_failed" }, { status: 400 });
+    }
+    patch.gender = gender;
+  }
+  if (body.phone !== undefined) {
+    const phone = normalizeIntegerInput(String(body.phone));
+    if (!/^09\d{9}$/.test(phone)) {
+      return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
+    }
+    const existing = await findPatientByPhone(phone);
+    if (existing && existing.id !== id) {
+      return NextResponse.json({ error: "phone_exists" }, { status: 409 });
+    }
+    patch.phone = phone;
+  }
+  if (body.age !== undefined) {
+    if (body.age === "" || body.age === null) {
+      patch.age = undefined;
+    } else {
+      const age = parseNormalizedNumber(String(body.age));
+      if (!Number.isFinite(age) || age < 1 || age > 120) {
+        return NextResponse.json({ error: "invalid_age" }, { status: 400 });
+      }
+      patch.age = age;
+    }
+  }
+  if (body.heightCm !== undefined) {
+    if (body.heightCm === "" || body.heightCm === null) {
+      patch.heightCm = undefined;
+    } else {
+      const heightCm = parseNormalizedNumber(String(body.heightCm));
+      if (!Number.isFinite(heightCm) || heightCm < 100 || heightCm > 230) {
+        return NextResponse.json({ error: "invalid_height" }, { status: 400 });
+      }
+      patch.heightCm = heightCm;
+    }
+  }
+  if (body.goalWeightKg !== undefined) {
+    if (body.goalWeightKg === "" || body.goalWeightKg === null) {
+      patch.goalWeightKg = undefined;
+    } else {
+      const goalWeightKg = parseNormalizedNumber(String(body.goalWeightKg));
+      if (!Number.isFinite(goalWeightKg) || goalWeightKg < 30 || goalWeightKg > 250) {
+        return NextResponse.json({ error: "invalid_goal" }, { status: 400 });
+      }
+      patch.goalWeightKg = goalWeightKg;
+    }
+  }
+
+  if (patch.lastName !== undefined && !patch.lastName) {
+    return NextResponse.json({ error: "validation_failed" }, { status: 400 });
+  }
+
+  const patient = await updatePatient(id, patch);
+  if (!patient) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ patient });
 }
