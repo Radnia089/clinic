@@ -128,13 +128,19 @@ export function AppSignupsPanel() {
                         <span className="rounded-full bg-[#F7F8F6] px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground">
                           بررسی‌شده
                         </span>
-                      ) : null}
+                      ) : (
+                        <span className="rounded-full bg-[#FBEFE8] px-2.5 py-0.5 text-[10px] font-bold text-[#D86B5C]">
+                          نیاز به بررسی
+                        </span>
+                      )}
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground" dir="ltr">
                       {patient.phone}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       ثبت: {formatDateFa(patient.createdAt)}
+                      {" · "}
+                      آخرین تغییر: {formatDateFa(patient.updatedAt)}
                       {patient.age != null ? ` · سن ${patient.age}` : ""}
                       {` · ${genderLabel(patient.gender)}`}
                       {patient.heightCm != null ? ` · قد ${patient.heightCm} cm` : ""}

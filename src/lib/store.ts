@@ -260,12 +260,17 @@ export async function updatePatient(
   const data = await ensureStore();
   const index = data.patients.findIndex((p) => p.id === id);
   if (index < 0) return null;
-  data.patients[index] = {
+  const next: Patient = {
     ...data.patients[index],
     ...patch,
     id,
     updatedAt: new Date().toISOString(),
   };
+  // اجازه پاک کردن وضعیت بررسی وقتی مشتری از اپ ویرایش می‌کند
+  if ("appReviewedAt" in patch && patch.appReviewedAt == null) {
+    delete next.appReviewedAt;
+  }
+  data.patients[index] = next;
   await writeStore(data);
   return data.patients[index];
 }

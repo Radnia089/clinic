@@ -184,10 +184,17 @@ export function PatientHomeScreen({
               </p>
             </div>
             <div className="text-left">
-              <p className="text-sm font-bold text-brand">سلام {firstName} 🍃</p>
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                امروز یک قدم به هدف نزدیک‌تری
-              </p>
+              <Link
+                href="/patient/profile"
+                className="group inline-flex flex-col items-end"
+              >
+                <p className="text-sm font-bold text-brand underline-offset-2 group-hover:underline">
+                  سلام {firstName} 🍃
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  مشاهده و تکمیل اطلاعات
+                </p>
+              </Link>
               <button
                 type="button"
                 onClick={() => void logout()}

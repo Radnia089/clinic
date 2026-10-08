@@ -35,7 +35,7 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/patient-auth/complete-profile", {
+      const res = await fetch("/api/patient-auth/update-profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
