@@ -91,7 +91,7 @@ export function MeasurementGuide({
           </ol>
 
           <p className="px-1 text-[11px] leading-5 text-muted-foreground">
-            متر را صاف و افقی نگه دارید. لباس نازک کافی است؛ عدد را به سانتی‌متر
+            متر را صاف و افقی نگه دارید. لباس نازک کافی است؛ عدد را به cm
             وارد کنید.
           </p>
         </div>

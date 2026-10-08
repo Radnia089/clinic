@@ -99,7 +99,7 @@ export function AdmissionFormEditor({
         <h3 className="mb-4 text-sm font-bold text-brand">اندازه‌ها و وضعیت بدنی</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
-            <Label>قد (سانتی‌متر)</Label>
+            <Label>قد (cm)</Label>
             <DigitsInput
               mode="decimal"
               className={fieldClass}
@@ -108,7 +108,7 @@ export function AdmissionFormEditor({
             />
           </div>
           <div className="space-y-2">
-            <Label>وزن فعلی</Label>
+            <Label>وزن فعلی (kg)</Label>
             <DigitsInput
               mode="decimal"
               className={fieldClass}
@@ -117,7 +117,7 @@ export function AdmissionFormEditor({
             />
           </div>
           <div className="space-y-2">
-            <Label>وزن هدف</Label>
+            <Label>وزن هدف (kg)</Label>
             <DigitsInput
               mode="decimal"
               className={fieldClass}
@@ -126,7 +126,7 @@ export function AdmissionFormEditor({
             />
           </div>
           <div className="space-y-2">
-            <Label>دور کمر</Label>
+            <Label>دور کمر (cm)</Label>
             <DigitsInput
               mode="decimal"
               className={fieldClass}

@@ -189,12 +189,12 @@ function CalculatorForm({
     const ageN = age ? parseNormalizedNumber(age) : undefined;
 
     if (!Number.isFinite(weightKg) || weightKg < 30 || weightKg > 250) {
-      setError("وزن را بین ۳۰ تا ۲۵۰ کیلوگرم وارد کنید.");
+      setError("وزن را بین ۳۰ تا ۲۵۰ kg وارد کنید.");
       onResult(null);
       return;
     }
     if (!Number.isFinite(heightCm) || heightCm < 100 || heightCm > 230) {
-      setError("قد را بین ۱۰۰ تا ۲۳۰ سانتی‌متر وارد کنید.");
+      setError("قد را بین ۱۰۰ تا ۲۳۰ cm وارد کنید.");
       onResult(null);
       return;
     }
@@ -207,7 +207,7 @@ function CalculatorForm({
       wristCm !== undefined &&
       (!Number.isFinite(wristCm) || wristCm < 10 || wristCm > 30)
     ) {
-      setError("دور مچ را بین ۱۰ تا ۳۰ سانتی‌متر وارد کنید.");
+      setError("دور مچ را بین ۱۰ تا ۳۰ cm وارد کنید.");
       onResult(null);
       return;
     }
@@ -246,7 +246,7 @@ function CalculatorForm({
       <FieldRow
         id="bmi-weight"
         label="وزن"
-        unit="کیلوگرم"
+        unit="kg"
         icon={<Scale className="size-4" />}
         iconClass="bg-[#E8F2EA] text-[#2F6B4F]"
         value={weight}
@@ -255,7 +255,7 @@ function CalculatorForm({
       <FieldRow
         id="bmi-height"
         label="قد"
-        unit="سانتی‌متر"
+        unit="cm"
         icon={<Ruler className="size-4" />}
         iconClass="bg-[#FFF4D6] text-[#C48A12]"
         value={height}
@@ -274,7 +274,7 @@ function CalculatorForm({
       <FieldRow
         id="bmi-wrist"
         label="دور مچ"
-        unit="سانتی‌متر"
+        unit="cm"
         icon={<PersonStanding className="size-4" />}
         iconClass="bg-[#FBEFE8] text-[#D86B5C]"
         value={wrist}

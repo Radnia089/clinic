@@ -122,7 +122,7 @@ export function ProgressRecorder() {
           <ShamsiDateInput value={recordedAt} onChange={setRecordedAt} required />
         </div>
         <div className="space-y-2">
-          <Label>وزن (کیلوگرم)</Label>
+          <Label>وزن (kg)</Label>
           <DigitsInput
             mode="decimal"
             className="h-11 rounded-xl"
@@ -132,7 +132,7 @@ export function ProgressRecorder() {
           />
         </div>
         <div className="space-y-2">
-          <Label>دور کمر (سانتی‌متر)</Label>
+          <Label>دور کمر (cm)</Label>
           <DigitsInput
             mode="decimal"
             className="h-11 rounded-xl"

@@ -187,7 +187,7 @@ export function OnlineConsultForm() {
         <p className="text-sm font-bold text-brand">قد و وزن</p>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label htmlFor="oc-height">قد (سانتی‌متر)</Label>
+            <Label htmlFor="oc-height">قد (cm)</Label>
             <DigitsInput
               id="oc-height"
               mode="decimal"
@@ -198,7 +198,7 @@ export function OnlineConsultForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="oc-weight">وزن (کیلوگرم)</Label>
+            <Label htmlFor="oc-weight">وزن (kg)</Label>
             <DigitsInput
               id="oc-weight"
               mode="decimal"
@@ -246,7 +246,7 @@ export function OnlineConsultForm() {
               <MeasurementGuide defaultOpen={false} />
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="oc-arm">۲ · دور بازو</Label>
+                  <Label htmlFor="oc-arm">۲ · دور بازو (cm)</Label>
                   <DigitsInput
                     id="oc-arm"
                     mode="decimal"

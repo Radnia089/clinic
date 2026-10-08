@@ -59,7 +59,7 @@ export function PatientProgressScreen() {
                   {new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 }).format(
                     Math.max(0, first.waistCm - last.waistCm)
                   )}{" "}
-                  <span className="text-sm">سانتی‌متر</span>
+                  <span className="text-sm">cm</span>
                 </p>
               </div>
             </section>
@@ -71,7 +71,7 @@ export function PatientProgressScreen() {
               measurements={measurements}
               metric="weightKg"
               color="#2F6B4F"
-              unit="کیلوگرم"
+              unit="kg"
             />
           </section>
 
@@ -81,7 +81,7 @@ export function PatientProgressScreen() {
               measurements={measurements}
               metric="waistCm"
               color="#D86B5C"
-              unit="سانتی‌متر"
+              unit="cm"
             />
           </section>
 

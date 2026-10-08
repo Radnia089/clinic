@@ -134,13 +134,13 @@ export function PatientHomeScreen({
                 <div>
                   <p className="text-xs text-muted-foreground">وزن فعلی</p>
                   <p className="text-xl font-extrabold text-brand">
-                    ۷۱٫۲ <span className="text-sm font-semibold">کیلوگرم</span>
+                    ۷۱٫۲ <span className="text-sm font-semibold">kg</span>
                   </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">هدف</p>
                   <p className="text-xl font-extrabold text-brand">
-                    ۶۵ <span className="text-sm font-semibold">کیلوگرم</span>
+                    ۶۵ <span className="text-sm font-semibold">kg</span>
                   </p>
                 </div>
               </div>

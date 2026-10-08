@@ -150,43 +150,43 @@ export function OnlineConsultsPanel({
               <div>
                 <dt className="text-xs text-muted-foreground">قد</dt>
                 <dd className="font-medium">
-                  {item.heightCm ? `${item.heightCm} سانتی‌متر` : "—"}
+                  {item.heightCm ? `${item.heightCm} cm` : "—"}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">وزن</dt>
                 <dd className="font-medium">
-                  {item.weightKg ? `${item.weightKg} کیلوگرم` : "—"}
+                  {item.weightKg ? `${item.weightKg} kg` : "—"}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">دور بازو</dt>
                 <dd className="font-medium">
-                  {item.armCm ? `${item.armCm} سانتی‌متر` : "—"}
+                  {item.armCm ? `${item.armCm} cm` : "—"}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">دور کمر</dt>
                 <dd className="font-medium">
-                  {item.waistCm ? `${item.waistCm} سانتی‌متر` : "—"}
+                  {item.waistCm ? `${item.waistCm} cm` : "—"}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">دور باسن</dt>
                 <dd className="font-medium">
-                  {item.hipCm ? `${item.hipCm} سانتی‌متر` : "—"}
+                  {item.hipCm ? `${item.hipCm} cm` : "—"}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">دور ران</dt>
                 <dd className="font-medium">
-                  {item.thighCm ? `${item.thighCm} سانتی‌متر` : "—"}
+                  {item.thighCm ? `${item.thighCm} cm` : "—"}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs text-muted-foreground">دور ساق</dt>
                 <dd className="font-medium">
-                  {item.calfCm ? `${item.calfCm} سانتی‌متر` : "—"}
+                  {item.calfCm ? `${item.calfCm} cm` : "—"}
                 </dd>
               </div>
             </dl>
