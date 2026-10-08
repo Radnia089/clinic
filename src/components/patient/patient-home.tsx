@@ -153,8 +153,6 @@ export function PatientHomeScreen({
             </div>
           </section>
 
-          <PromoBannerSlider items={promoBanners} />
-
           <section className="grid grid-cols-4 gap-2.5">
             {quickActions.map((action) => {
               const Icon = action.icon;
@@ -199,6 +197,8 @@ export function PatientHomeScreen({
               );
             })}
           </section>
+
+          <PromoBannerSlider items={promoBanners} />
 
           <ChampionsSection variant="patient" items={champions} />
 
