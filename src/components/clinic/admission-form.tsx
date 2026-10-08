@@ -135,7 +135,7 @@ export function AdmissionFormEditor({
             />
           </div>
           <div className="space-y-2">
-            <Label>دور باسن</Label>
+            <Label>دور باسن (cm)</Label>
             <DigitsInput
               mode="decimal"
               className={fieldClass}

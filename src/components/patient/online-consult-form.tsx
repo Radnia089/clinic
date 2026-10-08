@@ -256,7 +256,7 @@ export function OnlineConsultForm() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="oc-waist">۳ · دور کمر</Label>
+                  <Label htmlFor="oc-waist">۳ · دور کمر (cm)</Label>
                   <DigitsInput
                     id="oc-waist"
                     mode="decimal"
@@ -266,7 +266,7 @@ export function OnlineConsultForm() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="oc-hip">۴ · دور باسن</Label>
+                  <Label htmlFor="oc-hip">۴ · دور باسن (cm)</Label>
                   <DigitsInput
                     id="oc-hip"
                     mode="decimal"
@@ -276,7 +276,7 @@ export function OnlineConsultForm() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="oc-thigh">۵ · دور ران</Label>
+                  <Label htmlFor="oc-thigh">۵ · دور ران (cm)</Label>
                   <DigitsInput
                     id="oc-thigh"
                     mode="decimal"
@@ -286,7 +286,7 @@ export function OnlineConsultForm() {
                   />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="oc-calf">۶ · دور ساق</Label>
+                  <Label htmlFor="oc-calf">۶ · دور ساق (cm)</Label>
                   <DigitsInput
                     id="oc-calf"
                     mode="decimal"
