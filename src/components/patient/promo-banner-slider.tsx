@@ -53,25 +53,25 @@ export function PromoBannerSlider({
   if (landing) {
     if (items.length === 0) {
       return (
-        <section className="relative isolate min-h-[58svh] overflow-hidden bg-[#14352A] sm:min-h-[64svh]">
-          <div className="relative z-10 mx-auto flex min-h-[58svh] max-w-5xl flex-col justify-end px-4 pb-12 pt-10 sm:min-h-[64svh] sm:px-6 sm:pb-16">
-            <p className="text-sm font-semibold text-[#F0B429]">
+        <section className="relative isolate min-h-[78svh] w-full overflow-hidden bg-[#14352A] sm:min-h-[85svh]">
+          <div className="relative z-10 mx-auto flex min-h-[78svh] w-full max-w-6xl flex-col justify-end px-4 pb-16 pt-12 sm:min-h-[85svh] sm:px-6 sm:pb-20">
+            <p className="text-sm font-semibold tracking-wide text-[#F0B429] sm:text-base">
               کلینیک تخصصی لاغری و رژیم درمانی
             </p>
-            <h1 className="mt-2 text-4xl font-extrabold text-white sm:text-5xl">
+            <h1 className="mt-3 text-5xl font-extrabold text-white sm:text-6xl md:text-7xl">
               تندیس
             </h1>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/patient/book"
-                className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#F0B429] px-5 text-sm font-extrabold text-[#14352A]"
+                className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#F0B429] px-6 text-sm font-extrabold text-[#14352A]"
               >
                 رزرو نوبت
                 <ArrowLeft className="size-4" />
               </Link>
               <Link
                 href="/patient/consult"
-                className="inline-flex h-11 items-center rounded-xl border border-white/35 bg-white/10 px-5 text-sm font-bold text-white"
+                className="inline-flex h-12 items-center rounded-xl border border-white/40 bg-white/10 px-6 text-sm font-bold text-white"
               >
                 مشاوره آنلاین
               </Link>
@@ -86,7 +86,7 @@ export function PromoBannerSlider({
     return (
       <section
         id="offers"
-        className="relative isolate min-h-[58svh] overflow-hidden sm:min-h-[64svh]"
+        className="relative isolate min-h-[78svh] w-full overflow-hidden sm:min-h-[85svh]"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -96,37 +96,39 @@ export function PromoBannerSlider({
           alt={current.title}
           fill
           priority={index === 0}
-          className="object-cover"
+          className="object-cover object-center"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F241C]/90 via-[#14352A]/35 to-[#14352A]/10" />
-        <div className="relative z-10 mx-auto flex min-h-[58svh] max-w-5xl flex-col justify-end px-4 pb-12 pt-10 sm:min-h-[64svh] sm:px-6 sm:pb-16">
-          <p className="text-sm font-semibold text-[#F0B429]">پیشنهاد ویژه</p>
-          <h1 className="mt-2 max-w-2xl text-3xl font-extrabold text-white sm:text-4xl md:text-5xl">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0F241C]/92 via-[#14352A]/40 to-[#14352A]/15" />
+        <div className="relative z-10 mx-auto flex min-h-[78svh] w-full max-w-6xl flex-col justify-end px-4 pb-16 pt-12 sm:min-h-[85svh] sm:px-6 sm:pb-20">
+          <p className="text-sm font-semibold tracking-wide text-[#F0B429] sm:text-base">
+            پیشنهاد ویژه
+          </p>
+          <h1 className="mt-3 max-w-3xl text-4xl font-extrabold leading-tight text-white sm:text-5xl md:text-6xl">
             {current.title}
           </h1>
           {current.subtitle ? (
-            <p className="mt-3 max-w-xl text-sm leading-8 text-white/85">
+            <p className="mt-4 max-w-2xl text-sm leading-8 text-white/85 sm:text-base">
               {current.subtitle}
             </p>
           ) : null}
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
               href={current.href || "/patient/book"}
-              className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#F0B429] px-5 text-sm font-extrabold text-[#14352A]"
+              className="inline-flex h-12 items-center gap-2 rounded-xl bg-[#F0B429] px-6 text-sm font-extrabold text-[#14352A] transition hover:bg-[#e0a61f]"
             >
               {current.href ? "مشاهده پیشنهاد" : "رزرو نوبت"}
               <ArrowLeft className="size-4" />
             </Link>
             <Link
               href="/patient/consult"
-              className="inline-flex h-11 items-center rounded-xl border border-white/35 bg-white/10 px-5 text-sm font-bold text-white"
+              className="inline-flex h-12 items-center rounded-xl border border-white/40 bg-white/10 px-6 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
             >
               مشاوره آنلاین
             </Link>
           </div>
           {items.length > 1 ? (
-            <div className="mt-8 flex items-center gap-1.5">
+            <div className="mt-10 flex items-center gap-2">
               {items.map((item, i) => (
                 <button
                   key={item.id}
@@ -135,7 +137,7 @@ export function PromoBannerSlider({
                   onClick={() => setIndex(i)}
                   className={cn(
                     "h-1.5 rounded-full transition-all",
-                    i === index ? "w-7 bg-[#F0B429]" : "w-2 bg-white/40"
+                    i === index ? "w-8 bg-[#F0B429]" : "w-2.5 bg-white/45"
                   )}
                 />
               ))}
