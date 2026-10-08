@@ -141,28 +141,6 @@ export function PatientHomeScreen() {
           </div>
         </section>
 
-        <Link
-          href="/patient/bmi"
-          className="block overflow-hidden rounded-[28px] bg-[#14352A] p-5 text-white shadow-[0_10px_30px_rgba(20,53,42,0.18)]"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold text-[#F0B429]">ابزار سلامت</p>
-              <h2 className="mt-1 text-lg font-extrabold">محاسبه BMI</h2>
-              <p className="mt-2 text-xs leading-6 text-white/75">
-                شاخص توده بدنی، بازه وزن ایده‌آل و استخوان‌بندی‌تان را ببینید.
-              </p>
-            </div>
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-[#F0B429]">
-              <Scale className="size-5" />
-            </span>
-          </div>
-          <span className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-[#F0B429]">
-            شروع محاسبه
-            <ChevronLeft className="size-4" />
-          </span>
-        </Link>
-
         <section className="grid grid-cols-4 gap-2.5">
           {quickActions.map((action) => {
             const Icon = action.icon;
