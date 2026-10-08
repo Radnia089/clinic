@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { BmiCalculator } from "@/components/bmi/bmi-calculator";
 import { ChampionsSection } from "@/components/champions/champions-section";
+import { LandingLoginMenu } from "@/components/landing/landing-login-menu";
 import { MagazineLandingSection } from "@/components/magazine/magazine-landing-section";
 import { PromoBannerSlider } from "@/components/patient/promo-banner-slider";
 import type { Champion, MagazineArticle, PromoBanner } from "@/lib/types";
@@ -80,21 +81,21 @@ export function ClinicLanding({
 
       {/* Nav */}
       <header className="sticky top-0 z-40 border-b border-[#1A2E26]/06 bg-[#F6F8F5]/90 backdrop-blur-md">
-        <div className="mx-auto flex h-auto min-h-16 max-w-6xl items-center justify-between gap-4 px-4 py-2 sm:min-h-[4.5rem] sm:px-6">
-          <Link href="/" className="flex flex-col items-start gap-0.5">
+        <div className="mx-auto flex h-auto min-h-14 max-w-6xl items-center justify-between gap-3 px-4 py-2 sm:min-h-[4.5rem] sm:gap-4 sm:px-6">
+          <Link href="/" className="min-w-0 flex flex-col items-start gap-0.5">
             <Image
               src="/tandis-logo.png"
               alt="کلینیک تندیس"
               width={160}
               height={67}
-              className="h-9 w-auto object-contain sm:h-11"
+              className="h-8 w-auto object-contain sm:h-11"
               priority
             />
-            <p className="max-w-[14rem] text-[10px] font-semibold leading-4 text-[#14352A]/75 sm:max-w-none sm:text-[11px]">
+            <p className="max-w-[12rem] text-[9px] font-semibold leading-snug text-[#14352A]/75 sm:max-w-none sm:text-[11px]">
               کلینیک تخصصی لاغری و رژیم درمانی تندیس یزد
             </p>
           </Link>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-[#1A2E26]/75 md:flex">
+          <nav className="hidden items-center gap-5 text-sm font-medium text-[#1A2E26]/75 lg:flex xl:gap-6">
             <a href="#services" className="hover:text-[#14352A]">
               خدمات
             </a>
@@ -113,19 +114,11 @@ export function ClinicLanding({
             <a href="#path" className="hover:text-[#14352A]">
               مسیر درمان
             </a>
-            <a href="#portal" className="hover:text-[#14352A]">
-              ورود
-            </a>
             <a href="#contact" className="hover:text-[#14352A]">
               تماس
             </a>
           </nav>
-          <a
-            href="#portal"
-            className="inline-flex h-10 items-center rounded-full bg-[#14352A] px-4 text-sm font-bold text-white transition hover:bg-[#1f4a3a] sm:px-5"
-          >
-            ورود به پنل‌ها
-          </a>
+          <LandingLoginMenu />
         </div>
       </header>
 
@@ -351,81 +344,9 @@ export function ClinicLanding({
         </div>
       </section>
 
-      {/* Portal — درگاه ورود همه پنل‌ها */}
-      <section id="portal" className="bg-[#0F241C] text-white">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-          <p className="text-sm font-bold tracking-wide text-[#F0B429]">درگاه ورود</p>
-          <h2 className="mt-2 max-w-2xl text-3xl font-extrabold sm:text-4xl">
-            ورود به همه پنل‌های تندیس از همین صفحه
-          </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-8 text-white/70 sm:text-base">
-            مشتری، پذیرش و مدیریت — هر نقش از اینجا وارد پنل خودش می‌شود.
-          </p>
-
-          <div className="mt-12 grid gap-4 md:grid-cols-3">
-            <Link
-              href="/patient"
-              className="group flex flex-col justify-between rounded-[1.75rem] bg-white/5 p-6 transition hover:bg-white/10 sm:p-7"
-            >
-              <div>
-                <p className="text-xs font-bold tracking-wide text-[#F0B429]">
-                  مراجعه‌کننده
-                </p>
-                <h3 className="mt-3 text-2xl font-extrabold">اپ مشتری</h3>
-                <p className="mt-3 text-sm leading-7 text-white/70">
-                  برنامه غذایی، پیشرفت، نوبت حضوری و مشاوره آنلاین.
-                </p>
-              </div>
-              <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#F0B429]">
-                ورود به اپ مشتری
-                <ArrowLeft className="size-4 transition group-hover:-translate-x-1" />
-              </span>
-            </Link>
-
-            <Link
-              href="/login?next=/clinic/reception"
-              className="group flex flex-col justify-between rounded-[1.75rem] bg-[#F0B429] p-6 text-[#14352A] transition hover:bg-[#e0a61f] sm:p-7"
-            >
-              <div>
-                <p className="text-xs font-bold tracking-wide text-[#14352A]/70">
-                  کارکنان
-                </p>
-                <h3 className="mt-3 text-2xl font-extrabold">پذیرش</h3>
-                <p className="mt-3 text-sm leading-7 text-[#14352A]/75">
-                  میز پذیرش، ثبت مراجعه، مشتریان، نوبت‌ها و مشاوره آنلاین.
-                </p>
-              </div>
-              <span className="mt-8 inline-flex items-center gap-2 text-sm font-extrabold">
-                ورود پذیرش
-                <ArrowLeft className="size-4 transition group-hover:-translate-x-1" />
-              </span>
-            </Link>
-
-            <Link
-              href="/login?next=/clinic"
-              className="group flex flex-col justify-between rounded-[1.75rem] border border-white/15 bg-[#14352A] p-6 transition hover:border-white/30 hover:bg-[#1a4033] sm:p-7"
-            >
-              <div>
-                <p className="text-xs font-bold tracking-wide text-[#F0B429]">
-                  مدیریت
-                </p>
-                <h3 className="mt-3 text-2xl font-extrabold">پنل مدیر</h3>
-                <p className="mt-3 text-sm leading-7 text-white/70">
-                  داشبورد، مالی کلینیک، پیامک و حسابداری شخصی.
-                </p>
-              </div>
-              <span className="mt-8 inline-flex items-center gap-2 text-sm font-bold text-[#F0B429]">
-                ورود مدیریت
-                <ArrowLeft className="size-4 transition group-hover:-translate-x-1" />
-              </span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {/* Contact */}
-      <section id="contact" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
-        <div className="grid gap-10 md:grid-cols-[1fr_1.1fr] md:items-end">
+      <section id="contact" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-28">
+        <div className="grid gap-8 sm:gap-10 md:grid-cols-[1fr_1.1fr] md:items-end">
           <div>
             <p className="text-sm font-bold tracking-wide text-[#C48A12]">تماس</p>
             <h2 className="mt-2 text-3xl font-extrabold text-[#14352A] sm:text-4xl">
@@ -434,7 +355,7 @@ export function ClinicLanding({
             <p className="mt-4 text-sm leading-8 text-[#1A2E26]/70">{address}</p>
             <a
               href={`tel:${tel}`}
-              className="mt-3 inline-block text-2xl font-extrabold text-[#14352A]"
+              className="mt-3 inline-block text-xl font-extrabold text-[#14352A] sm:text-2xl"
               dir="ltr"
             >
               {phone}
@@ -444,30 +365,25 @@ export function ClinicLanding({
           <div className="flex flex-wrap gap-3 md:justify-end">
             <Link
               href="/patient/book"
-              className="inline-flex h-12 items-center rounded-full bg-[#F0B429] px-6 text-sm font-extrabold text-[#14352A]"
+              className="inline-flex h-11 items-center rounded-full bg-[#F0B429] px-5 text-sm font-extrabold text-[#14352A] sm:h-12 sm:px-6"
             >
               رزرو نوبت حضوری
             </Link>
             <Link
               href="/patient/consult"
-              className="inline-flex h-12 items-center rounded-full bg-[#14352A] px-6 text-sm font-bold text-white"
+              className="inline-flex h-11 items-center rounded-full bg-[#14352A] px-5 text-sm font-bold text-white sm:h-12 sm:px-6"
             >
               مشاوره آنلاین
             </Link>
-            <a
-              href="#portal"
-              className="inline-flex h-12 items-center rounded-full border border-[#14352A]/15 bg-white px-6 text-sm font-bold text-[#14352A]"
-            >
-              ورود به پنل‌ها
-            </a>
+            <LandingLoginMenu variant="outline" className="h-11 px-5 sm:h-12 sm:px-6" />
           </div>
         </div>
       </section>
 
       <footer className="border-t border-[#1A2E26]/08 bg-[#0F241C] text-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-white px-2.5 py-1.5">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="shrink-0 rounded-xl bg-white px-2.5 py-1.5">
               <Image
                 src="/tandis-logo.png"
                 alt="تندیس"
@@ -478,10 +394,8 @@ export function ClinicLanding({
             </div>
             <p className="text-xs text-white/65">کلینیک لاغری تندیس یزد</p>
           </div>
-          <div className="flex flex-wrap gap-4 text-sm text-white/75">
-            <a href="#portal" className="hover:text-white">
-              ورود به پنل‌ها
-            </a>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-white/75">
+            <LandingLoginMenu variant="footer" />
             <a href="#bmi" className="hover:text-white">
               محاسبه BMI
             </a>
@@ -490,9 +404,6 @@ export function ClinicLanding({
             </a>
             <Link href="/magazine" className="hover:text-white">
               مجله
-            </Link>
-            <Link href="/patient" className="hover:text-white">
-              اپ مشتری
             </Link>
             <Link href="/patient/consult" className="hover:text-white">
               مشاوره آنلاین

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-/** درگاه ورود روی لندینگ متمرکز شده است */
+/** مسیر قدیمی درگاه؛ ورود از دکمه هدر لندینگ است */
 export default function AppsPortalPage() {
-  redirect("/#portal");
+  redirect("/");
 }

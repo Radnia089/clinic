@@ -40,10 +40,10 @@ curl -X POST http://127.0.0.1:3847/api/reminders \
 
 ## ورود
 
-درگاه همه پنل‌ها روی لندینگ است: [`/#portal`](http://127.0.0.1:3847/#portal)
+از دکمه **ورود** در هدر لندینگ، نقش را انتخاب کنید:
 
-- اپ مشتری → `/patient`
-- پذیرش → `/login?next=/clinic/reception` (کاربر `tandis`)
+- مشتری → `/patient`
+- کارکنان → `/login?next=/clinic/reception` (کاربر `tandis`)
 - مدیریت → `/login?next=/clinic` (کاربر `admin`)
 
 رمز تست: `123456`
@@ -65,8 +65,8 @@ npm run dev -- --port 3847 --hostname 127.0.0.1
 
 | مسیر | توضیح |
 | --- | --- |
-| `/` | لندینگ کلینیک + درگاه ورود (`/#portal`) + محاسبه BMI (`/#bmi`) + قهرمانان (`/#champions`) |
-| `/apps` | هدایت به `/#portal` |
+| `/` | لندینگ کلینیک + ورود (پاپ‌آپ) + محاسبه BMI (`/#bmi`) + قهرمانان (`/#champions`) |
+| `/apps` | هدایت به لندینگ |
 | `/patient` | اپ مشتری |
 | `/patient/bmi` | محاسبه شاخص توده بدنی |
 | `/patient/champions` | قبل و بعد قهرمانان |
