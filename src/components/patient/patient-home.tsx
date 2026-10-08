@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { ClinicLogo } from "@/components/brand/clinic-logo";
 import { ChampionsSection } from "@/components/champions/champions-section";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
+import { PatientUserMenu } from "@/components/patient/patient-user-menu";
 import { PromoBannerSlider } from "@/components/patient/promo-banner-slider";
 import type {
   Champion,
@@ -165,11 +166,6 @@ export function PatientHomeScreen({
   const progressValue = goalProgressPercent(measurements, goalWeight);
   const firstName = patient?.firstName?.trim() || "دوست";
 
-  async function logout() {
-    await fetch("/api/patient-auth/logout", { method: "POST" });
-    window.location.href = "/patient/login";
-  }
-
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-[430px] flex-col bg-[#F7F8F6] text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.04)]">
       {tab === "progress" ? (
@@ -183,26 +179,7 @@ export function PatientHomeScreen({
                 کلینیک تخصصی لاغری و رژیم درمانی تندیس
               </p>
             </div>
-            <div className="text-left">
-              <Link
-                href="/patient/profile"
-                className="group inline-flex flex-col items-end"
-              >
-                <p className="text-sm font-bold text-brand underline-offset-2 group-hover:underline">
-                  سلام {firstName} 🍃
-                </p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  مشاهده و تکمیل اطلاعات
-                </p>
-              </Link>
-              <button
-                type="button"
-                onClick={() => void logout()}
-                className="mt-1 text-[11px] font-medium text-muted-foreground underline-offset-2 hover:underline"
-              >
-                خروج
-              </button>
-            </div>
+            <PatientUserMenu firstName={firstName} />
           </header>
 
           <section className="rounded-[28px] bg-[#E8F2EA] p-5">

@@ -54,7 +54,7 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
       router.replace("/patient");
       router.refresh();
     } catch {
-      setError("ذخیره اطلاعات انجام نشد. فیلدهای ضروری را بررسی کنید.");
+      setError("ذخیره اطلاعات انجام نشد. دوباره تلاش کنید.");
     } finally {
       setLoading(false);
     }
@@ -82,7 +82,6 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
                 className={fieldClass}
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                required
               />
             </div>
             <div className="space-y-1.5">
@@ -91,7 +90,6 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
                 className={fieldClass}
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                required
               />
             </div>
           </div>
