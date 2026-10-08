@@ -11,10 +11,15 @@ import {
   Payment,
   PersonalLedgerEntry,
   ProgressMeasurement,
+  PromoBanner,
   SmsLogEntry,
   Visit,
 } from "@/lib/types";
 import { defaultChampions, sortChampions } from "@/lib/champions";
+import {
+  defaultPromoBanners,
+  sortPromoBanners,
+} from "@/lib/promo-banners";
 import { mergeReminderSettings } from "@/lib/sms";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -31,6 +36,7 @@ const emptyData = (): AppData => ({
   smsLogs: [],
   personalLedger: [],
   champions: defaultChampions(),
+  promoBanners: defaultPromoBanners(),
 });
 
 async function ensureStore(): Promise<AppData> {
@@ -85,8 +91,18 @@ async function ensureStore(): Promise<AppData> {
       smsLogs: parsed.smsLogs ?? [],
       personalLedger: parsed.personalLedger ?? [],
       champions,
+      promoBanners:
+        parsed.promoBanners && parsed.promoBanners.length > 0
+          ? parsed.promoBanners
+          : defaultPromoBanners(),
     };
-    if (!parsed.champions || parsed.champions.length === 0 || needsWaistPersist) {
+    if (
+      !parsed.champions ||
+      parsed.champions.length === 0 ||
+      needsWaistPersist ||
+      !parsed.promoBanners ||
+      parsed.promoBanners.length === 0
+    ) {
       await writeStore(data);
     }
     return data;
@@ -493,6 +509,57 @@ export async function deleteChampion(id: string) {
   const before = data.champions?.length ?? 0;
   data.champions = (data.champions ?? []).filter((item) => item.id !== id);
   if ((data.champions.length ?? 0) === before) return false;
+  await writeStore(data);
+  return true;
+}
+
+export async function listPromoBanners(options?: { publishedOnly?: boolean }) {
+  const items = (await ensureStore()).promoBanners ?? [];
+  const filtered = options?.publishedOnly
+    ? items.filter((item) => item.published)
+    : items;
+  return sortPromoBanners(filtered);
+}
+
+export async function createPromoBanner(
+  input: Omit<PromoBanner, "id" | "createdAt" | "updatedAt">
+) {
+  const data = await ensureStore();
+  const now = new Date().toISOString();
+  const item: PromoBanner = {
+    ...input,
+    id: crypto.randomUUID(),
+    createdAt: now,
+    updatedAt: now,
+  };
+  data.promoBanners = data.promoBanners ?? [];
+  data.promoBanners.unshift(item);
+  await writeStore(data);
+  return item;
+}
+
+export async function updatePromoBanner(
+  id: string,
+  patch: Partial<PromoBanner>
+) {
+  const data = await ensureStore();
+  const index = (data.promoBanners ?? []).findIndex((item) => item.id === id);
+  if (index < 0) return null;
+  data.promoBanners[index] = {
+    ...data.promoBanners[index],
+    ...patch,
+    id,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeStore(data);
+  return data.promoBanners[index];
+}
+
+export async function deletePromoBanner(id: string) {
+  const data = await ensureStore();
+  const before = data.promoBanners?.length ?? 0;
+  data.promoBanners = (data.promoBanners ?? []).filter((item) => item.id !== id);
+  if ((data.promoBanners.length ?? 0) === before) return false;
   await writeStore(data);
   return true;
 }

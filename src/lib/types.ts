@@ -243,6 +243,19 @@ export interface Champion {
   updatedAt: string;
 }
 
+export interface PromoBanner {
+  id: string;
+  title: string;
+  subtitle?: string;
+  image: string;
+  /** لینک اختیاری هنگام کلیک روی بنر */
+  href?: string;
+  published: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AppData {
   clinic: ClinicProfile;
   patients: Patient[];
@@ -254,6 +267,7 @@ export interface AppData {
   smsLogs: SmsLogEntry[];
   personalLedger: PersonalLedgerEntry[];
   champions: Champion[];
+  promoBanners: PromoBanner[];
 }
 
 export const PERSONAL_INCOME_CATEGORIES = [

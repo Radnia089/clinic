@@ -26,6 +26,8 @@
 .data/
 /public/uploads/champions/*
 !/public/uploads/champions/.gitkeep
+/public/uploads/promos/*
+!/public/uploads/promos/.gitkeep
 
 # debug
 npm-debug.log*

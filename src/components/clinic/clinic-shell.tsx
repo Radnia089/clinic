@@ -16,6 +16,7 @@ import {
   BookOpen,
   Video,
   Trophy,
+  ImageIcon,
 } from "lucide-react";
 
 const receptionLinks = [
@@ -40,6 +41,13 @@ const managementLinks = [
     label: "قهرمانان",
     icon: Trophy,
     short: "قهرمانان",
+    managerOnly: true,
+  },
+  {
+    href: "/clinic/banners",
+    label: "بنرهای تبلیغاتی",
+    icon: ImageIcon,
+    short: "بنرها",
     managerOnly: true,
   },
   { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },

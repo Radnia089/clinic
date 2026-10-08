@@ -1,11 +1,14 @@
 import { Suspense } from "react";
 import { PatientHomeScreen } from "@/components/patient/patient-home";
-import { listChampions } from "@/lib/store";
+import { listChampions, listPromoBanners } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function PatientAppPage() {
-  const champions = await listChampions({ publishedOnly: true });
+  const [champions, promoBanners] = await Promise.all([
+    listChampions({ publishedOnly: true }),
+    listPromoBanners({ publishedOnly: true }),
+  ]);
 
   return (
     <div className="min-h-[100svh] bg-[#EEF1EE]">
@@ -16,7 +19,10 @@ export default async function PatientAppPage() {
           </div>
         }
       >
-        <PatientHomeScreen champions={champions} />
+        <PatientHomeScreen
+          champions={champions}
+          promoBanners={promoBanners}
+        />
       </Suspense>
     </div>
   );
