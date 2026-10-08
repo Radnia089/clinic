@@ -1,14 +1,20 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DigitsInput } from "@/components/ui/digits-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { Gender, Patient, ProgressMeasurement } from "@/lib/types";
+import {
+  patientAvatarSrc,
+  type Gender,
+  type Patient,
+  type ProgressMeasurement,
+} from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const fieldClass =
@@ -22,8 +28,10 @@ export function PatientProfile({
   measurements: ProgressMeasurement[];
 }) {
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
   const latest = measurements[measurements.length - 1];
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
   const [firstName, setFirstName] = useState(patient.firstName || "");
@@ -31,6 +39,7 @@ export function PatientProfile({
   const [age, setAge] = useState(patient.age != null ? String(patient.age) : "");
   const [gender, setGender] = useState<Gender>(patient.gender || "female");
   const [address, setAddress] = useState(patient.address || "");
+  const [avatarUrl, setAvatarUrl] = useState(patient.avatarUrl);
   const [heightCm, setHeightCm] = useState(
     patient.heightCm != null ? String(patient.heightCm) : ""
   );
@@ -43,6 +52,33 @@ export function PatientProfile({
   const [waistCm, setWaistCm] = useState(
     latest?.waistCm != null ? String(latest.waistCm) : ""
   );
+
+  const previewSrc = patientAvatarSrc({ avatarUrl, gender });
+  const displayName = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
+
+  async function onPickAvatar(file: File | null) {
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/patient-auth/upload-avatar", {
+        method: "POST",
+        body,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.message || "آپلود تصویر انجام نشد.");
+      }
+      setAvatarUrl(data.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "آپلود انجام نشد.");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -62,6 +98,7 @@ export function PatientProfile({
           weightKg,
           goalWeightKg,
           waistCm,
+          avatarUrl: avatarUrl ?? "",
         }),
       });
       if (!res.ok) throw new Error("failed");
@@ -85,20 +122,59 @@ export function PatientProfile({
           بازگشت
         </Link>
 
-        <p className="mt-5 text-xs font-bold tracking-wide text-[#C48A12]">
-          حساب من
-        </p>
-        <h1 className="mt-1 text-2xl font-extrabold text-[#14352A]">
+        <div className="mt-6 flex flex-col items-center text-center">
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={uploading}
+            className="group relative size-28 overflow-hidden rounded-full bg-[#E8F2EA] shadow-[0_10px_28px_rgba(20,53,42,0.14)] ring-4 ring-white transition hover:ring-[#F0B429]/50"
+            aria-label="انتخاب عکس پروفایل"
+          >
+            <Image
+              src={previewSrc}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="112px"
+              unoptimized={previewSrc.endsWith(".svg")}
+            />
+            <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-[#14352A]/72 py-1.5 text-[10px] font-bold text-white opacity-100 transition group-hover:bg-[#14352A]/85">
+              <Camera className="size-3" />
+              {uploading ? "..." : "عکس"}
+            </span>
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => void onPickAvatar(e.target.files?.[0] ?? null)}
+          />
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            اختیاری — اگر عکس نگذارید آواتار {gender === "male" ? "مرد" : "زن"} نشان داده می‌شود
+          </p>
+
+          {displayName ? (
+            <p className="mt-3 text-lg font-extrabold text-[#14352A]">{displayName}</p>
+          ) : null}
+          {patient.phone ? (
+            <p className="mt-1 text-sm font-semibold text-[#14352A]/70" dir="ltr">
+              {patient.phone}
+            </p>
+          ) : null}
+        </div>
+
+        <p className="mt-6 text-xs font-bold tracking-wide text-[#C48A12]">
           ویرایش اطلاعات
-        </h1>
-        <p className="mt-2 text-sm leading-7 text-[#1A2E26]/65">
+        </p>
+        <p className="mt-1 text-sm leading-7 text-[#1A2E26]/65">
           هر فیلدی را خواستید پر کنید؛ اجباری نیست. بعد از ذخیره به صفحه اصلی
           برمی‌گردید.
         </p>
 
         <form
           onSubmit={onSubmit}
-          className="mt-5 space-y-4 rounded-[1.75rem] bg-white p-5 shadow-[0_12px_32px_rgba(20,53,42,0.08)]"
+          className="mt-4 space-y-4 rounded-[1.75rem] bg-white p-5 shadow-[0_12px_32px_rgba(20,53,42,0.08)]"
         >
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -207,15 +283,11 @@ export function PatientProfile({
             </div>
           </div>
 
-          <p className="text-[11px] leading-6 text-muted-foreground" dir="ltr">
-            موبایل: {patient.phone}
-          </p>
-
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
           <Button
             type="submit"
-            disabled={loading}
+            disabled={loading || uploading}
             className="h-12 w-full rounded-full bg-[#F0B429] text-sm font-extrabold text-[#14352A] hover:bg-[#e0a61f]"
           >
             {loading ? "در حال ذخیره..." : "ذخیره و بازگشت"}

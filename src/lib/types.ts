@@ -29,6 +29,8 @@ export interface Patient {
   heightCm?: number;
   /** وزن هدف (kg) — در اپ مشتری و پرونده مشترک است */
   goalWeightKg?: number;
+  /** تصویر پروفایل آپلودشده؛ اگر نباشد آواتار پیش‌فرض زن/مرد */
+  avatarUrl?: string;
   /** حضوری یا ثبت‌نام از اپ */
   source: PatientSource;
   /** پروفایل تکمیلی در اپ کامل شده است */
@@ -360,6 +362,14 @@ export const DEFAULT_CLINIC: ClinicProfile = {
 
 export function patientFullName(patient: Pick<Patient, "firstName" | "lastName">) {
   return `${patient.firstName} ${patient.lastName}`.trim();
+}
+
+/** آواتار سفارشی یا پیش‌فرض بر اساس جنسیت */
+export function patientAvatarSrc(
+  patient: Pick<Patient, "avatarUrl" | "gender">
+) {
+  if (patient.avatarUrl) return patient.avatarUrl;
+  return patient.gender === "male" ? "/avatars/male.svg" : "/avatars/female.svg";
 }
 
 export function genderLabel(gender: Gender) {

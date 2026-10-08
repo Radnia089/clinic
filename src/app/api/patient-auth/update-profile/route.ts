@@ -91,6 +91,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_waist" }, { status: 400 });
   }
 
+  const avatarUrl =
+    body.avatarUrl !== undefined
+      ? String(body.avatarUrl || "").trim() || undefined
+      : patient.avatarUrl;
+
   const draft = {
     ...patient,
     firstName,
@@ -100,6 +105,7 @@ export async function POST(request: Request) {
     address,
     heightCm,
     goalWeightKg,
+    avatarUrl,
   };
 
   const updated = await updatePatient(patient.id, {
@@ -110,6 +116,7 @@ export async function POST(request: Request) {
     address,
     heightCm,
     goalWeightKg,
+    avatarUrl,
     profileComplete: patientHasRegisteredInfo(draft) || patient.profileComplete,
     source: patient.source === "clinic" ? "clinic" : "app",
     appReviewedAt: undefined,

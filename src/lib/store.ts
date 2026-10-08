@@ -270,6 +270,9 @@ export async function updatePatient(
   if ("appReviewedAt" in patch && patch.appReviewedAt == null) {
     delete next.appReviewedAt;
   }
+  if ("avatarUrl" in patch && !patch.avatarUrl) {
+    delete next.avatarUrl;
+  }
   data.patients[index] = next;
   await writeStore(data);
   return data.patients[index];

@@ -14,9 +14,11 @@ import { Label } from "@/components/ui/label";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
 import { Textarea } from "@/components/ui/textarea";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
+import Image from "next/image";
 import {
   formatDateFa,
   formatMoney,
+  patientAvatarSrc,
   patientFullName,
   visitChannelLabel,
   visitStatusLabel,
@@ -195,7 +197,18 @@ export function CustomerFileClient({
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="relative size-14 shrink-0 overflow-hidden rounded-full bg-[#E8F2EA] ring-2 ring-white shadow-sm">
+            <Image
+              src={patientAvatarSrc(patient)}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="56px"
+              unoptimized={patientAvatarSrc(patient).endsWith(".svg")}
+            />
+          </div>
+          <div className="min-w-0">
           <p className="text-xs font-medium text-muted-foreground">پرونده مشتری</p>
           <h1 className="mt-1 flex flex-wrap items-center gap-2 text-2xl font-extrabold text-brand">
             {patientFullName(patient) || "بدون نام"}
@@ -229,6 +242,7 @@ export function CustomerFileClient({
               پیامک خوشامد و لینک اپ ارسال شده
             </p>
           ) : null}
+          </div>
         </div>
         <Link href="/clinic/reception/customers" className="text-sm font-medium text-brand">
           بازگشت به لیست
