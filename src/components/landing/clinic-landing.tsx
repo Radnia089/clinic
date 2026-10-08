@@ -55,12 +55,14 @@ export function ClinicLanding({
   hours,
   champions = [],
   articles = [],
+  promoBanners = [],
 }: {
   phone: string;
   address: string;
   hours: string;
   champions?: Champion[];
   articles?: MagazineArticle[];
+  promoBanners?: PromoBanner[];
 }) {
   const tel = phone.replace(/[^0-9+]/g, "");
 
@@ -124,46 +126,8 @@ export function ClinicLanding({
         </div>
       </header>
 
-      {/* Hero — brand first, full-bleed image */}
-      <section className="relative isolate min-h-[88svh] overflow-hidden sm:min-h-[92svh]">
-        <Image
-          src="/images/landing-hero-oasis.jpg"
-          alt="فضای کلینیک لاغری تندیس"
-          fill
-          priority
-          className="object-cover animate-ken"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F241C]/90 via-[#14352A]/45 to-[#14352A]/20" />
-
-        <div className="relative z-10 mx-auto flex min-h-[88svh] max-w-6xl flex-col justify-end px-4 pb-14 pt-28 sm:min-h-[92svh] sm:px-6 sm:pb-20">
-          <p className="animate-rise text-sm font-semibold tracking-wide text-[#F0B429] sm:text-base">
-            کلینیک لاغری · رژیم درمانی · یزد
-          </p>
-          <h1 className="animate-rise-delay-1 mt-3 max-w-3xl text-5xl font-extrabold leading-[1.05] text-white sm:text-6xl md:text-7xl lg:text-8xl">
-            تندیس
-          </h1>
-          <p className="animate-rise-delay-2 mt-5 max-w-xl text-base leading-8 text-white/90 sm:text-lg">
-            لاغری پایدار با رژیم شخصی، دستگاه‌های کمک لاغری و همراهی مشاور —
-            حضوری در کلینیک یا آنلاین از خانه.
-          </p>
-          <div className="animate-rise-delay-3 mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/patient/book"
-              className="inline-flex h-12 items-center gap-2 rounded-full bg-[#F0B429] px-6 text-sm font-extrabold text-[#14352A] transition hover:bg-[#e0a61f]"
-            >
-              رزرو نوبت حضوری
-              <ArrowLeft className="size-4" />
-            </Link>
-            <Link
-              href="/patient/consult"
-              className="inline-flex h-12 items-center rounded-full border border-white/40 bg-white/10 px-6 text-sm font-bold text-white backdrop-blur-sm transition hover:bg-white/20"
-            >
-              مشاوره آنلاین
-            </Link>
-          </div>
-        </div>
-      </section>
+      {/* Hero = اسلایدر بنرهای مدیر */}
+      <PromoBannerSlider variant="landing" items={promoBanners} />
 
       {/* Services — image-forward strips, not heavy cards */}
       <section id="services" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
