@@ -18,7 +18,6 @@ export function PatientPasswordLogin() {
   const [nationalId, setNationalId] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -44,7 +43,6 @@ export function PatientPasswordLogin() {
         }
         throw new Error("بررسی شماره انجام نشد.");
       }
-      setAlreadyRegistered(Boolean(data.alreadyRegistered));
       setPassword("");
       setConfirm("");
       setNationalId("");
