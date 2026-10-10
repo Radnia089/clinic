@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { LogOut, PencilLine } from "lucide-react";
+import { KeyRound, LogOut, PencilLine } from "lucide-react";
 import {
   patientAvatarSrc,
   patientFullName,
@@ -122,6 +122,17 @@ export function PatientUserMenu({ patient }: { patient: Patient | null }) {
                   <PencilLine className="size-3.5" />
                 </span>
                 ویرایش اطلاعات
+              </Link>
+              <Link
+                href="/patient/change-password"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="mt-1 flex items-center gap-2.5 rounded-2xl px-3 py-2.5 text-sm font-bold text-[#14352A] transition hover:bg-[#E8F2EA]"
+              >
+                <span className="flex size-8 items-center justify-center rounded-full bg-[#E8F2EA]">
+                  <KeyRound className="size-3.5" />
+                </span>
+                تغییر رمز
               </Link>
               <button
                 type="button"
