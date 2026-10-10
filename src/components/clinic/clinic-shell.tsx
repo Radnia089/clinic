@@ -44,12 +44,6 @@ const managementLinks = [
     short: "پیام اپ",
     managerOnly: true,
   },
-  {
-    href: "/clinic/app-signups",
-    label: "ثبت‌نام اپ",
-    icon: Smartphone,
-    short: "اپ",
-  },
   { href: "/clinic/finance", label: "مالی کلینیک", icon: Wallet, short: "مالی" },
   {
     href: "/clinic/personal-accounting",
