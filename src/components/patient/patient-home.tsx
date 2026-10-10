@@ -290,15 +290,6 @@ export function PatientHomeScreen({
           <PromoBannerSlider items={promoBanners} />
 
           <ChampionsSection variant="patient" items={champions} />
-
-          <div className="pt-1 text-center">
-            <Link
-              href="/"
-              className="text-xs text-muted-foreground hover:text-brand"
-            >
-              تغییر اپ
-            </Link>
-          </div>
         </div>
       )}
 
