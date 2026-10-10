@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ArticleCard } from "@/components/magazine/article-card";
+import { ArticleInstagramCta } from "@/components/magazine/article-instagram-cta";
 import type { MagazineArticle } from "@/lib/types";
 
 export function MagazineLandingSection({
@@ -21,7 +22,8 @@ export function MagazineLandingSection({
               مقالات لاغری و رژیم درمانی
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-8 text-[#1A2E26]/70 sm:text-base">
-              محتوای آموزشی برای انتخاب بهتر مسیر تغذیه، کاهش وزن و کاهش سایز.
+              محتوای آموزشی برای انتخاب بهتر مسیر تغذیه، کاهش وزن و کاهش سایز —
+              هم‌راستا با موضوعات پیج اینستاگرام تندیس.
             </p>
           </div>
           <Link
@@ -31,6 +33,10 @@ export function MagazineLandingSection({
             مشاهده همه مقالات
             <ArrowLeft className="size-4" />
           </Link>
+        </div>
+
+        <div className="mt-8 max-w-xl">
+          <ArticleInstagramCta compact />
         </div>
 
         <div className="mt-10 grid gap-5 md:grid-cols-3">

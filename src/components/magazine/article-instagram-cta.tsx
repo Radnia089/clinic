@@ -16,24 +16,35 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-export function ArticleInstagramCta() {
+export function ArticleInstagramCta({
+  compact = false,
+}: {
+  compact?: boolean;
+}) {
   return (
     <a
       href={TANDIS_INSTAGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="mt-4 flex items-center justify-between gap-3 rounded-[1.5rem] bg-gradient-to-l from-[#F58529]/15 via-[#DD2A7B]/10 to-[#8134AF]/15 px-4 py-4 ring-1 ring-[#DD2A7B]/15 transition hover:ring-[#DD2A7B]/30"
+      className={
+        compact
+          ? "mt-2 flex items-center justify-between gap-3 rounded-[1.5rem] bg-gradient-to-l from-[#F58529]/15 via-[#DD2A7B]/10 to-[#8134AF]/15 px-4 py-3 ring-1 ring-[#DD2A7B]/15 transition hover:ring-[#DD2A7B]/30"
+          : "mt-8 flex items-center justify-between gap-3 rounded-[1.5rem] bg-gradient-to-l from-[#F58529]/15 via-[#DD2A7B]/10 to-[#8134AF]/15 px-4 py-4 ring-1 ring-[#DD2A7B]/15 transition hover:ring-[#DD2A7B]/30"
+      }
     >
       <div className="flex items-center gap-3">
-        <span className="flex size-11 items-center justify-center rounded-full bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white">
           <InstagramIcon className="size-5" />
         </span>
         <div>
           <p className="text-sm font-extrabold text-[#14352A]">
-            اینستاگرام کلینیک تندیس
+            {compact
+              ? "نکات روزانه در اینستاگرام تندیس"
+              : "ادامه این موضوع را در اینستاگرام تندیس ببینید"}
           </p>
-          <p className="mt-0.5 text-xs text-[#1A2E26]/65" dir="ltr">
-            @{TANDIS_INSTAGRAM_HANDLE}
+          <p className="mt-0.5 text-xs leading-6 text-[#1A2E26]/65">
+            نمونه‌کار · رژیم · پشت‌صحنه کلینیک ·{" "}
+            <span dir="ltr">@{TANDIS_INSTAGRAM_HANDLE}</span>
           </p>
         </div>
       </div>

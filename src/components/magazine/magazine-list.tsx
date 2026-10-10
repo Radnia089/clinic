@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { ArticleCard } from "@/components/magazine/article-card";
+import { ArticleInstagramCta } from "@/components/magazine/article-instagram-cta";
 import { MAGAZINE_CATEGORIES, type MagazineArticle } from "@/lib/magazine";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +47,8 @@ export function MagazineList({
         مقاله‌ها{" "}
         <span className="font-bold">{faNum(filtered.length)} مقاله</span>
       </p>
+
+      <ArticleInstagramCta compact />
 
       <div className="relative">
         <Search className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-muted-foreground" />
