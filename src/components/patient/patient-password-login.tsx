@@ -176,11 +176,18 @@ export function PatientPasswordLogin() {
   }
 
   return (
-    <div className="relative min-h-[100svh] overflow-hidden bg-white text-[#1A2E26]">
+    <div className="relative min-h-[100svh] overflow-hidden bg-[#14352A] text-white">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          background:
+            "radial-gradient(ellipse at 20% 0%, rgba(240,180,41,0.35), transparent 50%), radial-gradient(ellipse at 90% 80%, rgba(232,242,234,0.18), transparent 45%)",
+        }}
+      />
       <div className="relative mx-auto flex min-h-[100svh] w-full max-w-[430px] flex-col px-5 pb-10 pt-8">
         <Link
           href="/"
-          className="inline-flex items-center gap-1 text-sm text-[#14352A]/65 transition hover:text-[#14352A]"
+          className="inline-flex items-center gap-1 text-sm text-white/70 transition hover:text-white"
         >
           <ArrowLeft className="size-4" />
           بازگشت به سایت
@@ -195,13 +202,13 @@ export function PatientPasswordLogin() {
             className="h-12 w-auto object-contain"
             priority
           />
-          <p className="mt-5 max-w-xs text-sm leading-7 text-[#14352A]/75">
+          <p className="mt-5 max-w-xs text-sm leading-7 text-white/85">
             کلینیک تخصصی لاغری و رژیم درمانی تندیس
           </p>
-          <h1 className="mt-2 text-3xl font-extrabold text-[#14352A]">ورود</h1>
+          <h1 className="mt-2 text-3xl font-extrabold">ورود</h1>
         </div>
 
-        <div className="mt-10 rounded-[1.75rem] bg-[#F7F8F6] p-5 text-[#1A2E26] shadow-[0_6px_18px_rgba(35,70,55,0.06)]">
+        <div className="mt-10 rounded-[1.75rem] bg-white p-5 text-[#1A2E26] shadow-2xl">
           {step === "phone" ? (
             <form onSubmit={checkPhone} className="space-y-4">
               <div className="space-y-2">
