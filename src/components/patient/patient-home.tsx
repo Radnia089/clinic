@@ -10,13 +10,12 @@ import {
   BookOpen,
   Scale,
   Video,
-  Gift,
-  Star,
   MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ClinicLogo } from "@/components/brand/clinic-logo";
 import { ChampionsSection } from "@/components/champions/champions-section";
+import { PatientClubLink } from "@/components/patient/patient-club-link";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
 import { PatientInstagramLink } from "@/components/patient/patient-instagram-link";
 import { PatientNotificationBell } from "@/components/patient/patient-notification-bell";
@@ -209,6 +208,7 @@ export function PatientHomeScreen({
               </p>
             </div>
             <div className="flex items-start gap-1.5">
+              <PatientClubLink />
               <PatientInstagramLink />
               <PatientNotificationBell />
               <PatientUserMenu patient={patient} />
@@ -290,27 +290,6 @@ export function PatientHomeScreen({
           <PromoBannerSlider items={promoBanners} />
 
           <ChampionsSection variant="patient" items={champions} />
-
-          <section className="flex items-center justify-between gap-3 rounded-[28px] bg-[#F6E6E1] px-4 py-4">
-            <div className="flex items-center gap-3">
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-white/80 text-[#D86B5C]">
-                <Gift className="size-5" />
-              </span>
-              <div>
-                <p className="text-sm font-bold text-[#9A4E42]">باشگاه تندیس</p>
-                <p className="mt-0.5 flex items-center gap-1 text-xs text-[#9A4E42]/80">
-                  <Star className="size-3.5 fill-[#E0A24A] text-[#E0A24A]" />
-                  ۱۸۰ امتیاز
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="rounded-full bg-[#D86B5C] px-4 py-2 text-xs font-semibold text-white"
-            >
-              مشاهده جوایز
-            </button>
-          </section>
 
           <div className="pt-1 text-center">
             <Link
