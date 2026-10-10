@@ -4,6 +4,7 @@ import { citiesForProvince } from "@/lib/iran-locations";
 import { ageFromIsoBirthDate } from "@/lib/jalali";
 import { getCurrentPatient } from "@/lib/patient-auth";
 import { patientHasRegisteredInfo } from "@/lib/patient-profile";
+import { toPublicPatient } from "@/lib/patient-public";
 import { createMeasurement, listMeasurements, updatePatient } from "@/lib/store";
 import type { Gender } from "@/lib/types";
 
@@ -184,5 +185,8 @@ export async function POST(request: Request) {
   }
 
   const measurements = await listMeasurements(updated!.id);
-  return NextResponse.json({ patient: updated, measurements });
+  return NextResponse.json({
+    patient: updated ? toPublicPatient(updated) : updated,
+    measurements,
+  });
 }

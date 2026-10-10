@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseNormalizedNumber } from "@/lib/digits";
 import { getCurrentPatient } from "@/lib/patient-auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import { createMeasurement, updatePatient } from "@/lib/store";
 import type { Gender } from "@/lib/types";
 
@@ -74,5 +75,7 @@ export async function POST(request: Request) {
     });
   }
 
-  return NextResponse.json({ patient: updated });
+  return NextResponse.json({
+    patient: updated ? toPublicPatient(updated) : updated,
+  });
 }

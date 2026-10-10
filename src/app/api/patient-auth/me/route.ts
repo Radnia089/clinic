@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentPatient } from "@/lib/patient-auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import { listMeasurements } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export async function GET() {
   }
   const measurements = await listMeasurements(patient.id);
   return NextResponse.json(
-    { patient, measurements },
+    { patient: toPublicPatient(patient), measurements },
     {
       headers: {
         "Cache-Control": "no-store, no-cache, must-revalidate",

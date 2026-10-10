@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 import { getCurrentPatient } from "@/lib/patient-auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import { updatePatient } from "@/lib/store";
 
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -45,5 +46,8 @@ export async function POST(request: Request) {
     appReviewedAt: undefined,
   });
 
-  return NextResponse.json({ url: avatarUrl, patient: updated });
+  return NextResponse.json({
+    url: avatarUrl,
+    patient: updated ? toPublicPatient(updated) : updated,
+  });
 }

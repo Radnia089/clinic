@@ -336,6 +336,10 @@ export async function updatePatient(
   if ("birthDate" in patch && !patch.birthDate) {
     delete next.birthDate;
   }
+  if ("passwordHash" in patch && !patch.passwordHash) {
+    delete next.passwordHash;
+    delete next.passwordSetAt;
+  }
   data.patients[index] = next;
   await writeStore(data);
   return data.patients[index];

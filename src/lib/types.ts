@@ -43,6 +43,10 @@ export interface Patient {
   profileComplete: boolean;
   /** زمان تأیید موبایل با OTP */
   phoneVerifiedAt?: string;
+  /** هش رمز ورود اپ (salt:hash) — هرگز به کلاینت برنگردد */
+  passwordHash?: string;
+  /** زمان تنظیم یا تغییر رمز ورود */
+  passwordSetAt?: string;
   /** زمان ارسال پیامک خوشامد / لینک اپ */
   welcomeSmsSentAt?: string;
   /** زمان بررسی در بخش «ثبت‌نام اپ» توسط کارکنان */
