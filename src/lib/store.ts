@@ -127,12 +127,12 @@ async function ensureStore(): Promise<AppData> {
       patientInboxReads: parsed.patientInboxReads ?? [],
     };
     const defaultArticleList = defaultArticles();
-    const defaultsById = Object.fromEntries(
+    const articleDefaultsById = Object.fromEntries(
       defaultArticleList.map((item) => [item.id, item])
     );
     let articlesChanged = false;
     data.articles = (data.articles ?? []).map((item) => {
-      const seed = defaultsById[item.id];
+      const seed = articleDefaultsById[item.id];
       if (!seed) return item;
       // همگام‌سازی محتوای seeded (سئو/کاور) بدون از دست رفتن بازدید
       if (
