@@ -45,6 +45,7 @@ export function PatientProfile({
 
   const [firstName, setFirstName] = useState(patient.firstName || "");
   const [lastName, setLastName] = useState(patient.lastName || "");
+  const [nationalId, setNationalId] = useState(patient.nationalId || "");
   const [age, setAge] = useState(patient.age != null ? String(patient.age) : "");
   const [gender, setGender] = useState<Gender>(patient.gender || "female");
   const [province, setProvince] = useState(patient.province || "");
@@ -108,6 +109,7 @@ export function PatientProfile({
         body: JSON.stringify({
           firstName,
           lastName,
+          nationalId,
           age,
           gender,
           province,
@@ -121,12 +123,22 @@ export function PatientProfile({
           avatarUrl: avatarUrl ?? "",
         }),
       });
-      if (!res.ok) throw new Error("failed");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.error === "invalid_national_id") {
+          throw new Error("کد ملی معتبر نیست.");
+        }
+        throw new Error("failed");
+      }
       // Hard navigation so home always reloads fresh weight/goal/avatar
       window.location.assign("/patient");
       return;
-    } catch {
-      setError("ذخیره انجام نشد. دوباره تلاش کنید.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message !== "failed"
+          ? err.message
+          : "ذخیره انجام نشد. دوباره تلاش کنید."
+      );
       setLoading(false);
     }
   }
@@ -213,6 +225,17 @@ export function PatientProfile({
                 onChange={(e) => setLastName(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>کد ملی</Label>
+            <DigitsInput
+              mode="integer"
+              className={fieldClass}
+              value={nationalId}
+              onValueChange={(v) => setNationalId(v.slice(0, 10))}
+              placeholder="۱۰ رقم"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

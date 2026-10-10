@@ -8,18 +8,16 @@ import { ArrowLeft, KeyRound, Smartphone } from "lucide-react";
 import { DigitsInput } from "@/components/ui/digits-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
-type Step = "phone" | "setup" | "login" | "forgot_code" | "forgot_reset";
+type Step = "phone" | "setup" | "login" | "forgot";
 
 export function PatientPasswordLogin() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
+  const [nationalId, setNationalId] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [code, setCode] = useState("");
-  const [devCode, setDevCode] = useState<string | undefined>();
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,8 +47,7 @@ export function PatientPasswordLogin() {
       setAlreadyRegistered(Boolean(data.alreadyRegistered));
       setPassword("");
       setConfirm("");
-      setCode("");
-      setDevCode(undefined);
+      setNationalId("");
       setStep(data.hasPassword ? "login" : "setup");
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
@@ -70,12 +67,15 @@ export function PatientPasswordLogin() {
       const res = await fetch("/api/patient-auth/set-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, password }),
+        body: JSON.stringify({ phone, password, nationalId }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (data.error === "invalid_length") {
           throw new Error("رمز باید ۴ تا ۸ کاراکتر باشد.");
+        }
+        if (data.error === "invalid_national_id") {
+          throw new Error("کد ملی معتبر نیست.");
         }
         if (data.error === "password_exists") {
           throw new Error("برای این شماره قبلاً رمز ثبت شده. وارد شوید.");
@@ -123,46 +123,7 @@ export function PatientPasswordLogin() {
     }
   }
 
-  async function requestResetOtp(event?: FormEvent) {
-    event?.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch("/api/patient-auth/request-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, purpose: "reset" }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        if (data.error === "not_found") {
-          throw new Error("برای این شماره رمزی ثبت نشده است.");
-        }
-        throw new Error("ارسال کد بازیابی انجام نشد.");
-      }
-      setDevCode(data.devCode);
-      setCode("");
-      setStep("forgot_code");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "خطا");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function continueToResetPassword(event: FormEvent) {
-    event.preventDefault();
-    if (code.length < 5) {
-      setError("کد ۵ رقمی را وارد کنید.");
-      return;
-    }
-    setError("");
-    setPassword("");
-    setConfirm("");
-    setStep("forgot_reset");
-  }
-
-  async function resetPassword(event: FormEvent) {
+  async function resetWithNationalId(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
     setError("");
@@ -173,16 +134,30 @@ export function PatientPasswordLogin() {
       const res = await fetch("/api/patient-auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, code, password }),
+        body: JSON.stringify({ phone, nationalId, password }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (data.error === "invalid") throw new Error("کد نادرست است.");
-        if (data.error === "expired") {
-          throw new Error("کد منقضی شده. دوباره درخواست دهید.");
+        if (data.error === "not_found") {
+          throw new Error("این شماره موبایل در پرونده‌ها نیست.");
+        }
+        if (data.error === "national_id_missing") {
+          throw new Error(
+            "کد ملی در پرونده ثبت نشده؛ از پذیرش کلینیک بخواهید ثبت کند."
+          );
+        }
+        if (data.error === "national_id_mismatch") {
+          throw new Error("کد ملی با این شماره هم‌خوان نیست.");
+        }
+        if (data.error === "invalid_national_id") {
+          throw new Error("کد ملی معتبر نیست.");
         }
         if (data.error === "invalid_length") {
           throw new Error("رمز باید ۴ تا ۸ کاراکتر باشد.");
+        }
+        if (data.error === "no_password") {
+          setStep("setup");
+          throw new Error("هنوز رمزی ندارید؛ از ساخت رمز استفاده کنید.");
         }
         throw new Error("بازنشانی رمز انجام نشد.");
       }
@@ -198,8 +173,7 @@ export function PatientPasswordLogin() {
     setStep("phone");
     setPassword("");
     setConfirm("");
-    setCode("");
-    setDevCode(undefined);
+    setNationalId("");
     setError("");
   }
 
@@ -210,9 +184,7 @@ export function PatientPasswordLogin() {
         ? "۲ · ساخت رمز"
         : step === "login"
           ? "۲ · ورود با رمز"
-          : step === "forgot_code"
-            ? "بازیابی · کد پیامک"
-            : "بازیابی · رمز جدید";
+          : "بازیابی رمز با کد ملی";
 
   return (
     <div className="relative min-h-[100svh] overflow-hidden bg-[#14352A] text-white">
@@ -248,7 +220,7 @@ export function PatientPasswordLogin() {
           </p>
           <h1 className="mt-2 text-3xl font-extrabold">ورود با رمز</h1>
           <p className="mt-3 max-w-xs text-sm leading-7 text-white/75">
-            بدون پیامک روزانه؛ یک‌بار رمز کوتاه بسازید و بعد با همان وارد شوید.
+            بدون پیامک؛ رمز کوتاه بسازید و در صورت فراموشی با کد ملی بازیابی کنید.
           </p>
         </div>
 
@@ -296,12 +268,25 @@ export function PatientPasswordLogin() {
             <form onSubmit={savePassword} className="space-y-4" autoComplete="on">
               <p className="rounded-xl bg-[#F7F8F6] px-3 py-2 text-sm leading-7 text-muted-foreground">
                 {alreadyRegistered
-                  ? "اولین ورود به اپ است؛ یک رمز کوتاه ۴ تا ۸ کاراکتری بسازید."
-                  : "خوش آمدید؛ یک رمز کوتاه بسازید تا بعداً بدون پیامک وارد شوید."}
+                  ? "اولین ورود به اپ است؛ کد ملی و یک رمز کوتاه بسازید."
+                  : "کد ملی و رمز کوتاه بسازید تا بعداً بدون پیامک وارد شوید."}
               </p>
               <p className="text-sm text-muted-foreground" dir="ltr">
                 {phone}
               </p>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  کد ملی
+                </label>
+                <DigitsInput
+                  mode="integer"
+                  value={nationalId}
+                  onValueChange={(v) => setNationalId(v.slice(0, 10))}
+                  placeholder="۱۰ رقم"
+                  className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
                   رمز کوتاه
@@ -325,7 +310,6 @@ export function PatientPasswordLogin() {
                 </label>
                 <Input
                   type="password"
-                  name="confirm-password"
                   autoComplete="new-password"
                   value={confirm}
                   onChange={(e) => setConfirm(e.target.value.slice(0, 8))}
@@ -339,7 +323,7 @@ export function PatientPasswordLogin() {
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button
                 type="submit"
-                disabled={loading || password.length < 4}
+                disabled={loading || password.length < 4 || nationalId.length < 10}
                 className="h-12 w-full rounded-full bg-[#F0B429] text-sm font-extrabold text-[#14352A] hover:bg-[#e0a61f]"
               >
                 {loading ? "در حال ذخیره..." : "ذخیره رمز"}
@@ -391,12 +375,13 @@ export function PatientPasswordLogin() {
               <button
                 type="button"
                 disabled={loading}
-                className={cn(
-                  "w-full text-center text-sm font-bold text-[#C48A12]"
-                )}
+                className="w-full text-center text-sm font-bold text-[#C48A12]"
                 onClick={() => {
                   setError("");
-                  void requestResetOtp();
+                  setPassword("");
+                  setConfirm("");
+                  setNationalId("");
+                  setStep("forgot");
                 }}
               >
                 فراموشی رمز
@@ -411,60 +396,32 @@ export function PatientPasswordLogin() {
             </form>
           ) : null}
 
-          {step === "forgot_code" ? (
-            <form onSubmit={continueToResetPassword} className="space-y-4">
-              <p className="rounded-xl bg-[#FFF8E8] px-3 py-2 text-sm leading-7 text-[#9A6B10]">
-                فقط برای بازیابی رمز، یک پیامک ارسال می‌شود.
+          {step === "forgot" ? (
+            <form
+              onSubmit={resetWithNationalId}
+              className="space-y-4"
+              autoComplete="on"
+            >
+              <p className="rounded-xl bg-[#F7F8F6] px-3 py-2 text-sm leading-7 text-muted-foreground">
+                اگر این موبایل در پرونده باشد و کد ملی درست باشد، می‌توانید رمز
+                جدید بسازید — بدون پیامک.
               </p>
-              <p className="text-sm leading-7 text-muted-foreground">
-                کد ۵ رقمی به{" "}
-                <span className="font-bold text-[#14352A]" dir="ltr">
-                  {phone}
-                </span>{" "}
-                ارسال شد.
+              <p className="text-sm text-muted-foreground" dir="ltr">
+                {phone}
               </p>
-              <DigitsInput
-                mode="integer"
-                value={code}
-                onValueChange={(v) => setCode(v.slice(0, 5))}
-                placeholder="•••••"
-                className="h-14 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] text-center text-2xl tracking-[0.4em]"
-                required
-              />
-              {devCode ? (
-                <p className="rounded-xl bg-[#FFF8E8] px-3 py-2 text-xs text-[#9A6B10]">
-                  حالت تست: کد شما{" "}
-                  <span dir="ltr" className="font-bold">
-                    {devCode}
-                  </span>
-                </p>
-              ) : null}
-              {error ? <p className="text-sm text-destructive">{error}</p> : null}
-              <Button
-                type="submit"
-                disabled={loading || code.length < 5}
-                className="h-12 w-full rounded-full bg-[#14352A] text-sm font-extrabold text-white hover:bg-[#1f4a3a]"
-              >
-                ادامه
-              </Button>
-              <button
-                type="button"
-                className="w-full text-center text-xs font-medium text-muted-foreground"
-                onClick={() => {
-                  setStep("login");
-                  setError("");
-                }}
-              >
-                بازگشت به ورود با رمز
-              </button>
-            </form>
-          ) : null}
-
-          {step === "forgot_reset" ? (
-            <form onSubmit={resetPassword} className="space-y-4" autoComplete="on">
-              <p className="text-sm leading-7 text-muted-foreground">
-                رمز کوتاه جدید بسازید و ذخیره کنید.
-              </p>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  کد ملی
+                </label>
+                <DigitsInput
+                  mode="integer"
+                  value={nationalId}
+                  onValueChange={(v) => setNationalId(v.slice(0, 10))}
+                  placeholder="۱۰ رقم"
+                  className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
+                  required
+                />
+              </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
                   رمز جدید
@@ -499,18 +456,33 @@ export function PatientPasswordLogin() {
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button
                 type="submit"
-                disabled={loading || password.length < 4}
+                disabled={
+                  loading || password.length < 4 || nationalId.length < 10
+                }
                 className="h-12 w-full rounded-full bg-[#F0B429] text-sm font-extrabold text-[#14352A] hover:bg-[#e0a61f]"
               >
                 {loading ? "در حال ذخیره..." : "ذخیره رمز جدید"}
               </Button>
+              <button
+                type="button"
+                className="w-full text-center text-xs font-medium text-muted-foreground"
+                onClick={() => {
+                  setStep("login");
+                  setError("");
+                  setPassword("");
+                  setConfirm("");
+                  setNationalId("");
+                }}
+              >
+                بازگشت به ورود با رمز
+              </button>
             </form>
           ) : null}
         </div>
 
         <div className="mt-8 grid gap-3 text-center text-[11px] leading-6 text-white/60">
-          <p>ورود روزانه با رمز است؛ پیامک فقط اگر رمز را فراموش کنید.</p>
-          <p>رمز را می‌توانید در مرورگر یا گوشی هم ذخیره کنید.</p>
+          <p>ورود و بازیابی رمز بدون پیامک انجام می‌شود.</p>
+          <p>کد ملی برای بازیابی رمز در پرونده ذخیره می‌شود.</p>
         </div>
       </div>
     </div>

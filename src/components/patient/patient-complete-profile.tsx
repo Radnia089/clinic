@@ -16,6 +16,7 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
   const [error, setError] = useState("");
   const [firstName, setFirstName] = useState(patient.firstName || "");
   const [lastName, setLastName] = useState(patient.lastName || "");
+  const [nationalId, setNationalId] = useState(patient.nationalId || "");
   const [age, setAge] = useState(patient.age != null ? String(patient.age) : "");
   const [gender, setGender] = useState<Gender>(patient.gender || "female");
   const [address, setAddress] = useState(patient.address || "");
@@ -39,6 +40,7 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
         body: JSON.stringify({
           firstName,
           lastName,
+          nationalId,
           age,
           gender,
           address,
@@ -48,11 +50,21 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
           waistCm,
         }),
       });
-      if (!res.ok) throw new Error("failed");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.error === "invalid_national_id") {
+          throw new Error("کد ملی معتبر نیست.");
+        }
+        throw new Error("failed");
+      }
       window.location.assign("/patient");
       return;
-    } catch {
-      setError("ذخیره اطلاعات انجام نشد. دوباره تلاش کنید.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message !== "failed"
+          ? err.message
+          : "ذخیره اطلاعات انجام نشد. دوباره تلاش کنید."
+      );
       setLoading(false);
     }
   }
@@ -89,6 +101,18 @@ export function PatientCompleteProfile({ patient }: { patient: Patient }) {
                 onChange={(e) => setLastName(e.target.value)}
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>کد ملی</Label>
+            <DigitsInput
+              mode="integer"
+              className={fieldClass}
+              value={nationalId}
+              onValueChange={(v) => setNationalId(v.slice(0, 10))}
+              placeholder="۱۰ رقم"
+              required
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { parseNormalizedNumber } from "@/lib/digits";
 import { getCurrentPatient } from "@/lib/patient-auth";
+import {
+  isValidNationalId,
+  normalizeNationalId,
+} from "@/lib/national-id";
 import { toPublicPatient } from "@/lib/patient-public";
 import { createMeasurement, updatePatient } from "@/lib/store";
 import type { Gender } from "@/lib/types";
@@ -14,6 +18,7 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const firstName = String(body.firstName ?? "").trim();
   const lastName = String(body.lastName ?? "").trim();
+  const nationalId = normalizeNationalId(String(body.nationalId ?? ""));
   const gender = (body.gender as Gender) || "female";
   const ageRaw = String(body.age ?? "").trim();
   const age = ageRaw ? parseNormalizedNumber(ageRaw) : undefined;
@@ -25,6 +30,9 @@ export async function POST(request: Request) {
 
   if (!firstName || !lastName) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
+  }
+  if (!isValidNationalId(nationalId)) {
+    return NextResponse.json({ error: "invalid_national_id" }, { status: 400 });
   }
   if (!["female", "male"].includes(gender)) {
     return NextResponse.json({ error: "invalid_gender" }, { status: 400 });
@@ -43,6 +51,7 @@ export async function POST(request: Request) {
   const updated = await updatePatient(patient.id, {
     firstName,
     lastName,
+    nationalId,
     gender,
     age,
     address,

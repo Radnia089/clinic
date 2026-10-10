@@ -9,6 +9,10 @@ import {
 import { normalizeIntegerInput, parseNormalizedNumber } from "@/lib/digits";
 import { citiesForProvince } from "@/lib/iran-locations";
 import { ageFromIsoBirthDate } from "@/lib/jalali";
+import {
+  isValidNationalId,
+  normalizeNationalId,
+} from "@/lib/national-id";
 import { sendWelcomeSms } from "@/lib/welcome-sms";
 import type { Gender, Patient } from "@/lib/types";
 
@@ -45,6 +49,10 @@ export async function POST(request: Request) {
   const ageParsed = ageRaw ? parseNormalizedNumber(ageRaw) : undefined;
   const gender = (body.gender as Gender) || "female";
   const phone = normalizeIntegerInput(String(body.phone ?? ""));
+  const nationalIdRaw = String(body.nationalId ?? "").trim();
+  const nationalId = nationalIdRaw
+    ? normalizeNationalId(nationalIdRaw)
+    : undefined;
   const address = String(body.address ?? "").trim();
   const notes = String(body.notes ?? "").trim();
   const heightCm = parseOptionalNumber(body.heightCm);
@@ -53,6 +61,9 @@ export async function POST(request: Request) {
   // فقط نام‌خانوادگی و موبایل اجباری‌اند
   if (!lastName || !/^09\d{9}$/.test(phone)) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
+  }
+  if (nationalId && !isValidNationalId(nationalId)) {
+    return NextResponse.json({ error: "invalid_national_id" }, { status: 400 });
   }
 
   if (
@@ -90,6 +101,7 @@ export async function POST(request: Request) {
     age: ageParsed,
     gender,
     phone,
+    nationalId,
     address,
     notes: notes || undefined,
     heightCm: heightCm !== undefined && Number.isFinite(heightCm) ? heightCm : undefined,
@@ -143,6 +155,21 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "phone_exists" }, { status: 409 });
     }
     patch.phone = phone;
+  }
+  if (body.nationalId !== undefined) {
+    const raw = String(body.nationalId ?? "").trim();
+    if (!raw) {
+      patch.nationalId = undefined;
+    } else {
+      const nationalId = normalizeNationalId(raw);
+      if (!isValidNationalId(nationalId)) {
+        return NextResponse.json(
+          { error: "invalid_national_id" },
+          { status: 400 }
+        );
+      }
+      patch.nationalId = nationalId;
+    }
   }
   if (body.age !== undefined) {
     if (body.age === "" || body.age === null) {

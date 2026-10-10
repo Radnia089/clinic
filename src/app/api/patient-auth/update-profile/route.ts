@@ -3,6 +3,10 @@ import { parseNormalizedNumber } from "@/lib/digits";
 import { citiesForProvince } from "@/lib/iran-locations";
 import { ageFromIsoBirthDate } from "@/lib/jalali";
 import { getCurrentPatient } from "@/lib/patient-auth";
+import {
+  isValidNationalId,
+  normalizeNationalId,
+} from "@/lib/national-id";
 import { patientHasRegisteredInfo } from "@/lib/patient-profile";
 import { toPublicPatient } from "@/lib/patient-public";
 import { createMeasurement, listMeasurements, updatePatient } from "@/lib/store";
@@ -138,6 +142,23 @@ export async function POST(request: Request) {
       ? String(body.avatarUrl || "").trim() || undefined
       : patient.avatarUrl;
 
+  let nationalId = patient.nationalId;
+  if (body.nationalId !== undefined) {
+    const raw = String(body.nationalId ?? "").trim();
+    if (!raw) {
+      nationalId = undefined;
+    } else {
+      const normalized = normalizeNationalId(raw);
+      if (!isValidNationalId(normalized)) {
+        return NextResponse.json(
+          { error: "invalid_national_id" },
+          { status: 400 }
+        );
+      }
+      nationalId = normalized;
+    }
+  }
+
   const draft = {
     ...patient,
     firstName,
@@ -151,6 +172,7 @@ export async function POST(request: Request) {
     heightCm,
     goalWeightKg,
     avatarUrl,
+    nationalId,
   };
 
   const updated = await updatePatient(patient.id, {
@@ -165,6 +187,7 @@ export async function POST(request: Request) {
     heightCm,
     goalWeightKg,
     avatarUrl,
+    nationalId,
     profileComplete: patientHasRegisteredInfo(draft) || patient.profileComplete,
     source: patient.source === "clinic" ? "clinic" : "app",
     appReviewedAt: undefined,

@@ -72,6 +72,7 @@ export function CustomerFileClient({
   const [firstName, setFirstName] = useState(initialPatient.firstName);
   const [lastName, setLastName] = useState(initialPatient.lastName);
   const [phone, setPhone] = useState(initialPatient.phone);
+  const [nationalId, setNationalId] = useState(initialPatient.nationalId || "");
   const [age, setAge] = useState(numToStr(initialPatient.age));
   const [gender, setGender] = useState<Gender>(initialPatient.gender);
   const [province, setProvince] = useState(initialPatient.province || "");
@@ -137,6 +138,7 @@ export function CustomerFileClient({
           firstName,
           lastName,
           phone,
+          nationalId: nationalId || null,
           age: age || null,
           gender,
           province: province || null,
@@ -152,6 +154,7 @@ export function CustomerFileClient({
       if (!res.ok) {
         if (data.error === "invalid_phone") throw new Error("موبایل معتبر نیست.");
         if (data.error === "phone_exists") throw new Error("این موبایل برای مشتری دیگری ثبت شده.");
+        if (data.error === "invalid_national_id") throw new Error("کد ملی معتبر نیست.");
         if (data.error === "invalid_province") throw new Error("استان معتبر نیست.");
         if (data.error === "invalid_city") throw new Error("شهر با استان هم‌خوان نیست.");
         if (data.error === "invalid_birth_date") throw new Error("تاریخ تولد معتبر نیست.");
@@ -307,6 +310,16 @@ export function CustomerFileClient({
               value={phone}
               onValueChange={setPhone}
               required
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>کد ملی</Label>
+            <DigitsInput
+              mode="integer"
+              className={fieldClass}
+              value={nationalId}
+              onValueChange={(v) => setNationalId(v.slice(0, 10))}
+              placeholder="۱۰ رقم"
             />
           </div>
           <div className="space-y-1.5">

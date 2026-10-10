@@ -340,6 +340,9 @@ export async function updatePatient(
     delete next.passwordHash;
     delete next.passwordSetAt;
   }
+  if ("nationalId" in patch && !patch.nationalId) {
+    delete next.nationalId;
+  }
   data.patients[index] = next;
   await writeStore(data);
   return data.patients[index];

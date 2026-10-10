@@ -23,6 +23,8 @@ export interface Patient {
   age?: number;
   gender: Gender;
   phone: string;
+  /** کد ملی ۱۰ رقمی — برای بازیابی رمز بدون OTP */
+  nationalId?: string;
   address: string;
   /** استان محل سکونت */
   province?: string;

@@ -67,6 +67,7 @@ export function NewVisitorForm({
   const [age, setAge] = useState("");
   const [gender, setGender] = useState<Gender | "">("");
   const [phone, setPhone] = useState("");
+  const [nationalId, setNationalId] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [visitDate, setVisitDate] = useState(
@@ -153,6 +154,7 @@ export function NewVisitorForm({
           age: age.trim() || undefined,
           gender: gender || "female",
           phone,
+          nationalId: nationalId.trim() || undefined,
           address: address.trim(),
           notes: notes.trim() || undefined,
         }),
@@ -263,6 +265,16 @@ export function NewVisitorForm({
               value={phone}
               onValueChange={setPhone}
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <FieldLabel>کد ملی</FieldLabel>
+            <DigitsInput
+              mode="integer"
+              className={fieldClass}
+              placeholder="۱۰ رقم"
+              value={nationalId}
+              onValueChange={(v) => setNationalId(v.slice(0, 10))}
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
