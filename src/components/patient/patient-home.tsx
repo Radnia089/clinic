@@ -299,14 +299,14 @@ export function PatientHomeScreen({
         <ul className="grid grid-cols-4">
           {[
             { id: "home", label: "خانه", icon: Home, href: undefined as string | undefined },
+            { id: "magazine", label: "مجله", icon: BookOpen, href: "/patient/magazine" },
+            { id: "progress", label: "پیشرفت", icon: BarChart3, href: undefined },
             {
               id: "about",
               label: "درباره ما",
               icon: Info,
               href: "/patient/about",
             },
-            { id: "progress", label: "پیشرفت", icon: BarChart3, href: undefined },
-            { id: "magazine", label: "مجله", icon: BookOpen, href: "/patient/magazine" },
           ].map((item) => {
             const Icon = item.icon;
             const active = tab === item.id;
