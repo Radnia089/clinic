@@ -86,11 +86,22 @@ export default async function PatientChampionsPage() {
                     {champion.quote}
                   </p>
                   <p className="text-xs font-semibold text-brand/80">
-                    وزن {faNum(champion.startKg)}→{faNum(champion.endKg)} kg
+                    وزن{" "}
+                    <span dir="ltr" className="inline-block tabular-nums">
+                      {faNum(champion.startKg)} → {faNum(champion.endKg)}
+                    </span>{" "}
+                    kg
                     {champion.startWaistCm !== undefined &&
-                    champion.endWaistCm !== undefined
-                      ? ` · کمر ${faNum(champion.startWaistCm)}→${faNum(champion.endWaistCm)} cm`
-                      : ""}
+                    champion.endWaistCm !== undefined ? (
+                      <>
+                        {" · "}کمر{" "}
+                        <span dir="ltr" className="inline-block tabular-nums">
+                          {faNum(champion.startWaistCm)} →{" "}
+                          {faNum(champion.endWaistCm)}
+                        </span>{" "}
+                        cm
+                      </>
+                    ) : null}
                   </p>
                 </div>
               </article>

@@ -228,11 +228,21 @@ function ChampionCard({
             compact ? "pt-0.5 text-[10px]" : "text-xs"
           )}
         >
-          وزن {faNum(champion.startKg)}→{faNum(champion.endKg)} kg
+          وزن{" "}
+          <span dir="ltr" className="inline-block tabular-nums">
+            {faNum(champion.startKg)} → {faNum(champion.endKg)}
+          </span>{" "}
+          kg
           {champion.startWaistCm !== undefined &&
-          champion.endWaistCm !== undefined
-            ? ` · کمر ${faNum(champion.startWaistCm)}→${faNum(champion.endWaistCm)} cm`
-            : ""}
+          champion.endWaistCm !== undefined ? (
+            <>
+              {" · "}کمر{" "}
+              <span dir="ltr" className="inline-block tabular-nums">
+                {faNum(champion.startWaistCm)} → {faNum(champion.endWaistCm)}
+              </span>{" "}
+              cm
+            </>
+          ) : null}
         </p>
       </div>
     </article>

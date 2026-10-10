@@ -436,8 +436,11 @@ export function ChampionsManager({
                   ) : null}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  وزن {faNum(item.startKg)}→{faNum(item.endKg)} kg (−
-                  {faNum(lostKg(item))})
+                  وزن{" "}
+                  <span dir="ltr" className="inline-block tabular-nums">
+                    {faNum(item.startKg)} → {faNum(item.endKg)}
+                  </span>{" "}
+                  kg (−{faNum(lostKg(item))})
                   {lostSizeCm(item) !== undefined
                     ? ` · سایز کمر −${faNum(lostSizeCm(item)!)} cm`
                     : ""}
