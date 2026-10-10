@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type FormEvent } from "react";
-import { Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Loader2, Pencil, Plus, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +40,7 @@ export function ChampionsManager({
   const [items, setItems] = useState(initialItems);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [quote, setQuote] = useState("");
   const [startKg, setStartKg] = useState("");
@@ -50,8 +51,10 @@ export function ChampionsManager({
   const [afterImage, setAfterImage] = useState("");
   const [published, setPublished] = useState(true);
   const [uploading, setUploading] = useState<"before" | "after" | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   function resetForm() {
+    setEditingId(null);
     setName("");
     setQuote("");
     setStartKg("");
@@ -61,7 +64,31 @@ export function ChampionsManager({
     setBeforeImage("");
     setAfterImage("");
     setPublished(true);
+    setError("");
   }
+
+  function startEdit(item: Champion) {
+    setEditingId(item.id);
+    setName(item.name);
+    setQuote(item.quote || "");
+    setStartKg(String(item.startKg));
+    setEndKg(String(item.endKg));
+    setStartWaistCm(
+      item.startWaistCm !== undefined ? String(item.startWaistCm) : ""
+    );
+    setEndWaistCm(
+      item.endWaistCm !== undefined ? String(item.endWaistCm) : ""
+    );
+    setBeforeImage(item.beforeImage);
+    setAfterImage(item.afterImage);
+    setPublished(item.published);
+    setError("");
+  }
+
+  useEffect(() => {
+    if (!editingId) return;
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [editingId]);
 
   async function onUpload(
     side: "before" | "after",
@@ -81,34 +108,53 @@ export function ChampionsManager({
     }
   }
 
-  async function onCreate(event: FormEvent) {
+  async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError("");
     setSaving(true);
+    const payload = {
+      name,
+      quote,
+      startKg,
+      endKg,
+      startWaistCm: startWaistCm || undefined,
+      endWaistCm: endWaistCm || undefined,
+      beforeImage,
+      afterImage,
+      published,
+    };
     try {
-      const res = await fetch("/api/champions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          quote,
-          startKg,
-          endKg,
-          startWaistCm: startWaistCm || undefined,
-          endWaistCm: endWaistCm || undefined,
-          beforeImage,
-          afterImage,
-          published,
-          sortOrder: items.length + 1,
-        }),
-      });
-      if (!res.ok) throw new Error("failed");
-      const data = (await res.json()) as { item: Champion };
-      setItems((prev) => [data.item, ...prev]);
-      resetForm();
+      if (editingId) {
+        const res = await fetch("/api/champions", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, ...payload }),
+        });
+        if (!res.ok) throw new Error("failed");
+        const data = (await res.json()) as { item: Champion };
+        setItems((prev) =>
+          prev.map((row) => (row.id === editingId ? data.item : row))
+        );
+        resetForm();
+      } else {
+        const res = await fetch("/api/champions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            sortOrder: items.length + 1,
+          }),
+        });
+        if (!res.ok) throw new Error("failed");
+        const data = (await res.json()) as { item: Champion };
+        setItems((prev) => [data.item, ...prev]);
+        resetForm();
+      }
     } catch {
       setError(
-        "ثبت قهرمان انجام نشد. وزن، دور کمر (در صورت وارد کردن هر دو) و تصاویر را بررسی کنید."
+        editingId
+          ? "ویرایش قهرمان انجام نشد. وزن، دور کمر و تصاویر را بررسی کنید."
+          : "ثبت قهرمان انجام نشد. وزن، دور کمر (در صورت وارد کردن هر دو) و تصاویر را بررسی کنید."
       );
     } finally {
       setSaving(false);
@@ -116,6 +162,7 @@ export function ChampionsManager({
   }
 
   async function togglePublished(item: Champion) {
+    if (editingId === item.id) return;
     const res = await fetch("/api/champions", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -135,7 +182,10 @@ export function ChampionsManager({
     });
     if (!res.ok) return;
     setItems((prev) => prev.filter((row) => row.id !== id));
+    if (editingId === id) resetForm();
   }
+
+  const isEditing = Boolean(editingId);
 
   return (
     <div className="space-y-6">
@@ -148,12 +198,30 @@ export function ChampionsManager({
       </div>
 
       <form
-        onSubmit={onCreate}
+        ref={formRef}
+        onSubmit={onSubmit}
         className="space-y-4 rounded-[1.75rem] bg-white p-5 shadow-sm sm:p-6"
       >
-        <div className="flex items-center gap-2 text-sm font-bold text-brand">
-          <Plus className="size-4" />
-          افزودن قهرمان جدید
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-sm font-bold text-brand">
+            {isEditing ? (
+              <Pencil className="size-4" />
+            ) : (
+              <Plus className="size-4" />
+            )}
+            {isEditing ? "ویرایش قهرمان" : "افزودن قهرمان جدید"}
+          </div>
+          {isEditing ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-xl text-xs"
+              onClick={resetForm}
+            >
+              <X className="size-3.5" />
+              انصراف از ویرایش
+            </Button>
+          ) : null}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -303,6 +371,8 @@ export function ChampionsManager({
               <Loader2 className="animate-spin" />
               در حال ذخیره...
             </>
+          ) : isEditing ? (
+            "ذخیره تغییرات"
           ) : (
             "ثبت قهرمان"
           )}
@@ -319,7 +389,10 @@ export function ChampionsManager({
           items.map((item) => (
             <article
               key={item.id}
-              className="flex flex-col gap-4 rounded-[1.5rem] bg-white p-4 shadow-sm sm:flex-row sm:items-center"
+              className={cn(
+                "flex flex-col gap-4 rounded-[1.5rem] bg-white p-4 shadow-sm sm:flex-row sm:items-center",
+                editingId === item.id && "ring-2 ring-brand/30"
+              )}
             >
               <div className="relative h-24 w-full shrink-0 overflow-hidden rounded-xl sm:w-36">
                 <div className="absolute inset-0 grid grid-cols-2">
@@ -356,6 +429,11 @@ export function ChampionsManager({
                   >
                     {item.published ? "منتشر شده" : "پیش‌نویس"}
                   </span>
+                  {editingId === item.id ? (
+                    <span className="rounded-full bg-[#FFF4DF] px-2 py-0.5 text-[10px] font-bold text-[#C48A12]">
+                      در حال ویرایش
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   وزن {faNum(item.startKg)}→{faNum(item.endKg)} kg (−
@@ -370,12 +448,23 @@ export function ChampionsManager({
                   </p>
                 ) : null}
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-9 rounded-xl text-xs"
+                  onClick={() => startEdit(item)}
+                  disabled={editingId === item.id}
+                >
+                  <Pencil className="size-3.5" />
+                  ویرایش
+                </Button>
                 <Button
                   type="button"
                   variant="outline"
                   className="h-9 rounded-xl text-xs"
                   onClick={() => togglePublished(item)}
+                  disabled={editingId === item.id}
                 >
                   {item.published ? "عدم انتشار" : "انتشار"}
                 </Button>
