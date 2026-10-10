@@ -126,6 +126,16 @@ async function ensureStore(): Promise<AppData> {
       patientInboxMessages: parsed.patientInboxMessages ?? [],
       patientInboxReads: parsed.patientInboxReads ?? [],
     };
+    const defaultArticleList = defaultArticles();
+    const existingArticleIds = new Set(
+      (data.articles ?? []).map((item) => item.id)
+    );
+    const missingArticles = defaultArticleList.filter(
+      (item) => !existingArticleIds.has(item.id)
+    );
+    if (missingArticles.length > 0) {
+      data.articles = [...(data.articles ?? []), ...missingArticles];
+    }
     if (
       !parsed.champions ||
       parsed.champions.length === 0 ||
@@ -133,7 +143,8 @@ async function ensureStore(): Promise<AppData> {
       !parsed.promoBanners ||
       parsed.promoBanners.length === 0 ||
       !parsed.articles ||
-      parsed.articles.length === 0
+      parsed.articles.length === 0 ||
+      missingArticles.length > 0
     ) {
       await writeStore(data);
     }
