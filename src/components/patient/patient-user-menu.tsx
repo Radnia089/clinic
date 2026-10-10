@@ -59,13 +59,13 @@ export function PatientUserMenu({ patient }: { patient: Patient | null }) {
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <span className="relative size-12 overflow-hidden rounded-full bg-[#E8F2EA] shadow-sm ring-2 ring-white">
+        <span className="relative size-10 overflow-hidden rounded-full bg-[#E8F2EA] shadow-sm ring-2 ring-white">
           <Image
             src={avatarSrc}
             alt=""
             fill
             className="object-cover"
-            sizes="48px"
+            sizes="40px"
             unoptimized={avatarSrc.endsWith(".svg")}
             priority
           />

@@ -1,8 +1,4 @@
-import { ArrowLeft } from "lucide-react";
-import {
-  TANDIS_INSTAGRAM_HANDLE,
-  TANDIS_INSTAGRAM_URL,
-} from "@/lib/social-links";
+import { TANDIS_INSTAGRAM_URL } from "@/lib/social-links";
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -17,29 +13,17 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-export function PatientInstagramCard() {
+/** دکمه اینستاگرام کنار زنگوله — دایره کوچک‌تر از آواتار */
+export function PatientInstagramLink() {
   return (
     <a
       href={TANDIS_INSTAGRAM_URL}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center justify-between gap-3 rounded-[28px] bg-white px-4 py-4 shadow-[0_6px_18px_rgba(35,70,55,0.06)] ring-1 ring-[#14352A]/06 transition active:scale-[0.99]"
+      aria-label="اینستاگرام تندیس"
+      className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white shadow-sm ring-2 ring-white transition active:scale-95"
     >
-      <div className="flex items-center gap-3">
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F58529] via-[#DD2A7B] to-[#8134AF] text-white shadow-sm">
-          <InstagramIcon className="size-5" />
-        </span>
-        <div>
-          <p className="text-sm font-bold text-[#14352A]">اینستاگرام تندیس</p>
-          <p className="mt-0.5 text-xs text-muted-foreground" dir="ltr">
-            @{TANDIS_INSTAGRAM_HANDLE}
-          </p>
-        </div>
-      </div>
-      <span className="inline-flex items-center gap-1 text-xs font-bold text-brand">
-        مشاهده
-        <ArrowLeft className="size-3.5" />
-      </span>
+      <InstagramIcon className="size-4" />
     </a>
   );
 }

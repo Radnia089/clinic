@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { ClinicLogo } from "@/components/brand/clinic-logo";
 import { ChampionsSection } from "@/components/champions/champions-section";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
-import { PatientInstagramCard } from "@/components/patient/patient-instagram-card";
+import { PatientInstagramLink } from "@/components/patient/patient-instagram-link";
 import { PatientNotificationBell } from "@/components/patient/patient-notification-bell";
 import { PatientUserMenu } from "@/components/patient/patient-user-menu";
 import { PromoBannerSlider } from "@/components/patient/promo-banner-slider";
@@ -208,7 +208,8 @@ export function PatientHomeScreen({
                 کلینیک تخصصی لاغری و رژیم درمانی تندیس
               </p>
             </div>
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-1.5">
+              <PatientInstagramLink />
               <PatientNotificationBell />
               <PatientUserMenu patient={patient} />
             </div>
@@ -310,8 +311,6 @@ export function PatientHomeScreen({
               مشاهده جوایز
             </button>
           </section>
-
-          <PatientInstagramCard />
 
           <div className="pt-1 text-center">
             <Link

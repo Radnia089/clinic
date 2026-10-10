@@ -98,13 +98,13 @@ export function PatientNotificationBell() {
           if (!open) void load();
         }}
         className={cn(
-          "relative flex size-11 items-center justify-center rounded-2xl transition",
-          open ? "bg-[#E8F2EA]" : "bg-white shadow-sm ring-1 ring-[#14352A]/08"
+          "relative flex size-9 items-center justify-center rounded-full transition",
+          open ? "bg-[#E8F2EA]" : "bg-white shadow-sm ring-2 ring-white"
         )}
         aria-label="صندوق پیام"
         aria-expanded={open}
       >
-        <Bell className="size-5 text-brand" />
+        <Bell className="size-4 text-brand" />
         {badge ? (
           <span className="absolute -left-0.5 -top-0.5 flex min-w-[1.125rem] items-center justify-center rounded-full bg-[#D86B5C] px-1 text-[10px] font-bold text-white">
             {badge}
