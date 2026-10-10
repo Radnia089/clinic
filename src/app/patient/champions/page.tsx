@@ -73,7 +73,7 @@ export default async function PatientChampionsPage() {
                     </span>
                     {sizeLost !== undefined && sizeLost > 0 ? (
                       <span className="rounded-full bg-[#F0B429] px-3 py-1.5 text-[11px] font-extrabold text-[#14352A]">
-                        {faNum(sizeLost)} سم سایز
+                        {faNum(sizeLost)} cm سایز
                       </span>
                     ) : null}
                   </div>
@@ -89,7 +89,7 @@ export default async function PatientChampionsPage() {
                     وزن {faNum(champion.startKg)}→{faNum(champion.endKg)} kg
                     {champion.startWaistCm !== undefined &&
                     champion.endWaistCm !== undefined
-                      ? ` · کمر ${faNum(champion.startWaistCm)}→${faNum(champion.endWaistCm)} سم`
+                      ? ` · کمر ${faNum(champion.startWaistCm)}→${faNum(champion.endWaistCm)} cm`
                       : ""}
                   </p>
                 </div>

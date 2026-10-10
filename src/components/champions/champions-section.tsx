@@ -199,7 +199,7 @@ function ChampionCard({
                 compact ? "px-2 py-1 text-[9px]" : "px-2.5 py-1.5 text-[11px]"
               )}
             >
-              {faNum(sizeLost)} سم سایز
+              {faNum(sizeLost)} cm سایز
             </span>
           ) : null}
         </div>
@@ -231,7 +231,7 @@ function ChampionCard({
           وزن {faNum(champion.startKg)}→{faNum(champion.endKg)} kg
           {champion.startWaistCm !== undefined &&
           champion.endWaistCm !== undefined
-            ? ` · کمر ${faNum(champion.startWaistCm)}→${faNum(champion.endWaistCm)} سم`
+            ? ` · کمر ${faNum(champion.startWaistCm)}→${faNum(champion.endWaistCm)} cm`
             : ""}
         </p>
       </div>

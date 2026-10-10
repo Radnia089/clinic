@@ -195,7 +195,7 @@ export function ChampionsManager({
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label htmlFor="ch-waist-start">دور کمر شروع (سم)</Label>
+            <Label htmlFor="ch-waist-start">دور کمر شروع (cm)</Label>
             <DigitsInput
               id="ch-waist-start"
               mode="decimal"
@@ -206,7 +206,7 @@ export function ChampionsManager({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ch-waist-end">دور کمر پایان (سم)</Label>
+            <Label htmlFor="ch-waist-end">دور کمر پایان (cm)</Label>
             <DigitsInput
               id="ch-waist-end"
               mode="decimal"
@@ -361,7 +361,7 @@ export function ChampionsManager({
                   وزن {faNum(item.startKg)}→{faNum(item.endKg)} kg (−
                   {faNum(lostKg(item))})
                   {lostSizeCm(item) !== undefined
-                    ? ` · سایز کمر −${faNum(lostSizeCm(item)!)} سم`
+                    ? ` · سایز کمر −${faNum(lostSizeCm(item)!)} cm`
                     : ""}
                 </p>
                 {item.quote ? (
