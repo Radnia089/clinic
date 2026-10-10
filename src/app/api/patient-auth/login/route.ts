@@ -31,6 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_credentials" }, { status: 401 });
   }
 
-  const session = await establishPatientSession(patient);
+  const remember = body.remember !== false;
+  const session = await establishPatientSession(patient, { remember });
   return NextResponse.json({ ok: true, ...session });
 }

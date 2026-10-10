@@ -68,7 +68,8 @@ export async function POST(request: Request) {
       })) ?? patient;
   }
 
-  const session = await establishPatientSession(patient);
+  const remember = body.remember !== false;
+  const session = await establishPatientSession(patient, { remember });
   return NextResponse.json({
     ok: true,
     isNew: !patient.firstName && !patient.lastName,

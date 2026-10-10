@@ -7,7 +7,14 @@ import { patientHasRegisteredInfo } from "@/lib/patient-profile";
 import { toPublicPatient } from "@/lib/patient-public";
 import type { Patient } from "@/lib/types";
 
-export async function establishPatientSession(patient: Patient) {
+/** با ذخیره رمز: ۹۰ روز؛ بدون آن: فقط تا بستن مرورگر (جلسه) */
+const REMEMBER_MAX_AGE = 60 * 60 * 24 * 90;
+
+export async function establishPatientSession(
+  patient: Patient,
+  options?: { remember?: boolean }
+) {
+  const remember = options?.remember !== false;
   const jar = await cookies();
   jar.set(
     PATIENT_AUTH_COOKIE,
@@ -16,7 +23,7 @@ export async function establishPatientSession(patient: Patient) {
       httpOnly: true,
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24 * 30,
+      ...(remember ? { maxAge: REMEMBER_MAX_AGE } : {}),
     }
   );
 
@@ -25,5 +32,6 @@ export async function establishPatientSession(patient: Patient) {
     patient: toPublicPatient(patient),
     needsProfile,
     alreadyRegistered: !needsProfile,
+    remember,
   };
 }

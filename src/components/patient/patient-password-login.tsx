@@ -3,12 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowLeft } from "lucide-react";
 import { DigitsInput } from "@/components/ui/digits-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
+import {
+  clearRememberedPatientLogin,
+  readRememberedPatientLogin,
+  writeRememberedPatientLogin,
+} from "@/lib/patient-remember";
 type Step = "phone" | "setup" | "login" | "forgot";
 
 export function PatientPasswordLogin() {
@@ -18,13 +22,66 @@ export function PatientPasswordLogin() {
   const [nationalId, setNationalId] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [rememberPassword, setRememberPassword] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [autoLoggingIn, setAutoLoggingIn] = useState(true);
   const [error, setError] = useState("");
+  const autoTried = useRef(false);
 
   function goAfterAuth(needsProfile: boolean) {
     router.replace(needsProfile ? "/patient/complete-profile" : "/patient");
     router.refresh();
   }
+
+  function persistRemember(nextPhone: string, nextPassword: string) {
+    if (rememberPassword) {
+      writeRememberedPatientLogin(nextPhone, nextPassword);
+    } else {
+      clearRememberedPatientLogin();
+    }
+  }
+
+  useEffect(() => {
+    if (autoTried.current) return;
+    autoTried.current = true;
+    const saved = readRememberedPatientLogin();
+    if (!saved) {
+      setAutoLoggingIn(false);
+      return;
+    }
+    setPhone(saved.phone);
+    setPassword(saved.password);
+    setRememberPassword(true);
+    setLoading(true);
+    fetch("/api/patient-auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        phone: saved.phone,
+        password: saved.password,
+        remember: true,
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          clearRememberedPatientLogin();
+          setPassword("");
+          setError("رمز ذخیره‌شده منقضی شده؛ دوباره وارد شوید.");
+          return;
+        }
+        goAfterAuth(Boolean(data.needsProfile));
+      })
+      .catch(() => {
+        clearRememberedPatientLogin();
+        setError("ورود خودکار انجام نشد.");
+      })
+      .finally(() => {
+        setLoading(false);
+        setAutoLoggingIn(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- فقط یک‌بار روی mount
+  }, []);
 
   async function checkPhone(event: FormEvent) {
     event.preventDefault();
@@ -65,7 +122,12 @@ export function PatientPasswordLogin() {
       const res = await fetch("/api/patient-auth/set-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, password, nationalId }),
+        body: JSON.stringify({
+          phone,
+          password,
+          nationalId,
+          remember: rememberPassword,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -80,6 +142,7 @@ export function PatientPasswordLogin() {
         }
         throw new Error("ذخیره رمز انجام نشد.");
       }
+      persistRemember(phone, password);
       goAfterAuth(Boolean(data.needsProfile));
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
@@ -96,7 +159,11 @@ export function PatientPasswordLogin() {
       const res = await fetch("/api/patient-auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, password }),
+        body: JSON.stringify({
+          phone,
+          password,
+          remember: rememberPassword,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -113,6 +180,7 @@ export function PatientPasswordLogin() {
         }
         throw new Error("ورود انجام نشد.");
       }
+      persistRemember(phone, password);
       goAfterAuth(Boolean(data.needsProfile));
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
@@ -132,7 +200,12 @@ export function PatientPasswordLogin() {
       const res = await fetch("/api/patient-auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, nationalId, password }),
+        body: JSON.stringify({
+          phone,
+          nationalId,
+          password,
+          remember: rememberPassword,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -159,6 +232,7 @@ export function PatientPasswordLogin() {
         }
         throw new Error("بازنشانی رمز انجام نشد.");
       }
+      persistRemember(phone, password);
       goAfterAuth(Boolean(data.needsProfile));
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
@@ -211,7 +285,13 @@ export function PatientPasswordLogin() {
         </div>
 
         <div className="mt-10 rounded-[1.75rem] bg-white p-5 text-[#1A2E26] shadow-2xl">
-          {step === "phone" ? (
+          {autoLoggingIn ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              در حال ورود خودکار...
+            </p>
+          ) : null}
+
+          {!autoLoggingIn && step === "phone" ? (
             <form onSubmit={checkPhone} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
@@ -239,7 +319,7 @@ export function PatientPasswordLogin() {
             </form>
           ) : null}
 
-          {step === "setup" ? (
+          {!autoLoggingIn && step === "setup" ? (
             <form onSubmit={savePassword} className="space-y-4" autoComplete="on">
               <p className="text-sm text-muted-foreground" dir="ltr">
                 {phone}
@@ -290,13 +370,22 @@ export function PatientPasswordLogin() {
                   maxLength={8}
                 />
               </div>
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#14352A]">
+                <input
+                  type="checkbox"
+                  checked={rememberPassword}
+                  onChange={(e) => setRememberPassword(e.target.checked)}
+                  className="size-4 accent-[#14352A]"
+                />
+                <span className="font-medium">ذخیره رمز</span>
+              </label>
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button
                 type="submit"
                 disabled={loading || password.length < 4 || nationalId.length < 10}
                 className="h-12 w-full rounded-full bg-[#F0B429] text-sm font-extrabold text-[#14352A] hover:bg-[#e0a61f]"
               >
-                {loading ? "در حال ذخیره..." : "ذخیره رمز"}
+                {loading ? "در حال ذخیره..." : "ذخیره رمز و ورود"}
               </Button>
               <button
                 type="button"
@@ -308,7 +397,7 @@ export function PatientPasswordLogin() {
             </form>
           ) : null}
 
-          {step === "login" ? (
+          {!autoLoggingIn && step === "login" ? (
             <form onSubmit={loginWithPassword} className="space-y-4" autoComplete="on">
               <p className="text-sm text-muted-foreground" dir="ltr">
                 {phone}
@@ -330,6 +419,15 @@ export function PatientPasswordLogin() {
                   maxLength={8}
                 />
               </div>
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#14352A]">
+                <input
+                  type="checkbox"
+                  checked={rememberPassword}
+                  onChange={(e) => setRememberPassword(e.target.checked)}
+                  className="size-4 accent-[#14352A]"
+                />
+                <span className="font-medium">ذخیره رمز</span>
+              </label>
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button
                 type="submit"
@@ -362,7 +460,7 @@ export function PatientPasswordLogin() {
             </form>
           ) : null}
 
-          {step === "forgot" ? (
+          {!autoLoggingIn && step === "forgot" ? (
             <form
               onSubmit={resetWithNationalId}
               className="space-y-4"
@@ -415,6 +513,15 @@ export function PatientPasswordLogin() {
                   maxLength={8}
                 />
               </div>
+              <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#14352A]">
+                <input
+                  type="checkbox"
+                  checked={rememberPassword}
+                  onChange={(e) => setRememberPassword(e.target.checked)}
+                  className="size-4 accent-[#14352A]"
+                />
+                <span className="font-medium">ذخیره رمز</span>
+              </label>
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button
                 type="submit"

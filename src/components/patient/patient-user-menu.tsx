@@ -43,6 +43,10 @@ export function PatientUserMenu({ patient }: { patient: Patient | null }) {
   }, [open]);
 
   async function logout() {
+    const { clearRememberedPatientLogin } = await import(
+      "@/lib/patient-remember"
+    );
+    clearRememberedPatientLogin();
     await fetch("/api/patient-auth/logout", { method: "POST" });
     window.location.href = "/patient/login";
   }

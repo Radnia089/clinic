@@ -53,6 +53,7 @@ export async function POST(request: Request) {
       passwordSetAt: now,
     })) ?? patient;
 
-  const session = await establishPatientSession(updated);
+  const remember = body.remember !== false;
+  const session = await establishPatientSession(updated, { remember });
   return NextResponse.json({ ok: true, ...session });
 }
