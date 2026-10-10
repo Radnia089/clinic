@@ -165,7 +165,21 @@ export function NewVisitorForm({
       if (patientRes.status === 409) {
         const data = await patientRes.json();
         patientId = data.patient?.id ?? null;
+        if (patientId && nationalId.trim()) {
+          await fetch("/api/patients", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: patientId,
+              nationalId: nationalId.trim(),
+            }),
+          });
+        }
       } else if (!patientRes.ok) {
+        const data = await patientRes.json().catch(() => ({}));
+        if (data.error === "invalid_national_id") {
+          throw new Error("national_id");
+        }
         throw new Error("patient");
       } else {
         const data = await patientRes.json();
@@ -200,8 +214,12 @@ export function NewVisitorForm({
       if (!visitRes.ok) throw new Error("visit");
       router.push(`/clinic/reception`);
       router.refresh();
-    } catch {
-      setError("ثبت اطلاعات انجام نشد. لطفاً فیلدها را بررسی و دوباره تلاش کنید.");
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message === "national_id"
+          ? "کد ملی معتبر نیست."
+          : "ثبت اطلاعات انجام نشد. لطفاً فیلدها را بررسی و دوباره تلاش کنید."
+      );
       setLoading(false);
     }
   }
