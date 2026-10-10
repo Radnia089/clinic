@@ -215,13 +215,10 @@ export function PatientPasswordLogin() {
               priority
             />
           </div>
-          <p className="mt-5 text-sm font-semibold tracking-wide text-[#F0B429]">
-            اپ مشتری تندیس
+          <p className="mt-5 max-w-xs text-sm leading-7 text-white/85">
+            کلینیک تخصصی لاغری و رژیم درمانی تندیس
           </p>
-          <h1 className="mt-2 text-3xl font-extrabold">ورود با رمز</h1>
-          <p className="mt-3 max-w-xs text-sm leading-7 text-white/75">
-            بدون پیامک؛ رمز کوتاه بسازید و در صورت فراموشی با کد ملی بازیابی کنید.
-          </p>
+          <h1 className="mt-2 text-3xl font-extrabold">ورود</h1>
         </div>
 
         <div className="mt-10 rounded-[1.75rem] bg-white p-5 text-[#1A2E26] shadow-2xl">
@@ -266,11 +263,6 @@ export function PatientPasswordLogin() {
 
           {step === "setup" ? (
             <form onSubmit={savePassword} className="space-y-4" autoComplete="on">
-              <p className="rounded-xl bg-[#F7F8F6] px-3 py-2 text-sm leading-7 text-muted-foreground">
-                {alreadyRegistered
-                  ? "اولین ورود به اپ است؛ کد ملی و یک رمز کوتاه بسازید."
-                  : "کد ملی و رمز کوتاه بسازید تا بعداً بدون پیامک وارد شوید."}
-              </p>
               <p className="text-sm text-muted-foreground" dir="ltr">
                 {phone}
               </p>
@@ -340,12 +332,8 @@ export function PatientPasswordLogin() {
 
           {step === "login" ? (
             <form onSubmit={loginWithPassword} className="space-y-4" autoComplete="on">
-              <p className="text-sm leading-7 text-muted-foreground">
-                رمز ذخیره‌شده برای{" "}
-                <span className="font-bold text-[#14352A]" dir="ltr">
-                  {phone}
-                </span>{" "}
-                را وارد کنید.
+              <p className="text-sm text-muted-foreground" dir="ltr">
+                {phone}
               </p>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
@@ -402,10 +390,6 @@ export function PatientPasswordLogin() {
               className="space-y-4"
               autoComplete="on"
             >
-              <p className="rounded-xl bg-[#F7F8F6] px-3 py-2 text-sm leading-7 text-muted-foreground">
-                اگر این موبایل در پرونده باشد و کد ملی درست باشد، می‌توانید رمز
-                جدید بسازید — بدون پیامک.
-              </p>
               <p className="text-sm text-muted-foreground" dir="ltr">
                 {phone}
               </p>
@@ -480,10 +464,6 @@ export function PatientPasswordLogin() {
           ) : null}
         </div>
 
-        <div className="mt-8 grid gap-3 text-center text-[11px] leading-6 text-white/60">
-          <p>ورود و بازیابی رمز بدون پیامک انجام می‌شود.</p>
-          <p>کد ملی برای بازیابی رمز در پرونده ذخیره می‌شود.</p>
-        </div>
       </div>
     </div>
   );
