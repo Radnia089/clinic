@@ -32,6 +32,8 @@
 !/public/uploads/articles/.gitkeep
 /public/uploads/avatars/*
 !/public/uploads/avatars/.gitkeep
+/public/uploads/about/*
+!/public/uploads/about/.gitkeep
 
 # debug
 npm-debug.log*
