@@ -194,14 +194,16 @@ export function PatientPasswordLogin() {
         </Link>
 
         <div className="mt-10 flex flex-col items-center text-center">
-          <Image
-            src="/tandis-logo.png"
-            alt="تندیس"
-            width={140}
-            height={58}
-            className="h-12 w-auto object-contain"
-            priority
-          />
+          <div className="rounded-[1.25rem] bg-white px-5 py-3 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+            <Image
+              src="/tandis-logo.png"
+              alt="تندیس"
+              width={160}
+              height={67}
+              className="h-11 w-auto object-contain sm:h-12"
+              priority
+            />
+          </div>
           <p className="mt-5 max-w-xs text-sm leading-7 text-white/85">
             کلینیک تخصصی لاغری و رژیم درمانی تندیس
           </p>
