@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { ArrowRight, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DigitsInput } from "@/components/ui/digits-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -16,11 +17,18 @@ import {
 const fieldClass =
   "h-12 rounded-2xl border-[#D7E2D9] bg-white focus-visible:border-brand focus-visible:ring-brand/20";
 
-export function PatientChangePassword({ phone }: { phone: string }) {
+export function PatientChangePassword({
+  phone,
+  needsNationalId,
+}: {
+  phone: string;
+  needsNationalId: boolean;
+}) {
   const router = useRouter();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [nationalId, setNationalId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
@@ -34,10 +42,17 @@ export function PatientChangePassword({ phone }: { phone: string }) {
       if (newPassword !== confirm) {
         throw new Error("تکرار رمز جدید یکسان نیست.");
       }
+      if (needsNationalId && nationalId.length < 10) {
+        throw new Error("کد ملی را وارد کنید.");
+      }
       const res = await fetch("/api/patient-auth/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+          ...(needsNationalId ? { nationalId } : {}),
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -50,6 +65,9 @@ export function PatientChangePassword({ phone }: { phone: string }) {
         if (data.error === "same_password") {
           throw new Error("رمز جدید باید با رمز فعلی فرق داشته باشد.");
         }
+        if (data.error === "invalid_national_id") {
+          throw new Error("کد ملی معتبر نیست.");
+        }
         throw new Error("تغییر رمز انجام نشد.");
       }
 
@@ -58,7 +76,11 @@ export function PatientChangePassword({ phone }: { phone: string }) {
         writeRememberedPatientLogin(phone, newPassword);
       }
 
-      setOk("رمز با موفقیت تغییر کرد.");
+      setOk(
+        data.nationalIdSaved
+          ? "رمز و کد ملی با موفقیت ذخیره شد."
+          : "رمز با موفقیت تغییر کرد."
+      );
       setCurrentPassword("");
       setNewPassword("");
       setConfirm("");
@@ -97,6 +119,22 @@ export function PatientChangePassword({ phone }: { phone: string }) {
           onSubmit={onSubmit}
           className="mt-6 space-y-4 rounded-[1.75rem] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)]"
         >
+          {needsNationalId ? (
+            <div className="space-y-1.5">
+              <Label>کد ملی</Label>
+              <DigitsInput
+                mode="integer"
+                value={nationalId}
+                onValueChange={(v) => setNationalId(v.slice(0, 10))}
+                placeholder="۱۰ رقم"
+                className={fieldClass}
+                required
+              />
+              <p className="text-[11px] leading-5 text-muted-foreground">
+                کد ملی هنوز در پرونده نیست؛ با ذخیره رمز ثبت می‌شود.
+              </p>
+            </div>
+          ) : null}
           <div className="space-y-1.5">
             <Label>رمز فعلی</Label>
             <Input
@@ -143,7 +181,8 @@ export function PatientChangePassword({ phone }: { phone: string }) {
             disabled={
               loading ||
               currentPassword.length < 4 ||
-              newPassword.length < 4
+              newPassword.length < 4 ||
+              (needsNationalId && nationalId.length < 10)
             }
             className="h-12 w-full rounded-full bg-[#14352A] text-white hover:bg-[#1f4a3a]"
           >

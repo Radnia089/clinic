@@ -212,11 +212,6 @@ export function PatientPasswordLogin() {
         if (data.error === "not_found") {
           throw new Error("این شماره موبایل در پرونده‌ها نیست.");
         }
-        if (data.error === "national_id_missing") {
-          throw new Error(
-            "کد ملی در پرونده ثبت نشده؛ از پذیرش کلینیک بخواهید ثبت کند."
-          );
-        }
         if (data.error === "national_id_mismatch") {
           throw new Error("کد ملی با این شماره هم‌خوان نیست.");
         }
@@ -225,10 +220,6 @@ export function PatientPasswordLogin() {
         }
         if (data.error === "invalid_length") {
           throw new Error("رمز باید ۴ تا ۸ کاراکتر باشد.");
-        }
-        if (data.error === "no_password") {
-          setStep("setup");
-          throw new Error("هنوز رمزی ندارید؛ از ساخت رمز استفاده کنید.");
         }
         throw new Error("بازنشانی رمز انجام نشد.");
       }

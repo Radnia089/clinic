@@ -7,14 +7,15 @@ import {
 } from "@/lib/national-id";
 import {
   hashPatientPassword,
-  patientHasPassword,
   validatePatientPassword,
 } from "@/lib/patient-password";
 import { establishPatientSession } from "@/lib/patient-session";
 import { findPatientByPhone, updatePatient } from "@/lib/store";
 
 /**
- * بازیابی رمز با شماره موبایل + کد ملی (بدون OTP)
+ * بازیابی رمز: فقط وجود موبایل در پرونده لازم است.
+ * اگر کد ملی ثبت نشده باشد، کد ملی واردشده ذخیره می‌شود.
+ * اگر قبلاً ثبت شده باشد، باید با همان هم‌خوان باشد.
  */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -36,14 +37,12 @@ export async function POST(request: Request) {
   if (!patient) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
-  if (!patient.nationalId) {
-    return NextResponse.json({ error: "national_id_missing" }, { status: 409 });
-  }
-  if (!nationalIdsMatch(patient.nationalId, nationalId)) {
+
+  if (
+    patient.nationalId &&
+    !nationalIdsMatch(patient.nationalId, nationalId)
+  ) {
     return NextResponse.json({ error: "national_id_mismatch" }, { status: 401 });
-  }
-  if (!patientHasPassword(patient)) {
-    return NextResponse.json({ error: "no_password" }, { status: 409 });
   }
 
   const now = new Date().toISOString();
@@ -51,6 +50,7 @@ export async function POST(request: Request) {
     (await updatePatient(patient.id, {
       passwordHash: hashPatientPassword(validated.password),
       passwordSetAt: now,
+      ...(!patient.nationalId ? { nationalId } : {}),
     })) ?? patient;
 
   const remember = body.remember !== false;

@@ -9,5 +9,10 @@ export default async function PatientChangePasswordPage() {
   if (!patient) {
     redirect("/patient/login");
   }
-  return <PatientChangePassword phone={patient.phone} />;
+  return (
+    <PatientChangePassword
+      phone={patient.phone}
+      needsNationalId={!patient.nationalId}
+    />
+  );
 }
