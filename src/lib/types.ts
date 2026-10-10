@@ -135,6 +135,26 @@ export interface ProgressMeasurement {
   createdAt: string;
 }
 
+/** محتوای صفحه «درباره ما» در اپ مشتری */
+export interface ClinicAbout {
+  /** متن معرفی کلینیک */
+  aboutText: string;
+  /** نام پزشک / مسئول علمی */
+  doctorName: string;
+  /** عنوان علمی یا سمت */
+  doctorTitle: string;
+  /** بیوگرافی کوتاه پزشک */
+  doctorBio: string;
+  /** تصویر پزشک */
+  doctorImage?: string;
+  /** تصویر کاور / فضای کلینیک */
+  coverImage?: string;
+  /** گالری تصاویر کلینیک */
+  gallery: string[];
+  /** لینک نقشه / مسیریابی (نقشان، گوگل و …) */
+  mapUrl?: string;
+}
+
 export interface ClinicProfile {
   name: string;
   fullName: string;
@@ -155,6 +175,8 @@ export interface ClinicProfile {
   packageSlotMinutes: number;
   /** تنظیمات پیامک یادآوری نوبت */
   reminderSettings: ReminderSettings;
+  /** درباره ما — قابل ویرایش توسط مدیر */
+  about: ClinicAbout;
 }
 
 export type ReminderKind =
@@ -407,6 +429,24 @@ export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
     "{name} عزیز، نوبت شما در {clinic} روز {date} ساعت {time} ({type}) است. منتظر دیدارتان هستیم.",
 };
 
+export const DEFAULT_CLINIC_ABOUT: ClinicAbout = {
+  aboutText:
+    "کلینیک تخصصی لاغری و رژیم درمانی تندیس در یزد، با تمرکز بر برنامه تغذیه شخصی، پیگیری منظم و دستگاه‌های کمک لاغری، مسیر کاهش وزن پایدار را همراه شما می‌سازد.",
+  doctorName: "مشاور تغذیه تندیس",
+  doctorTitle: "کارشناس تغذیه و رژیم درمانی",
+  doctorBio:
+    "برنامه غذایی و مسیر کاهش وزن بر اساس هدف، اندازه‌ها و سبک زندگی شما تنظیم می‌شود.",
+  doctorImage: "",
+  coverImage: "/images/clinic-care.jpg",
+  gallery: [
+    "/images/device-rf.jpg",
+    "/images/device-cavitation.jpg",
+    "/images/landing-consult-desk.jpg",
+  ],
+  mapUrl:
+    "https://www.google.com/maps/search/?api=1&query=یزد+صفائیه+بلوار+دانشگاه+مجتمع+خورشید",
+};
+
 export const DEFAULT_CLINIC: ClinicProfile = {
   name: "تندیس",
   fullName: "کلینیک رژیم درمانی تندیس",
@@ -422,6 +462,7 @@ export const DEFAULT_CLINIC: ClinicProfile = {
   visitSlotMinutes: 30,
   packageSlotMinutes: 60,
   reminderSettings: DEFAULT_REMINDER_SETTINGS,
+  about: DEFAULT_CLINIC_ABOUT,
 };
 
 export function patientFullName(patient: Pick<Patient, "firstName" | "lastName">) {

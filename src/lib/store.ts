@@ -5,6 +5,7 @@ import {
   AppointmentRequest,
   Champion,
   DEFAULT_CLINIC,
+  DEFAULT_CLINIC_ABOUT,
   DEFAULT_REMINDER_SETTINGS,
   MagazineArticle,
   OnlineConsultRequest,
@@ -104,6 +105,13 @@ async function ensureStore(): Promise<AppData> {
         reminderSettings: mergeReminderSettings(
           parsed.clinic?.reminderSettings ?? DEFAULT_REMINDER_SETTINGS
         ),
+        about: {
+          ...DEFAULT_CLINIC_ABOUT,
+          ...(parsed.clinic?.about ?? {}),
+          gallery: Array.isArray(parsed.clinic?.about?.gallery)
+            ? parsed.clinic.about.gallery.filter(Boolean)
+            : DEFAULT_CLINIC_ABOUT.gallery,
+        },
       },
       patients: (parsed.patients ?? []).map(normalizePatientRecord),
       visits: parsed.visits ?? [],
@@ -211,6 +219,14 @@ export async function updateClinic(patch: Partial<AppData["clinic"]>) {
       ...data.clinic.reminderSettings,
       ...(patch.reminderSettings ?? {}),
     }),
+    about: {
+      ...DEFAULT_CLINIC_ABOUT,
+      ...data.clinic.about,
+      ...(patch.about ?? {}),
+      gallery: Array.isArray(patch.about?.gallery)
+        ? patch.about.gallery.filter(Boolean)
+        : (data.clinic.about?.gallery ?? DEFAULT_CLINIC_ABOUT.gallery),
+    },
   };
   await writeStore(data);
   return data.clinic;

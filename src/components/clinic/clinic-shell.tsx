@@ -20,6 +20,7 @@ import {
   ImageIcon,
   BookMarked,
   Headphones,
+  Info,
   Smartphone,
 } from "lucide-react";
 
@@ -72,6 +73,13 @@ const managementLinks = [
     label: "مجله",
     icon: BookMarked,
     short: "مجله",
+    managerOnly: true,
+  },
+  {
+    href: "/clinic/about",
+    label: "درباره ما",
+    icon: Info,
+    short: "درباره",
     managerOnly: true,
   },
   { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },
