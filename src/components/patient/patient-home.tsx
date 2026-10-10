@@ -197,26 +197,28 @@ export function PatientHomeScreen({
   const progressValue = goalProgressPercent(measurements, goalWeight);
   return (
     <div className="mx-auto flex min-h-[100svh] w-full max-w-[430px] flex-col bg-[#F7F8F6] text-foreground shadow-[0_0_0_1px_rgba(0,0,0,0.04)]">
+      <header className="sticky top-0 z-30 border-b border-black/5 bg-[#F7F8F6]/95 px-4 pb-3 pt-[max(1.25rem,env(safe-area-inset-top))] backdrop-blur">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <ClinicLogo compact />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              کلینیک تخصصی لاغری و رژیم درمانی تندیس
+            </p>
+          </div>
+          <div className="flex items-start gap-1.5">
+            <PatientSupportLink />
+            <PatientClubLink />
+            <PatientInstagramLink />
+            <PatientNotificationBell />
+            <PatientUserMenu patient={patient} />
+          </div>
+        </div>
+      </header>
+
       {tab === "progress" ? (
         <PatientProgressScreen />
       ) : (
-        <div className="flex-1 space-y-4 px-4 pb-28 pt-5">
-          <header className="flex items-start justify-between gap-3">
-            <div>
-              <ClinicLogo compact />
-              <p className="mt-1 text-[11px] text-muted-foreground">
-                کلینیک تخصصی لاغری و رژیم درمانی تندیس
-              </p>
-            </div>
-            <div className="flex items-start gap-1.5">
-              <PatientSupportLink />
-              <PatientClubLink />
-              <PatientInstagramLink />
-              <PatientNotificationBell />
-              <PatientUserMenu patient={patient} />
-            </div>
-          </header>
-
+        <div className="flex-1 space-y-4 px-4 pb-28 pt-4">
           <section className="rounded-[28px] bg-[#E8F2EA] p-5">
             <div className="flex items-center justify-between gap-4">
               <div className="space-y-4">

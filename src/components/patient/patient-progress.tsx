@@ -68,7 +68,7 @@ export function PatientProgressScreen() {
   const last = measurements[measurements.length - 1];
 
   return (
-    <div className="space-y-4 px-4 pb-28 pt-5">
+    <div className="space-y-4 px-4 pb-28 pt-4">
       <header>
         <p className="text-xs font-medium text-muted-foreground">پیشرفت مسیر</p>
         <h1 className="mt-1 text-2xl font-extrabold text-brand">نمودار رشد من</h1>
