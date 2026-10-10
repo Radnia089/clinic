@@ -13,6 +13,7 @@ import {
   Stethoscope,
   LogOut,
   MessageSquare,
+  Bell,
   BookOpen,
   Video,
   Trophy,
@@ -36,6 +37,13 @@ const receptionLinks = [
 const managementLinks = [
   { href: "/clinic", label: "داشبورد", icon: LayoutDashboard, short: "مدیریت" },
   { href: "/clinic/reminders", label: "پیامک و تبلیغات", icon: MessageSquare, short: "پیامک" },
+  {
+    href: "/clinic/notifications",
+    label: "پیام اپ",
+    icon: Bell,
+    short: "پیام اپ",
+    managerOnly: true,
+  },
   {
     href: "/clinic/app-signups",
     label: "ثبت‌نام اپ",

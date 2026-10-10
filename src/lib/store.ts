@@ -9,6 +9,8 @@ import {
   MagazineArticle,
   OnlineConsultRequest,
   Patient,
+  PatientInboxMessage,
+  PatientInboxRead,
   Payment,
   PersonalLedgerEntry,
   ProgressMeasurement,
@@ -40,6 +42,8 @@ const emptyData = (): AppData => ({
   champions: defaultChampions(),
   promoBanners: defaultPromoBanners(),
   articles: defaultArticles(),
+  patientInboxMessages: [],
+  patientInboxReads: [],
 });
 
 function normalizePatientRecord(raw: Patient): Patient {
@@ -119,6 +123,8 @@ async function ensureStore(): Promise<AppData> {
         parsed.articles && parsed.articles.length > 0
           ? parsed.articles
           : defaultArticles(),
+      patientInboxMessages: parsed.patientInboxMessages ?? [],
+      patientInboxReads: parsed.patientInboxReads ?? [],
     };
     if (
       !parsed.champions ||
@@ -732,6 +738,113 @@ export async function incrementArticleViews(slug: string) {
   };
   await writeStore(data);
   return data.articles[index];
+}
+
+function inboxMessageTargetsPatient(
+  message: PatientInboxMessage,
+  patientId: string
+) {
+  if (message.audience === "all") return true;
+  return (message.patientIds ?? []).includes(patientId);
+}
+
+export async function listPatientInboxMessagesAdmin() {
+  const data = await ensureStore();
+  return [...(data.patientInboxMessages ?? [])].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt)
+  );
+}
+
+export async function createPatientInboxMessage(input: {
+  title: string;
+  body: string;
+  audience: PatientInboxMessage["audience"];
+  patientIds?: string[];
+  createdBy?: string;
+}) {
+  const data = await ensureStore();
+  const now = new Date().toISOString();
+  const patientIds =
+    input.audience === "selected"
+      ? [...new Set((input.patientIds ?? []).filter(Boolean))]
+      : undefined;
+  if (input.audience === "selected" && (!patientIds || patientIds.length === 0)) {
+    return null;
+  }
+  const message: PatientInboxMessage = {
+    id: crypto.randomUUID(),
+    title: input.title.trim(),
+    body: input.body.trim(),
+    audience: input.audience,
+    patientIds,
+    createdAt: now,
+    createdBy: input.createdBy,
+  };
+  if (!message.title || !message.body) return null;
+  data.patientInboxMessages = [message, ...(data.patientInboxMessages ?? [])];
+  await writeStore(data);
+  return message;
+}
+
+export async function listInboxForPatient(patientId: string) {
+  const data = await ensureStore();
+  const reads = new Set(
+    (data.patientInboxReads ?? [])
+      .filter((r) => r.patientId === patientId)
+      .map((r) => r.messageId)
+  );
+  return (data.patientInboxMessages ?? [])
+    .filter((m) => inboxMessageTargetsPatient(m, patientId))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .map((m) => ({
+      ...m,
+      read: reads.has(m.id),
+    }));
+}
+
+export async function countUnreadInboxForPatient(patientId: string) {
+  const items = await listInboxForPatient(patientId);
+  return items.filter((m) => !m.read).length;
+}
+
+export async function markInboxMessageRead(
+  patientId: string,
+  messageId: string
+) {
+  const data = await ensureStore();
+  const message = (data.patientInboxMessages ?? []).find(
+    (m) => m.id === messageId
+  );
+  if (!message || !inboxMessageTargetsPatient(message, patientId)) {
+    return false;
+  }
+  const exists = (data.patientInboxReads ?? []).some(
+    (r) => r.patientId === patientId && r.messageId === messageId
+  );
+  if (exists) return true;
+  const record: PatientInboxRead = {
+    patientId,
+    messageId,
+    readAt: new Date().toISOString(),
+  };
+  data.patientInboxReads = [...(data.patientInboxReads ?? []), record];
+  await writeStore(data);
+  return true;
+}
+
+export async function markAllInboxReadForPatient(patientId: string) {
+  const items = await listInboxForPatient(patientId);
+  const unread = items.filter((m) => !m.read);
+  if (unread.length === 0) return 0;
+  const data = await ensureStore();
+  const now = new Date().toISOString();
+  const next: PatientInboxRead[] = [...(data.patientInboxReads ?? [])];
+  for (const m of unread) {
+    next.push({ patientId, messageId: m.id, readAt: now });
+  }
+  data.patientInboxReads = next;
+  await writeStore(data);
+  return unread.length;
 }
 
 export async function getDashboardStats() {

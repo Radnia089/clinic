@@ -287,6 +287,26 @@ export interface PromoBanner {
   updatedAt: string;
 }
 
+/** پیام صندوق اپ مشتری — عمومی یا برای افراد مشخص */
+export type PatientInboxAudience = "all" | "selected";
+
+export interface PatientInboxMessage {
+  id: string;
+  title: string;
+  body: string;
+  audience: PatientInboxAudience;
+  /** وقتی audience=selected */
+  patientIds?: string[];
+  createdAt: string;
+  createdBy?: string;
+}
+
+export interface PatientInboxRead {
+  patientId: string;
+  messageId: string;
+  readAt: string;
+}
+
 export interface MagazineArticle {
   id: string;
   /** اسلاگ یکتا برای URL سئو */
@@ -317,6 +337,8 @@ export interface AppData {
   champions: Champion[];
   promoBanners: PromoBanner[];
   articles: MagazineArticle[];
+  patientInboxMessages: PatientInboxMessage[];
+  patientInboxReads: PatientInboxRead[];
 }
 
 export const PERSONAL_INCOME_CATEGORIES = [

@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { ClinicLogo } from "@/components/brand/clinic-logo";
 import { ChampionsSection } from "@/components/champions/champions-section";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
+import { PatientNotificationBell } from "@/components/patient/patient-notification-bell";
 import { PatientUserMenu } from "@/components/patient/patient-user-menu";
 import { PromoBannerSlider } from "@/components/patient/promo-banner-slider";
 import type {
@@ -206,7 +207,10 @@ export function PatientHomeScreen({
                 کلینیک تخصصی لاغری و رژیم درمانی تندیس
               </p>
             </div>
-            <PatientUserMenu patient={patient} />
+            <div className="flex items-start gap-2">
+              <PatientNotificationBell />
+              <PatientUserMenu patient={patient} />
+            </div>
           </header>
 
           <section className="rounded-[28px] bg-[#E8F2EA] p-5">
