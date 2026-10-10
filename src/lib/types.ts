@@ -307,6 +307,35 @@ export interface PatientInboxRead {
   readAt: string;
 }
 
+/** تیکت پشتیبانی از اپ مشتری */
+export type SupportTicketStatus =
+  | "new"
+  | "in_progress"
+  | "resolved"
+  | "closed";
+
+export type SupportTicketCategory =
+  | "appointment"
+  | "diet"
+  | "app"
+  | "billing"
+  | "other";
+
+export interface SupportTicket {
+  id: string;
+  patientId: string;
+  patientName: string;
+  phone: string;
+  category: SupportTicketCategory;
+  subject: string;
+  body: string;
+  status: SupportTicketStatus;
+  /** پاسخ کوتاه کارکنان کلینیک */
+  clinicReply?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MagazineArticle {
   id: string;
   /** اسلاگ یکتا برای URL سئو */
@@ -339,6 +368,7 @@ export interface AppData {
   articles: MagazineArticle[];
   patientInboxMessages: PatientInboxMessage[];
   patientInboxReads: PatientInboxRead[];
+  supportTickets: SupportTicket[];
 }
 
 export const PERSONAL_INCOME_CATEGORIES = [
@@ -429,6 +459,34 @@ export function onlineConsultStatusLabel(status: OnlineConsultStatus) {
       return "انجام شد";
     case "cancelled":
       return "لغو شد";
+  }
+}
+
+export function supportTicketStatusLabel(status: SupportTicketStatus) {
+  switch (status) {
+    case "new":
+      return "جدید";
+    case "in_progress":
+      return "در حال پیگیری";
+    case "resolved":
+      return "حل‌شده";
+    case "closed":
+      return "بسته";
+  }
+}
+
+export function supportTicketCategoryLabel(category: SupportTicketCategory) {
+  switch (category) {
+    case "appointment":
+      return "نوبت";
+    case "diet":
+      return "رژیم و برنامه";
+    case "app":
+      return "اپ و ورود";
+    case "billing":
+      return "مالی و پرداخت";
+    case "other":
+      return "سایر";
   }
 }
 

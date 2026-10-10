@@ -19,6 +19,7 @@ import {
   Trophy,
   ImageIcon,
   BookMarked,
+  Headphones,
   Smartphone,
 } from "lucide-react";
 
@@ -79,6 +80,12 @@ const managementLinks = [
     label: "مشاوره آنلاین",
     icon: Video,
     short: "آنلاین",
+  },
+  {
+    href: "/clinic/support",
+    label: "پشتیبانی",
+    icon: Headphones,
+    short: "پشتیبانی",
   },
 ];
 

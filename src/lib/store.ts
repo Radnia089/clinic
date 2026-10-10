@@ -16,6 +16,7 @@ import {
   ProgressMeasurement,
   PromoBanner,
   SmsLogEntry,
+  SupportTicket,
   Visit,
 } from "@/lib/types";
 import { defaultChampions, sortChampions } from "@/lib/champions";
@@ -44,6 +45,7 @@ const emptyData = (): AppData => ({
   articles: defaultArticles(),
   patientInboxMessages: [],
   patientInboxReads: [],
+  supportTickets: [],
 });
 
 function normalizePatientRecord(raw: Patient): Patient {
@@ -125,6 +127,7 @@ async function ensureStore(): Promise<AppData> {
           : defaultArticles(),
       patientInboxMessages: parsed.patientInboxMessages ?? [],
       patientInboxReads: parsed.patientInboxReads ?? [],
+      supportTickets: parsed.supportTickets ?? [],
     };
     const defaultArticleList = defaultArticles();
     const articleDefaultsById = Object.fromEntries(
@@ -892,12 +895,61 @@ export async function markAllInboxReadForPatient(patientId: string) {
   return unread.length;
 }
 
+export async function listSupportTickets(patientId?: string) {
+  const items = (await ensureStore()).supportTickets ?? [];
+  const filtered = patientId
+    ? items.filter((item) => item.patientId === patientId)
+    : items;
+  return [...filtered].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+}
+
+export async function createSupportTicket(
+  input: Omit<SupportTicket, "id" | "createdAt" | "updatedAt" | "status" | "clinicReply">
+) {
+  const data = await ensureStore();
+  const now = new Date().toISOString();
+  const item: SupportTicket = {
+    ...input,
+    id: crypto.randomUUID(),
+    status: "new",
+    createdAt: now,
+    updatedAt: now,
+  };
+  data.supportTickets = [item, ...(data.supportTickets ?? [])];
+  await writeStore(data);
+  return item;
+}
+
+export async function updateSupportTicket(
+  id: string,
+  patch: Partial<
+    Pick<SupportTicket, "status" | "clinicReply" | "subject" | "body">
+  >
+) {
+  const data = await ensureStore();
+  const index = (data.supportTickets ?? []).findIndex((item) => item.id === id);
+  if (index < 0) return null;
+  data.supportTickets[index] = {
+    ...data.supportTickets[index],
+    ...patch,
+    id,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeStore(data);
+  return data.supportTickets[index];
+}
+
 export async function getDashboardStats() {
   const data = await ensureStore();
   const visitors = data.visits.filter((v) => v.status === "visitor").length;
   const admitted = data.visits.filter((v) => v.status === "admitted").length;
   const pendingAppointments = data.appointments.filter(
     (a) => a.status === "new"
+  ).length;
+  const openSupportTickets = (data.supportTickets ?? []).filter(
+    (t) => t.status === "new" || t.status === "in_progress"
   ).length;
   const revenue = data.payments
     .filter((p) => p.status === "paid" || p.status === "partial")
@@ -911,6 +963,7 @@ export async function getDashboardStats() {
     visitors,
     admitted,
     pendingAppointments,
+    openSupportTickets,
     revenue,
     outstanding,
   };

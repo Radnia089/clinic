@@ -19,6 +19,7 @@ import { PatientClubLink } from "@/components/patient/patient-club-link";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
 import { PatientInstagramLink } from "@/components/patient/patient-instagram-link";
 import { PatientNotificationBell } from "@/components/patient/patient-notification-bell";
+import { PatientSupportLink } from "@/components/patient/patient-support-link";
 import { PatientUserMenu } from "@/components/patient/patient-user-menu";
 import { PromoBannerSlider } from "@/components/patient/promo-banner-slider";
 import type {
@@ -208,6 +209,7 @@ export function PatientHomeScreen({
               </p>
             </div>
             <div className="flex items-start gap-1.5">
+              <PatientSupportLink />
               <PatientClubLink />
               <PatientInstagramLink />
               <PatientNotificationBell />
