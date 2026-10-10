@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, KeyRound, Smartphone } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { DigitsInput } from "@/components/ui/digits-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -175,15 +175,6 @@ export function PatientPasswordLogin() {
     setError("");
   }
 
-  const stepTitle =
-    step === "phone"
-      ? "۱ · شماره موبایل"
-      : step === "setup"
-        ? "۲ · ساخت رمز"
-        : step === "login"
-          ? "۲ · ورود با رمز"
-          : "بازیابی رمز با کد ملی";
-
   return (
     <div className="relative min-h-[100svh] overflow-hidden bg-[#14352A] text-white">
       <div
@@ -220,17 +211,6 @@ export function PatientPasswordLogin() {
         </div>
 
         <div className="mt-10 rounded-[1.75rem] bg-white p-5 text-[#1A2E26] shadow-2xl">
-          <div className="mb-5 flex items-center gap-2 text-sm font-bold text-[#14352A]">
-            <span className="flex size-9 items-center justify-center rounded-full bg-[#E8F2EA]">
-              {step === "phone" ? (
-                <Smartphone className="size-4 text-[#14352A]" />
-              ) : (
-                <KeyRound className="size-4 text-[#14352A]" />
-              )}
-            </span>
-            {stepTitle}
-          </div>
-
           {step === "phone" ? (
             <form onSubmit={checkPhone} className="space-y-4">
               <div className="space-y-2">
