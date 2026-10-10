@@ -6,9 +6,25 @@ import { listArticles } from "@/lib/store";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "مجله لاغری و رژیم درمانی | کلینیک تندیس یزد",
+  title: "مجله لاغری و رژیم درمانی | کلینیک تخصصی تندیس یزد",
   description:
-    "مقالات آموزشی درباره رژیم، کاهش وزن، کاهش سایز، تغذیه و سبک زندگی از کلینیک تخصصی لاغری تندیس یزد.",
+    "مقالات سئو‌شده درباره رژیم درمانی، کاهش وزن، دستگاه‌های کمک لاغری و سبک زندگی از کلینیک لاغری تندیس یزد. اینستاگرام: @tandis_clinic_yazd",
+  keywords: [
+    "کلینیک لاغری تندیس",
+    "رژیم درمانی یزد",
+    "لاغری یزد",
+    "مشاوره تغذیه یزد",
+    "مجله لاغری",
+    "tandis_clinic_yazd",
+  ],
+  alternates: { canonical: "/magazine" },
+  openGraph: {
+    title: "مجله کلینیک لاغری تندیس یزد",
+    description:
+      "راهنمای رژیم، کاهش سایز و دستگاه‌های کمک لاغری از کلینیک تخصصی تندیس.",
+    locale: "fa_IR",
+    type: "website",
+  },
 };
 
 export default async function MagazinePage() {

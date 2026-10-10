@@ -3,7 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Eye } from "lucide-react";
+import { ArticleInstagramCta } from "@/components/magazine/article-instagram-cta";
 import { articleParagraphs } from "@/lib/magazine";
+import {
+  TANDIS_INSTAGRAM_HANDLE,
+  TANDIS_INSTAGRAM_URL,
+} from "@/lib/social-links";
 import {
   getArticleBySlug,
   incrementArticleViews,
@@ -24,17 +29,37 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article || !article.published) {
-    return { title: "مقاله یافت نشد | مجله تندیس" };
+    return { title: "مقاله یافت نشد | مجله تندیس یزد" };
   }
+  const title = `${article.title} | کلینیک لاغری تندیس یزد`;
+  const description = `${article.excerpt} مشاوره تغذیه و رژیم درمانی در کلینیک تندیس یزد · اینستاگرام @${TANDIS_INSTAGRAM_HANDLE}`;
   return {
-    title: `${article.title} | مجله تندیس`,
-    description: article.excerpt,
+    title,
+    description,
+    keywords: [
+      "کلینیک لاغری تندیس",
+      "رژیم درمانی یزد",
+      "لاغری یزد",
+      "مشاوره تغذیه یزد",
+      article.category,
+      TANDIS_INSTAGRAM_HANDLE,
+    ],
+    alternates: {
+      canonical: `/magazine/${article.slug}`,
+    },
     openGraph: {
       title: article.title,
       description: article.excerpt,
-      images: [article.coverImage],
+      images: [{ url: article.coverImage }],
       type: "article",
       locale: "fa_IR",
+      siteName: "کلینیک لاغری تندیس یزد",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.excerpt,
+      images: [article.coverImage],
     },
   };
 }
@@ -55,8 +80,46 @@ export default async function MagazineArticlePage({
     .filter((item) => item.id !== article.id)
     .slice(0, 2);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.excerpt,
+    image: [article.coverImage],
+    datePublished: article.createdAt,
+    dateModified: article.updatedAt,
+    author: {
+      "@type": "Organization",
+      name: "کلینیک تخصصی لاغری و رژیم درمانی تندیس",
+      url: "https://www.instagram.com/tandis_clinic_yazd/",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "کلینیک تندیس یزد",
+      logo: {
+        "@type": "ImageObject",
+        url: "/tandis-logo.png",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `/magazine/${article.slug}`,
+    },
+    about: [
+      "لاغری",
+      "رژیم درمانی",
+      "یزد",
+      article.category,
+    ],
+    sameAs: [TANDIS_INSTAGRAM_URL],
+  };
+
   return (
     <div className="min-h-screen bg-[#F6F8F5]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="border-b border-[#1A2E26]/08 bg-white">
         <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
           <Link href="/magazine" className="text-sm font-medium text-brand">
@@ -82,7 +145,7 @@ export default async function MagazineArticlePage({
           <div className="relative mt-6 aspect-[16/9] overflow-hidden rounded-[1.75rem]">
             <Image
               src={article.coverImage}
-              alt={article.title}
+              alt={`${article.title} — کلینیک لاغری تندیس یزد`}
               fill
               className="object-cover"
               sizes="(max-width:768px) 100vw, 768px"
@@ -100,10 +163,15 @@ export default async function MagazineArticlePage({
             ))}
           </div>
 
-          <div className="mt-10 rounded-[1.5rem] bg-[#E8F2EA] p-5">
-            <p className="text-sm font-bold text-brand">آماده شروع مسیر لاغری هستید؟</p>
+          <ArticleInstagramCta />
+
+          <div className="mt-6 rounded-[1.5rem] bg-[#E8F2EA] p-5">
+            <p className="text-sm font-bold text-brand">
+              آماده شروع مسیر لاغری در تندیس هستید؟
+            </p>
             <p className="mt-2 text-sm leading-7 text-[#1A2E26]/70">
-              در کلینیک تندیس می‌توانید نوبت حضوری بگیرید یا مشاوره آنلاین ثبت کنید.
+              کلینیک تخصصی لاغری و رژیم درمانی تندیس یزد — نوبت حضوری یا مشاوره
+              آنلاین بگیرید.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link

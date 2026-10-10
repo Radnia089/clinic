@@ -127,6 +127,39 @@ async function ensureStore(): Promise<AppData> {
       patientInboxReads: parsed.patientInboxReads ?? [],
     };
     const defaultArticleList = defaultArticles();
+    const defaultsById = Object.fromEntries(
+      defaultArticleList.map((item) => [item.id, item])
+    );
+    let articlesChanged = false;
+    data.articles = (data.articles ?? []).map((item) => {
+      const seed = defaultsById[item.id];
+      if (!seed) return item;
+      // همگام‌سازی محتوای seeded (سئو/کاور) بدون از دست رفتن بازدید
+      if (
+        item.title !== seed.title ||
+        item.slug !== seed.slug ||
+        item.excerpt !== seed.excerpt ||
+        item.body !== seed.body ||
+        item.coverImage !== seed.coverImage ||
+        item.category !== seed.category ||
+        item.sortOrder !== seed.sortOrder
+      ) {
+        articlesChanged = true;
+        return {
+          ...item,
+          title: seed.title,
+          slug: seed.slug,
+          excerpt: seed.excerpt,
+          body: seed.body,
+          coverImage: seed.coverImage,
+          category: seed.category,
+          sortOrder: seed.sortOrder,
+          published: seed.published,
+          updatedAt: seed.updatedAt,
+        };
+      }
+      return item;
+    });
     const existingArticleIds = new Set(
       (data.articles ?? []).map((item) => item.id)
     );
@@ -135,6 +168,7 @@ async function ensureStore(): Promise<AppData> {
     );
     if (missingArticles.length > 0) {
       data.articles = [...(data.articles ?? []), ...missingArticles];
+      articlesChanged = true;
     }
     if (
       !parsed.champions ||
@@ -144,7 +178,7 @@ async function ensureStore(): Promise<AppData> {
       parsed.promoBanners.length === 0 ||
       !parsed.articles ||
       parsed.articles.length === 0 ||
-      missingArticles.length > 0
+      articlesChanged
     ) {
       await writeStore(data);
     }
