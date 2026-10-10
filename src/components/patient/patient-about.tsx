@@ -11,8 +11,14 @@ import {
   Phone,
   UserRound,
 } from "lucide-react";
-import { DEFAULT_CLINIC_ABOUT, type ClinicAbout } from "@/lib/types";
-import { TANDIS_INSTAGRAM_URL } from "@/lib/social-links";
+import {
+  DEFAULT_CLINIC_ABOUT,
+  type ClinicAbout,
+} from "@/lib/types";
+import {
+  TANDIS_INSTAGRAM_HANDLE,
+  TANDIS_INSTAGRAM_URL,
+} from "@/lib/social-links";
 
 type AboutClinic = {
   name: string;
@@ -22,6 +28,14 @@ type AboutClinic = {
   address: string;
   hours: string;
   about: ClinicAbout;
+};
+
+const GALLERY_CAPTIONS: Record<string, string> = {
+  "/images/device-rf.jpg": "دستگاه آر‌اف (RF)",
+  "/images/device-cavitation.jpg": "کاویتیشن",
+  "/images/device-endermologie.jpg": "اندومولوژی",
+  "/images/landing-consult-desk.jpg": "مشاوره تغذیه",
+  "/images/clinic-care.jpg": "فضای کلینیک",
 };
 
 function telHref(phone: string) {
@@ -130,7 +144,7 @@ export function PatientAboutScreen() {
             {about.gallery.length > 0 ? (
               <section className="space-y-2">
                 <h2 className="px-1 text-base font-extrabold text-[#14352A]">
-                  فضای کلینیک
+                  دستگاه‌ها و فضای کلینیک
                 </h2>
                 <div className="grid grid-cols-2 gap-2">
                   {about.gallery.map((src) => (
@@ -140,11 +154,16 @@ export function PatientAboutScreen() {
                     >
                       <Image
                         src={src}
-                        alt="تصویر کلینیک"
+                        alt={GALLERY_CAPTIONS[src] || "تصویر کلینیک"}
                         fill
                         className="object-cover"
                         sizes="200px"
                       />
+                      {GALLERY_CAPTIONS[src] ? (
+                        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent px-2 pb-2 pt-8 text-[11px] font-bold text-white">
+                          {GALLERY_CAPTIONS[src]}
+                        </span>
+                      ) : null}
                     </div>
                   ))}
                 </div>
@@ -191,9 +210,12 @@ export function PatientAboutScreen() {
                 href={TANDIS_INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-12 items-center justify-center rounded-full bg-[#E8F2EA] text-sm font-extrabold text-brand"
+                className="flex h-12 flex-col items-center justify-center rounded-full bg-[#E8F2EA] text-sm font-extrabold text-brand"
               >
-                اینستاگرام تندیس
+                <span>اینستاگرام تندیس</span>
+                <span className="text-[11px] font-medium opacity-80" dir="ltr">
+                  @{TANDIS_INSTAGRAM_HANDLE}
+                </span>
               </a>
             </section>
           </div>

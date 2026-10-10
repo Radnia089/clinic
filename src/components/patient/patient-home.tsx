@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   Home,
-  ClipboardList,
   BarChart3,
   BookOpen,
   Scale,
@@ -293,24 +292,6 @@ export function PatientHomeScreen({
           <PromoBannerSlider items={promoBanners} />
 
           <ChampionsSection variant="patient" items={champions} />
-
-          <Link
-            href="/patient/about"
-            className="flex items-center justify-between gap-3 rounded-[1.5rem] bg-white px-4 py-4 shadow-[0_6px_18px_rgba(35,70,55,0.06)] transition active:scale-[0.99]"
-          >
-            <div className="flex items-center gap-3">
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-[#E8F2EA] text-brand">
-                <Info className="size-5" />
-              </span>
-              <div>
-                <p className="text-sm font-extrabold text-[#14352A]">درباره ما</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  پزشک، آدرس، لوکیشن و فضای کلینیک
-                </p>
-              </div>
-            </div>
-            <span className="text-xs font-bold text-brand">مشاهده</span>
-          </Link>
         </div>
       )}
 
@@ -318,7 +299,12 @@ export function PatientHomeScreen({
         <ul className="grid grid-cols-4">
           {[
             { id: "home", label: "خانه", icon: Home, href: undefined as string | undefined },
-            { id: "plan", label: "برنامه من", icon: ClipboardList, href: undefined },
+            {
+              id: "about",
+              label: "درباره ما",
+              icon: Info,
+              href: "/patient/about",
+            },
             { id: "progress", label: "پیشرفت", icon: BarChart3, href: undefined },
             { id: "magazine", label: "مجله", icon: BookOpen, href: "/patient/magazine" },
           ].map((item) => {

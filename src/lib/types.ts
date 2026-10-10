@@ -431,20 +431,20 @@ export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
 
 export const DEFAULT_CLINIC_ABOUT: ClinicAbout = {
   aboutText:
-    "کلینیک تخصصی لاغری و رژیم درمانی تندیس در یزد، با تمرکز بر برنامه تغذیه شخصی، پیگیری منظم و دستگاه‌های کمک لاغری، مسیر کاهش وزن پایدار را همراه شما می‌سازد.",
-  doctorName: "مشاور تغذیه تندیس",
-  doctorTitle: "کارشناس تغذیه و رژیم درمانی",
+    "کلینیک تخصصی لاغری و رژیم درمانی تندیس در یزد (صفائیه، مجتمع خورشید) با مشاوره تغذیه شخصی، پیگیری منظم و دستگاه‌های کمک لاغری مثل آر‌اف، کاویتیشن و اندومولوژی، مسیر کاهش وزن پایدار را همراه شما می‌سازد. به‌روزرسانی‌ها و نمونه‌کارها را در اینستاگرام @tandis_clinic_yazd ببینید.",
+  doctorName: "آزاده السادات پورحسینی فراشاه",
+  doctorTitle: "کارشناس علوم تغذیه · نظام پزشکی ت-۵۶۵۸",
   doctorBio:
-    "برنامه غذایی و مسیر کاهش وزن بر اساس هدف، اندازه‌ها و سبک زندگی شما تنظیم می‌شود.",
-  doctorImage: "",
+    "مشاوره رژیم لاغری و چاقی، تناسب اندام، اختلالات تغذیه، رژیم بیماری‌های خاص (دیابت، فشار خون، کبد چرب و …) و تغذیه در کودکی، بارداری و شیردهی. برنامه بر اساس هدف، سایز و سبک زندگی شما تنظیم می‌شود.",
+  doctorImage: "/images/about/doctor-pourhosseini.jpg",
   coverImage: "/images/clinic-care.jpg",
   gallery: [
     "/images/device-rf.jpg",
     "/images/device-cavitation.jpg",
+    "/images/device-endermologie.jpg",
     "/images/landing-consult-desk.jpg",
   ],
-  mapUrl:
-    "https://www.google.com/maps/search/?api=1&query=یزد+صفائیه+بلوار+دانشگاه+مجتمع+خورشید",
+  mapUrl: "https://www.google.com/maps?q=31.839193,54.368628",
 };
 
 export const DEFAULT_CLINIC: ClinicProfile = {
