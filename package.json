@@ -4,14 +4,24 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:setup": "prisma migrate deploy && tsx prisma/seed.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
+    "@prisma/adapter-better-sqlite3": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "better-sqlite3": "^13.0.3",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.3.0",
+    "dotenv": "^18.0.7",
     "jalaali-js": "^2.0.1",
     "lucide-react": "^1.47.0",
     "next": "16.3.5",
@@ -28,7 +38,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "prisma": "^7.10.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

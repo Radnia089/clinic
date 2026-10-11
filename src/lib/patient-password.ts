@@ -1,4 +1,4 @@
-import { randomBytes, scryptSync, timingSafeEqual } from "crypto";
+import { hashPassword, verifyPassword } from "@/lib/password-hash";
 
 /** رمز کوتاه ۴ تا ۸ کاراکتر */
 export const PATIENT_PASSWORD_MIN = 4;
@@ -32,23 +32,11 @@ export function validatePatientPassword(raw: string) {
 }
 
 export function hashPatientPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 32).toString("hex");
-  return `${salt}:${hash}`;
+  return hashPassword(password);
 }
 
 export function verifyPatientPassword(password: string, stored?: string | null) {
-  if (!stored || !stored.includes(":")) return false;
-  const [salt, hash] = stored.split(":");
-  if (!salt || !hash) return false;
-  try {
-    const next = scryptSync(password, salt, 32);
-    const prev = Buffer.from(hash, "hex");
-    if (prev.length !== next.length) return false;
-    return timingSafeEqual(next, prev);
-  } catch {
-    return false;
-  }
+  return verifyPassword(password, stored);
 }
 
 export function patientHasPassword(patient: {

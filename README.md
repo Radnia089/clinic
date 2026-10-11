@@ -58,13 +58,20 @@ curl -X POST http://127.0.0.1:3847/api/reminders \
 ## اجرا
 
 ```bash
+cp .env.example .env   # در صورت نیاز
 npm install
+npm run db:setup       # migrate + seed (SQLite)
 npm run dev -- --port 3847 --hostname 127.0.0.1
 ```
 
 سپس باز کنید: [http://127.0.0.1:3847](http://127.0.0.1:3847)
 
-داده‌ها به‌صورت محلی در `.data/clinic-app.json` ذخیره می‌شوند.
+### دیتابیس
+
+- **SQLite** با **Prisma** در مسیر `.data/clinic.db` (`DATABASE_URL=file:./.data/clinic.db`)
+- جداول: مشتریان، ویزیت، پرداخت، نوبت، مشاوره آنلاین، اندازه‌گیری، پیامک، قهرمانان، بنر، مجله، صندوق پیام، پشتیبانی، تنظیمات کلینیک، کاربران کارکنان
+- با اولین اجرا، داده‌های پیش‌فرض (مقالات، قهرمانان، بنر، کاربران `tandis`/`admin`) و در صورت وجود، مهاجرت از `.data/clinic-app.json` انجام می‌شود
+- دستورها: `npm run db:migrate` · `npm run db:seed` · `npm run db:setup`
 
 ساعات کاری پیش‌فرض: ۸ تا ۲۱ با واحد ۱۵ دقیقه (ویزیت ۳۰ دقیقه، پکیج/دستگاه ۶۰ دقیقه).
 
@@ -97,4 +104,4 @@ npm run dev -- --port 3847 --hostname 127.0.0.1
 
 ## پشته
 
-Next.js · TypeScript · Tailwind CSS · shadcn/ui · کاوه‌نگار (اختیاری)
+Next.js · TypeScript · Tailwind CSS · shadcn/ui · Prisma · SQLite · کاوه‌نگار (اختیاری)

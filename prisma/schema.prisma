@@ -1,0 +1,294 @@
+// کلینیک تندیس — SQLite + Prisma
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model StaffUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  name         String
+  role         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+/// تنظیمات کلینیک به‌صورت یک ردیف JSON
+model ClinicSettings {
+  id        String   @id @default("default")
+  dataJson  String
+  updatedAt DateTime @updatedAt
+}
+
+model Patient {
+  id               String    @id @default(cuid())
+  firstName        String    @default("")
+  lastName         String    @default("")
+  age              Int?
+  gender           String    @default("female")
+  phone            String
+  nationalId       String?
+  address          String    @default("")
+  province         String?
+  city             String?
+  birthDate        String?
+  notes            String?
+  heightCm         Float?
+  goalWeightKg     Float?
+  avatarUrl        String?
+  source           String    @default("clinic")
+  profileComplete  Boolean   @default(false)
+  phoneVerifiedAt  DateTime?
+  passwordHash     String?
+  passwordSetAt    DateTime?
+  welcomeSmsSentAt DateTime?
+  appReviewedAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  visits          Visit[]
+  payments        Payment[]
+  measurements    Measurement[]
+  supportTickets  SupportTicket[]
+  inboxReads      InboxRead[]
+  smsLogs         SmsLog[]
+
+  @@index([phone])
+  @@index([source])
+  @@index([nationalId])
+}
+
+model Visit {
+  id              String   @id @default(cuid())
+  patientId       String
+  visitDate       String
+  visitTime       String?
+  durationMinutes Int?
+  visitType       String
+  channel         String   @default("clinic")
+  status          String   @default("visitor")
+  packageName     String?
+  admissionJson   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  patient  Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  payments Payment[]
+  smsLogs  SmsLog[]
+
+  @@index([patientId])
+  @@index([visitDate])
+  @@index([status])
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  patientId  String
+  visitId    String?
+  title      String
+  amount     Float
+  paidAmount Float    @default(0)
+  method     String   @default("cash")
+  status     String   @default("pending")
+  note       String?
+  createdAt  DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  visit   Visit?  @relation(fields: [visitId], references: [id], onDelete: SetNull)
+
+  @@index([patientId])
+  @@index([status])
+}
+
+model Appointment {
+  id            String   @id @default(cuid())
+  name          String
+  phone         String
+  preferredDate String?
+  preferredTime String?
+  service       String
+  note          String?
+  channel       String   @default("clinic")
+  status        String   @default("new")
+  createdAt     DateTime @default(now())
+
+  @@index([phone])
+  @@index([status])
+}
+
+model OnlineConsult {
+  id            String    @id @default(cuid())
+  name          String
+  phone         String
+  age           Int?
+  gender        String?
+  heightCm      Float?
+  weightKg      Float?
+  armCm         Float?
+  waistCm       Float?
+  hipCm         Float?
+  thighCm       Float?
+  calfCm        Float?
+  note          String?
+  preferredDate String?
+  status        String    @default("new")
+  scheduledDate String?
+  scheduledTime String?
+  smsNotifiedAt DateTime?
+  callStartedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  smsLogs SmsLog[]
+
+  @@index([phone])
+  @@index([status])
+}
+
+model Measurement {
+  id         String   @id @default(cuid())
+  patientId  String
+  recordedAt DateTime
+  weightKg   Float
+  waistCm    Float?
+  hipCm      Float?
+  armCm      Float?
+  thighCm    Float?
+  calfCm     Float?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([recordedAt])
+}
+
+model SmsLog {
+  id              String   @id @default(cuid())
+  visitId         String?
+  patientId       String?
+  onlineConsultId String?
+  patientName     String
+  phone           String
+  kind            String
+  body            String
+  status          String
+  provider        String
+  error           String?
+  dedupeKey       String
+  createdAt       DateTime @default(now())
+
+  visit         Visit?         @relation(fields: [visitId], references: [id], onDelete: SetNull)
+  patient       Patient?       @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  onlineConsult OnlineConsult? @relation(fields: [onlineConsultId], references: [id], onDelete: SetNull)
+
+  @@index([dedupeKey])
+  @@index([createdAt])
+}
+
+model PersonalLedger {
+  id        String   @id @default(cuid())
+  kind      String
+  category  String
+  title     String?
+  amount    Float
+  entryDate String
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([entryDate])
+  @@index([kind])
+}
+
+model Champion {
+  id           String   @id @default(cuid())
+  name         String
+  quote        String   @default("")
+  startKg      Float
+  endKg        Float
+  startWaistCm Float?
+  endWaistCm   Float?
+  beforeImage  String
+  afterImage   String
+  published    Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PromoBanner {
+  id        String   @id @default(cuid())
+  title     String
+  subtitle  String?
+  image     String
+  href      String?
+  published Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Article {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  title      String
+  excerpt    String   @default("")
+  body       String   @default("")
+  category   String   @default("")
+  coverImage String   @default("")
+  views      Int      @default(0)
+  published  Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model InboxMessage {
+  id         String   @id @default(cuid())
+  title      String
+  body       String
+  audience   String   @default("all")
+  patientIds String?
+  createdAt  DateTime @default(now())
+  createdBy  String?
+
+  reads InboxRead[]
+}
+
+model InboxRead {
+  id        String   @id @default(cuid())
+  patientId String
+  messageId String
+  readAt    DateTime @default(now())
+
+  patient Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  message InboxMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, messageId])
+  @@index([patientId])
+}
+
+model SupportTicket {
+  id          String   @id @default(cuid())
+  patientId   String
+  patientName String
+  phone       String
+  category    String
+  subject     String
+  body        String
+  status      String   @default("new")
+  clinicReply String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
+  @@index([status])
+}

@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   const title = String(body.title ?? "").trim();
   const text = String(body.body ?? "").trim();
   const audience = body.audience === "selected" ? "selected" : "all";
-  const patientIds = Array.isArray(body.patientIds)
+  const patientIds: string[] = Array.isArray(body.patientIds)
     ? body.patientIds.map((id: unknown) => String(id).trim()).filter(Boolean)
     : [];
 
