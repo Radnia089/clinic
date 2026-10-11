@@ -275,6 +275,10 @@ export async function getReminderDashboard() {
     provider: getActiveSmsProvider(),
     logs,
     hasKavenegarKey: Boolean(process.env.KAVENEGAR_API_KEY?.trim()),
+    hasAndroidGateway: Boolean(
+      process.env.SMS_ANDROID_USERNAME?.trim() &&
+        process.env.SMS_ANDROID_PASSWORD?.trim()
+    ),
     audience: {
       all: patients.length,
       withVisits,

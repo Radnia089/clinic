@@ -258,7 +258,7 @@ export interface SmsLogEntry {
   kind: ReminderKind;
   body: string;
   status: SmsDeliveryStatus;
-  provider: "mock" | "kavenegar";
+  provider: "mock" | "kavenegar" | "android";
   error?: string;
   /** کلید یکتا برای جلوگیری از ارسال تکراری */
   dedupeKey: string;

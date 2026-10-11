@@ -19,6 +19,7 @@ export default async function RemindersPage() {
         initialLogs={dashboard.logs}
         provider={dashboard.provider}
         hasKavenegarKey={dashboard.hasKavenegarKey}
+        hasAndroidGateway={dashboard.hasAndroidGateway}
         audience={dashboard.audience}
       />
     </div>

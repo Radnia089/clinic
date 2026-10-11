@@ -59,17 +59,35 @@ function kindLabel(kind: SmsLogEntry["kind"]) {
   }
 }
 
+function providerLabel(provider: SmsLogEntry["provider"] | "mock" | "kavenegar" | "android") {
+  if (provider === "android") return "گوشی اندروید";
+  if (provider === "kavenegar") return "کاوه‌نگار";
+  return "آزمایشی / Mock";
+}
+
+function providerHelp(provider: "mock" | "kavenegar" | "android") {
+  if (provider === "android") {
+    return "اپ SMS Gateway روی گوشی اندروید تنظیم شده — پیامک‌ها از سیم‌کارت همان گوشی ارسال می‌شوند.";
+  }
+  if (provider === "kavenegar") {
+    return "کلید کاوه‌نگار تنظیم شده — پیامک‌ها واقعی ارسال می‌شوند.";
+  }
+  return "فعلاً حالت آزمایشی (Mock) فعال است. پیام‌ها ذخیره می‌شوند ولی به شبکه مخابراتی نمی‌روند.";
+}
+
 export function RemindersPanel({
   initialSettings,
   initialLogs,
   provider,
   hasKavenegarKey,
+  hasAndroidGateway,
   audience,
 }: {
   initialSettings: ReminderSettings;
   initialLogs: SmsLogEntry[];
-  provider: "mock" | "kavenegar";
+  provider: "mock" | "kavenegar" | "android";
   hasKavenegarKey: boolean;
+  hasAndroidGateway: boolean;
   audience: {
     all: number;
     withVisits: number;
@@ -253,25 +271,45 @@ export function RemindersPanel({
           <div>
             <p className="text-sm font-bold text-brand">وضعیت بستر پیامک</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {hasKavenegarKey
-                ? "کلید کاوه‌نگار تنظیم شده — پیامک‌ها واقعی ارسال می‌شوند."
-                : "فعلاً حالت آزمایشی (Mock) فعال است. پیام‌ها ذخیره می‌شوند ولی به شبکه مخابراتی نمی‌روند."}
+              {providerHelp(provider)}
             </p>
           </div>
           <span
             className={`rounded-full px-3 py-1 text-xs font-bold ${
-              provider === "kavenegar"
+              provider === "android"
                 ? "bg-[#E8F2EA] text-brand"
-                : "bg-[#F6E6E1] text-[#9A4E42]"
+                : provider === "kavenegar"
+                  ? "bg-[#E8F2EA] text-brand"
+                  : "bg-[#F6E6E1] text-[#9A4E42]"
             }`}
           >
-            {provider === "kavenegar" ? "کاوه‌نگار" : "آزمایشی / Mock"}
+            {providerLabel(provider)}
           </span>
         </div>
-        <div className="rounded-2xl bg-[#F7F8F6] px-4 py-3 text-xs leading-6 text-muted-foreground">
-          برای ارسال واقعی، در فایل <span dir="ltr">.env.local</span> مقدار{" "}
-          <span dir="ltr">KAVENEGAR_API_KEY</span> را بگذارید. سرویس هر دقیقه نوبت‌های
-          سررسید را چک می‌کند.
+        <div className="space-y-2 rounded-2xl bg-[#F7F8F6] px-4 py-3 text-xs leading-6 text-muted-foreground">
+          <p>
+            برای ارسال از گوشی اندروید (بدون پنل): اپ{" "}
+            <span dir="ltr">SMS Gateway</span> را نصب کن، در تب Home نام‌کاربری و
+            رمز را بردار و در <span dir="ltr">.env</span> این‌ها را بگذار:
+          </p>
+          <p dir="ltr" className="font-mono text-[11px] text-brand">
+            SMS_ANDROID_USERNAME=…{" "}
+            <br />
+            SMS_ANDROID_PASSWORD=…
+          </p>
+          <p>
+            اختیاری:{" "}
+            <span dir="ltr">SMS_ANDROID_DEVICE_ID</span> ·{" "}
+            <span dir="ltr">SMS_ANDROID_SIM_NUMBER=1</span> ·{" "}
+            <span dir="ltr">SMS_PROVIDER=android</span>
+          </p>
+          <p>
+            وضعیت تنظیمات:{" "}
+            {hasAndroidGateway ? "گوشی اندروید آماده" : "گوشی اندروید تنظیم نشده"}
+            {" · "}
+            {hasKavenegarKey ? "کاوه‌نگار آماده" : "کاوه‌نگار تنظیم نشده"}
+          </p>
+          <p>سرویس هر دقیقه نوبت‌های سررسید را چک می‌کند.</p>
         </div>
       </section>
 
