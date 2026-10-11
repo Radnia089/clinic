@@ -18,9 +18,19 @@ export const metadata: Metadata = {
   title: "کلینیک لاغری تندیس یزد | رژیم درمانی و مشاوره آنلاین",
   description:
     "کلینیک رژیم درمانی و لاغری تندیس در یزد — رزرو نوبت حضوری، مشاوره آنلاین، برنامه غذایی شخصی و پیگیری کاهش وزن.",
+  applicationName: "تندیس",
+  appleWebApp: {
+    capable: true,
+    title: "تندیس",
+    statusBarStyle: "default",
+  },
   icons: {
-    icon: "/tandis-logo.png",
-    apple: "/tandis-logo.png",
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/tandis-logo.png" },
+    ],
+    apple: "/icon-192.png",
   },
 };
 

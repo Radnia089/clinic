@@ -49,6 +49,20 @@ curl -X POST http://127.0.0.1:3847/api/reminders \
   -d '{"action":"run"}'
 ```
 
+## نوتیفیکیشن صندوق اپ مشتری (Web Push)
+
+وقتی از پنل کلینیک (`/clinic/notifications`) پیام به صندوق مشتری ارسال شود، در صورت فعال بودن نوتیف روی گوشی، حتی با اپ بسته هم اعلان می‌آید.
+
+```bash
+# یک‌بار کلید بسازید و در .env بگذارید
+npx web-push generate-vapid-keys
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=...
+VAPID_PRIVATE_KEY=...
+VAPID_SUBJECT=mailto:info@tandisclinicyazd.ir
+```
+
+مشتری بعد از ورود در صفحه اصلی دکمه «فعال کردن» را می‌زند و اجازه نوتیفیکیشن می‌دهد. برای iOS معمولاً باید سایت را به Home Screen اضافه کند. تست لوکال بهتر است با HTTPS باشد (`next dev --experimental-https`).
+
 ## ورود
 
 از دکمه **ورود** در هدر لندینگ، نقش را انتخاب کنید:

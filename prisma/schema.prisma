@@ -51,16 +51,33 @@ model Patient {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
-  visits          Visit[]
-  payments        Payment[]
-  measurements    Measurement[]
-  supportTickets  SupportTicket[]
-  inboxReads      InboxRead[]
-  smsLogs         SmsLog[]
+  visits             Visit[]
+  payments           Payment[]
+  measurements       Measurement[]
+  supportTickets     SupportTicket[]
+  inboxReads         InboxRead[]
+  smsLogs            SmsLog[]
+  pushSubscriptions  PushSubscription[]
 
   @@index([phone])
   @@index([source])
   @@index([nationalId])
+}
+
+/// اشتراک Web Push برای نوتیفیکیشن صندوق اپ مشتری
+model PushSubscription {
+  id        String   @id @default(cuid())
+  patientId String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
 }
 
 model Visit {

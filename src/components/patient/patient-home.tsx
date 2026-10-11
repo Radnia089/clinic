@@ -19,6 +19,7 @@ import { PatientClubLink } from "@/components/patient/patient-club-link";
 import { PatientProgressScreen } from "@/components/patient/patient-progress";
 import { PatientInstagramLink } from "@/components/patient/patient-instagram-link";
 import { PatientNotificationBell } from "@/components/patient/patient-notification-bell";
+import { PatientPushPrompt } from "@/components/patient/patient-push-prompt";
 import { PatientSupportLink } from "@/components/patient/patient-support-link";
 import { PatientUserMenu } from "@/components/patient/patient-user-menu";
 import { PromoBannerSlider } from "@/components/patient/promo-banner-slider";
@@ -219,6 +220,7 @@ export function PatientHomeScreen({
         <PatientProgressScreen />
       ) : (
         <div className="flex-1 space-y-4 px-4 pb-28 pt-4">
+          <PatientPushPrompt />
           <section className="rounded-[28px] bg-[#E8F2EA] p-5">
             <div className="flex items-center justify-between gap-4">
               <div className="space-y-4">

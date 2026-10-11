@@ -5,6 +5,7 @@ import {
   listPatientInboxMessagesAdmin,
   listPatients,
 } from "@/lib/store";
+import { sendPushToPatients } from "@/lib/web-push";
 
 async function requireManager() {
   const user = await getCurrentUser();
@@ -57,7 +58,12 @@ export async function POST(request: Request) {
     if (!message) {
       return NextResponse.json({ error: "create_failed" }, { status: 400 });
     }
-    return NextResponse.json({ message }, { status: 201 });
+    const push = await sendPushToPatients(filtered, {
+      title,
+      body: text,
+      url: "/patient/inbox",
+    });
+    return NextResponse.json({ message, push }, { status: 201 });
   }
 
   const message = await createPatientInboxMessage({
@@ -69,5 +75,10 @@ export async function POST(request: Request) {
   if (!message) {
     return NextResponse.json({ error: "create_failed" }, { status: 400 });
   }
-  return NextResponse.json({ message }, { status: 201 });
+  const push = await sendPushToPatients("all", {
+    title,
+    body: text,
+    url: "/patient/inbox",
+  });
+  return NextResponse.json({ message, push }, { status: 201 });
 }
