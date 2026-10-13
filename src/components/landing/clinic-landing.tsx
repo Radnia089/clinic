@@ -78,7 +78,7 @@ export function ClinicLanding({
               priority
             />
             <p className="mt-0.5 text-[10px] font-medium text-[#14352A]/65 sm:text-[11px]">
-              کلینیک تخصصی لاغری و رژیم درمانی · یزد
+              کلینیک تخصصی لاغری و رژیم درمانی تندیس
             </p>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
