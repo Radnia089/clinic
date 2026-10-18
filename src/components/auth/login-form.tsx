@@ -95,14 +95,6 @@ export function LoginForm() {
         >
           {loading ? "در حال ورود..." : "ورود"}
         </Button>
-
-        <div className="rounded-2xl bg-[#E8F2EA] px-3 py-3 text-xs leading-6 text-brand">
-          فعلاً برای تست:
-          <br />
-          کاربر منشی: <b dir="ltr">tandis</b> / <b dir="ltr">123456</b>
-          <br />
-          کاربر مدیر: <b dir="ltr">admin</b> / <b dir="ltr">123456</b>
-        </div>
       </form>
 
       <Link href="/" className="mt-6 text-center text-sm text-muted-foreground hover:text-brand">

@@ -289,19 +289,9 @@ export function RemindersPanel({
         <div className="space-y-2 rounded-2xl bg-[#F7F8F6] px-4 py-3 text-xs leading-6 text-muted-foreground">
           <p>
             برای ارسال از گوشی اندروید (بدون پنل): اپ{" "}
-            <span dir="ltr">SMS Gateway</span> را نصب کن، در تب Home نام‌کاربری و
-            رمز را بردار و در <span dir="ltr">.env</span> این‌ها را بگذار:
-          </p>
-          <p dir="ltr" className="font-mono text-[11px] text-brand">
-            SMS_ANDROID_USERNAME=…{" "}
-            <br />
-            SMS_ANDROID_PASSWORD=…
-          </p>
-          <p>
-            اختیاری:{" "}
-            <span dir="ltr">SMS_ANDROID_DEVICE_ID</span> ·{" "}
-            <span dir="ltr">SMS_ANDROID_SIM_NUMBER=1</span> ·{" "}
-            <span dir="ltr">SMS_PROVIDER=android</span>
+            <span dir="ltr">SMS Gateway</span> را نصب کنید و متغیرهای مربوط را در{" "}
+            <span dir="ltr">.env</span> طبق <span dir="ltr">.env.example</span>{" "}
+            تنظیم کنید.
           </p>
           <p>
             وضعیت تنظیمات:{" "}
