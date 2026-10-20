@@ -354,9 +354,9 @@ export function ReceptionDayBoard({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 md:gap-4">
-      {/* بالای تقویم ثابت؛ فقط شبکه ساعت‌ها اسکرول می‌شود */}
-      <div className="shrink-0 space-y-3 md:space-y-4">
+    <div className="flex flex-col gap-3 md:h-full md:min-h-0 md:gap-4">
+      {/* موبایل: عنوان و جدول با صفحه اسکرول می‌شوند. دسکتاپ: فقط شبکه ساعت‌ها */}
+      <div className="space-y-3 md:shrink-0 md:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium text-muted-foreground">تقویم روزانه پذیرش</p>
@@ -434,7 +434,7 @@ export function ReceptionDayBoard({
       </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_6px_18px_rgba(35,70,55,0.06)] select-none">
+      <div className="flex flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_6px_18px_rgba(35,70,55,0.06)] select-none md:min-h-0 md:flex-1">
         <div className="grid shrink-0 grid-cols-[4.25rem_1fr_1fr] border-b border-black/5 bg-[#F7F8F6] text-center text-xs font-bold text-brand">
           <div className="px-1 py-3">ساعت</div>
           <div className="border-r border-black/5 px-2 py-3">
@@ -451,7 +451,7 @@ export function ReceptionDayBoard({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+        <div className="md:min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-y-contain">
         <div className="grid grid-cols-[4.25rem_1fr_1fr]">
           <div className="relative bg-[#FAFBFA]">
             {gridSlots.map((slot) => (
@@ -512,7 +512,7 @@ export function ReceptionDayBoard({
       </div>
 
       {untimed.length > 0 ? (
-        <section className="max-h-40 shrink-0 overflow-y-auto rounded-[28px] bg-[#FFF8F5] p-4">
+        <section className="rounded-[28px] bg-[#FFF8F5] p-4 md:max-h-40 md:shrink-0 md:overflow-y-auto">
           <h2 className="text-sm font-bold text-[#9A4E42]">
             نوبت‌های بدون ساعت / تلفنی
           </h2>
