@@ -1,0 +1,153 @@
+# Build and push the production image to the container registry.
+#
+# Required repository secrets:
+#   REGISTRY_USERNAME   registry login user
+#   REGISTRY_PASSWORD   registry login password / token
+#
+# Required repository variables (Settings → Variables):
+#   APP_IMAGE              e.g. registry.hamdocker.ir/amintvk/tandis-clinic
+#   NEXT_PUBLIC_APP_URL    e.g. https://tandisclinicyazd.ir
+#
+# Optional variables:
+#   REGISTRY_HOST          default: registry.hamdocker.ir
+#   NODE_IMAGE             Docker Hub mirror for the Node base image
+#   NPM_REGISTRY           npm registry mirror URL
+#
+# Triggers:
+#   - push to main / master  → tag: prod
+#   - version tags: v1.2.3   → tag: 1.2.3 (+ prod)
+#   - manual run             → tag: input or prod
+#
+# Matches the rest of the stack on registry.hamdocker.ir (…:prod).
+
+name: Docker Publish
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag (default: prod)"
+        required: false
+        type: string
+        default: prod
+
+concurrency:
+  group: docker-publish-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUILDX_GIT_INFO: "false"
+
+jobs:
+  build-and-push:
+    name: Build and push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required configuration
+        env:
+          APP_IMAGE: ${{ vars.APP_IMAGE }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+        run: |
+          missing=0
+          for name in APP_IMAGE NEXT_PUBLIC_APP_URL REGISTRY_USERNAME REGISTRY_PASSWORD; do
+            eval "value=\${$name:-}"
+            if [ -z "$value" ]; then
+              echo "::error::$name is not set (Variables for APP_IMAGE / NEXT_PUBLIC_APP_URL, Secrets for REGISTRY_*)"
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - name: Resolve image tag and build args
+        id: meta
+        env:
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+          NODE_IMAGE: ${{ vars.NODE_IMAGE }}
+          NPM_REGISTRY: ${{ vars.NPM_REGISTRY }}
+        run: |
+          # Default production tag used by deploy/.env (APP_TAG=prod).
+          if [ -n "${{ inputs.tag }}" ]; then
+            TAG="${{ inputs.tag }}"
+            EXTRA_TAGS=""
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF#refs/tags/v}"
+            # Also refresh :prod so compose pull without changing APP_TAG still works.
+            EXTRA_TAGS="prod"
+          else
+            TAG="prod"
+            EXTRA_TAGS=""
+          fi
+
+          TAGS="${{ vars.APP_IMAGE }}:${TAG}"
+          for extra in $EXTRA_TAGS; do
+            TAGS="${TAGS},${{ vars.APP_IMAGE }}:${extra}"
+          done
+
+          BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          {
+            echo "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}"
+            echo "APP_VERSION=${TAG}"
+            echo "GIT_SHA=${GITHUB_SHA}"
+            echo "BUILD_DATE=${BUILD_DATE}"
+            [ -n "${NODE_IMAGE:-}" ] && echo "NODE_IMAGE=${NODE_IMAGE}"
+            [ -n "${NPM_REGISTRY:-}" ] && echo "NPM_REGISTRY=${NPM_REGISTRY}"
+          } > /tmp/build-args.txt
+
+          {
+            echo "tag=${TAG}"
+            echo "tags=${TAGS}"
+            echo "build_args<<EOF"
+            cat /tmp/build-args.txt
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Image tags: ${TAGS}"
+          cat /tmp/build-args.txt
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.REGISTRY_HOST || 'registry.hamdocker.ir' }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: ${{ steps.meta.outputs.build_args }}
+
+      - name: Summary
+        run: |
+          {
+            echo "## Image published"
+            echo ""
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| Tags | \`${{ steps.meta.outputs.tags }}\` |"
+            echo "| Commit | \`${{ github.sha }}\` |"
+            echo ""
+            echo "On the server keep \`APP_TAG=prod\` in \`.env\`, then:"
+            echo ""
+            echo '```bash'
+            echo "docker compose pull && docker compose up -d"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,54 @@
+# Production stack for the Tandis clinic app.
+# Compatible with both `docker compose` (v2) and legacy `docker-compose` (v1.27+).
+# Pull-only: the image is built and pushed with docker/build-and-push.sh.
+#
+#   cp .env.example .env    # fill in the values
+#   docker compose pull
+#   docker compose up -d
+#
+services:
+  app:
+    image: ${APP_IMAGE:?APP_IMAGE must be set}:${APP_TAG:?APP_TAG must be set}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/app/.data/clinic.db
+      TZ: ${TZ:-Asia/Tehran}
+    ports:
+      - "${PUBLISH_ADDR:-0.0.0.0}:${PUBLISH_PORT:-80}:3000"
+    volumes:
+      - clinic-data:/app/.data
+      - clinic-uploads:/app/public/uploads
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+      - /app/.next/cache:size=256m,uid=1000,gid=1000,mode=0755
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cpus: ${APP_CPUS:-1.0}
+    mem_limit: ${APP_MEMORY:-1g}
+    stop_grace_period: 30s
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/api/auth/me').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  clinic-data:
+    name: tandis-clinic-data
+  clinic-uploads:
+    name: tandis-clinic-uploads
