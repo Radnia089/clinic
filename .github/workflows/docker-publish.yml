@@ -1,16 +1,18 @@
-# Build and push the production image to the container registry.
+# =============================================================================
+# Docker Publish — production image for Tandis Clinic
+# =============================================================================
 #
-# Required repository secrets (Settings → Secrets and variables → Actions):
-#   REGISTRY_USERNAME   registry login user
-#   REGISTRY_PASSWORD   registry login password / token
+# Secrets (repo → Settings → Secrets and variables → Actions):
+#   REGISTRY_USERNAME
+#   REGISTRY_PASSWORD
 #
-# Image is fixed: registry.hamdocker.ir/amintvk/tandis-clinic
-# Default tag: prod (same as other services on this registry).
+# Image:  registry.hamdocker.ir/amintvk/tandis-clinic
+# Tags:   prod  (always on main / version releases)
+#         <semver> when pushing v*.*.*
+#         sha-<short>  (immutable companion for rollback)
 #
-# Triggers:
-#   - push to main / master  → tag: prod
-#   - version tags: v1.2.3   → tag: 1.2.3 (+ prod)
-#   - manual run             → tag: input or prod
+# Server: APP_TAG=prod → docker compose pull && docker compose up -d
+# =============================================================================
 
 name: Docker Publish
 
@@ -18,121 +20,161 @@ on:
   push:
     branches: [main, master]
     tags: ["v*.*.*"]
+    paths-ignore:
+      - "**/*.md"
+      - "android-patient/**"
+      - ".gitignore"
+      - "LICENSE*"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Image tag (default: prod)"
+        description: "Primary image tag"
         required: false
         type: string
         default: prod
 
 concurrency:
-  group: docker-publish-${{ github.ref }}
+  group: docker-publish-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   BUILDX_GIT_INFO: "false"
-  APP_IMAGE: registry.hamdocker.ir/amintvk/tandis-clinic
-  REGISTRY_HOST: registry.hamdocker.ir
+  REGISTRY: registry.hamdocker.ir
+  IMAGE: registry.hamdocker.ir/amintvk/tandis-clinic
   NEXT_PUBLIC_APP_URL: https://tandisclinicyazd.ir
 
 jobs:
-  build-and-push:
+  publish:
     name: Build and push
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    timeout-minutes: 45
+
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+      tags: ${{ steps.meta.outputs.tags }}
+      version: ${{ steps.identity.outputs.version }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - name: Check registry credentials
+      - name: Require registry credentials
         env:
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: |
-          missing=0
-          for name in REGISTRY_USERNAME REGISTRY_PASSWORD; do
-            eval "value=\${$name:-}"
-            if [ -z "$value" ]; then
-              echo "::error::$name secret is not set"
-              missing=1
-            fi
-          done
-          exit "$missing"
+          ok=1
+          [ -n "$REGISTRY_USERNAME" ] || { echo "::error title=Missing secret::REGISTRY_USERNAME"; ok=0; }
+          [ -n "$REGISTRY_PASSWORD" ] || { echo "::error title=Missing secret::REGISTRY_PASSWORD"; ok=0; }
+          [ "$ok" -eq 1 ]
 
-      - name: Resolve image tag and build args
+      - name: Docker metadata (OCI labels + tags)
         id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          flavor: |
+            latest=false
+          tags: |
+            type=raw,value=prod,enable=${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') }}
+            type=raw,value=prod,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=${{ inputs.tag || 'prod' }},enable=${{ github.event_name == 'workflow_dispatch' }}
+            type=sha,prefix=sha-,format=short
+          labels: |
+            org.opencontainers.image.title=Tandis Clinic
+            org.opencontainers.image.description=Clinic management — Next.js + Prisma + SMS reminders
+            org.opencontainers.image.vendor=Tandis Clinic
+            org.opencontainers.image.url=https://tandisclinicyazd.ir
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=UNLICENSED
+
+      - name: Resolve build identity
+        id: identity
         run: |
-          if [ -n "${{ inputs.tag }}" ]; then
-            TAG="${{ inputs.tag }}"
-            EXTRA_TAGS=""
-          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            TAG="${GITHUB_REF#refs/tags/v}"
-            EXTRA_TAGS="prod"
-          else
-            TAG="prod"
-            EXTRA_TAGS=""
-          fi
+          version="${{ steps.meta.outputs.version }}"
+          [ -n "$version" ] && [ "$version" != "unknown" ] || version="prod"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
-          TAGS="${APP_IMAGE}:${TAG}"
-          for extra in $EXTRA_TAGS; do
-            TAGS="${TAGS},${APP_IMAGE}:${extra}"
-          done
-
-          BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          {
-            echo "NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}"
-            echo "APP_VERSION=${TAG}"
-            echo "GIT_SHA=${GITHUB_SHA}"
-            echo "BUILD_DATE=${BUILD_DATE}"
-          } > /tmp/build-args.txt
-
-          {
-            echo "tag=${TAG}"
-            echo "tags=${TAGS}"
-            echo "build_args<<EOF"
-            cat /tmp/build-args.txt
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
-          echo "Image tags: ${TAGS}"
-          cat /tmp/build-args.txt
-
-      - name: Set up Docker Buildx
+      - name: Set up Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
 
-      - name: Log in to registry
+      - name: Log in to ${{ env.REGISTRY }}
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY_HOST }}
+          registry: ${{ env.REGISTRY }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./Dockerfile
           push: true
           platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: ${{ steps.meta.outputs.build_args }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          build-args: |
+            NEXT_PUBLIC_APP_URL=${{ env.NEXT_PUBLIC_APP_URL }}
+            APP_VERSION=${{ steps.identity.outputs.version }}
+            GIT_SHA=${{ github.sha }}
+            BUILD_DATE=${{ steps.identity.outputs.build_date }}
+          cache-from: type=gha,scope=tandis-clinic
+          cache-to: type=gha,mode=max,scope=tandis-clinic
+          provenance: mode=max
+          sbom: true
+          pull: true
 
-      - name: Summary
+      - name: Job summary
+        if: always() && steps.build.outcome == 'success'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+          SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           {
-            echo "## Image published"
+            echo "### Tandis Clinic · image published"
             echo ""
             echo "| | |"
-            echo "| --- | --- |"
-            echo "| Tags | \`${{ steps.meta.outputs.tags }}\` |"
-            echo "| Commit | \`${{ github.sha }}\` |"
+            echo "|---|---|"
+            echo "| **Image** | \`${IMAGE}\` |"
+            echo "| **Digest** | \`${DIGEST}\` |"
+            echo "| **Commit** | [\`${SHA:0:7}\`](${{ github.server_url }}/${{ github.repository }}/commit/${SHA}) |"
+            echo "| **Actor** | \`@${ACTOR}\` |"
+            echo "| **Run** | [actions#${{ github.run_number }}](${RUN_URL}) |"
             echo ""
-            echo "On the server keep \`APP_TAG=prod\` in \`.env\`, then:"
+            echo "#### Tags"
+            echo '```'
+            printf '%s\n' "$TAGS"
+            echo '```'
             echo ""
+            echo "#### Deploy"
             echo '```bash'
+            echo "# on the server (.env → APP_TAG=prod)"
             echo "docker compose pull && docker compose up -d"
             echo '```'
+            echo ""
+            echo "Pin by digest (immutable):"
+            echo '```'
+            echo "${IMAGE}@${DIGEST}"
+            echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Log out
+        if: always()
+        run: docker logout "${REGISTRY}" || true

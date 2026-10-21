@@ -42,13 +42,16 @@ Image name and app URL are hardcoded in the workflow
 (`registry.hamdocker.ir/amintvk/tandis-clinic`,
 `https://tandisclinicyazd.ir`).
 
-Image tags:
+Image tags (always includes an immutable `sha-<short>` companion):
 
-| Trigger | Tag |
+| Trigger | Tags |
 | --- | --- |
-| Push to `main` / `master` | `prod` |
-| Git tag `v1.2.3` | `1.2.3` and `prod` |
-| Manual run | value you enter (default `prod`) |
+| Push to `main` / `master` | `prod`, `sha-…` |
+| Git tag `v1.2.3` | `1.2.3`, `prod`, `sha-…` |
+| Manual run | value you enter (default `prod`), `sha-…` |
+
+Builds also attach OCI labels, SBOM, and SLSA provenance. Markdown-only and
+`android-patient/**` changes do not trigger a rebuild.
 
 On the server keep `APP_TAG=prod` and `docker compose pull` after each publish.
 
