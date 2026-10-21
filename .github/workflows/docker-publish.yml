@@ -1,24 +1,16 @@
 # Build and push the production image to the container registry.
 #
-# Required repository secrets:
+# Required repository secrets (Settings → Secrets and variables → Actions):
 #   REGISTRY_USERNAME   registry login user
 #   REGISTRY_PASSWORD   registry login password / token
 #
-# Required repository variables (Settings → Variables):
-#   APP_IMAGE              e.g. registry.hamdocker.ir/amintvk/tandis-clinic
-#   NEXT_PUBLIC_APP_URL    e.g. https://tandisclinicyazd.ir
-#
-# Optional variables:
-#   REGISTRY_HOST          default: registry.hamdocker.ir
-#   NODE_IMAGE             Docker Hub mirror for the Node base image
-#   NPM_REGISTRY           npm registry mirror URL
+# Image is fixed: registry.hamdocker.ir/amintvk/tandis-clinic
+# Default tag: prod (same as other services on this registry).
 #
 # Triggers:
 #   - push to main / master  → tag: prod
 #   - version tags: v1.2.3   → tag: 1.2.3 (+ prod)
 #   - manual run             → tag: input or prod
-#
-# Matches the rest of the stack on registry.hamdocker.ir (…:prod).
 
 name: Docker Publish
 
@@ -40,6 +32,9 @@ concurrency:
 
 env:
   BUILDX_GIT_INFO: "false"
+  APP_IMAGE: registry.hamdocker.ir/amintvk/tandis-clinic
+  REGISTRY_HOST: registry.hamdocker.ir
+  NEXT_PUBLIC_APP_URL: https://tandisclinicyazd.ir
 
 jobs:
   build-and-push:
@@ -51,18 +46,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check required configuration
+      - name: Check registry credentials
         env:
-          APP_IMAGE: ${{ vars.APP_IMAGE }}
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
         run: |
           missing=0
-          for name in APP_IMAGE NEXT_PUBLIC_APP_URL REGISTRY_USERNAME REGISTRY_PASSWORD; do
+          for name in REGISTRY_USERNAME REGISTRY_PASSWORD; do
             eval "value=\${$name:-}"
             if [ -z "$value" ]; then
-              echo "::error::$name is not set (Variables for APP_IMAGE / NEXT_PUBLIC_APP_URL, Secrets for REGISTRY_*)"
+              echo "::error::$name secret is not set"
               missing=1
             fi
           done
@@ -70,27 +63,21 @@ jobs:
 
       - name: Resolve image tag and build args
         id: meta
-        env:
-          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
-          NODE_IMAGE: ${{ vars.NODE_IMAGE }}
-          NPM_REGISTRY: ${{ vars.NPM_REGISTRY }}
         run: |
-          # Default production tag used by deploy/.env (APP_TAG=prod).
           if [ -n "${{ inputs.tag }}" ]; then
             TAG="${{ inputs.tag }}"
             EXTRA_TAGS=""
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             TAG="${GITHUB_REF#refs/tags/v}"
-            # Also refresh :prod so compose pull without changing APP_TAG still works.
             EXTRA_TAGS="prod"
           else
             TAG="prod"
             EXTRA_TAGS=""
           fi
 
-          TAGS="${{ vars.APP_IMAGE }}:${TAG}"
+          TAGS="${APP_IMAGE}:${TAG}"
           for extra in $EXTRA_TAGS; do
-            TAGS="${TAGS},${{ vars.APP_IMAGE }}:${extra}"
+            TAGS="${TAGS},${APP_IMAGE}:${extra}"
           done
 
           BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -99,8 +86,6 @@ jobs:
             echo "APP_VERSION=${TAG}"
             echo "GIT_SHA=${GITHUB_SHA}"
             echo "BUILD_DATE=${BUILD_DATE}"
-            [ -n "${NODE_IMAGE:-}" ] && echo "NODE_IMAGE=${NODE_IMAGE}"
-            [ -n "${NPM_REGISTRY:-}" ] && echo "NPM_REGISTRY=${NPM_REGISTRY}"
           } > /tmp/build-args.txt
 
           {
@@ -120,7 +105,7 @@ jobs:
       - name: Log in to registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ vars.REGISTRY_HOST || 'registry.hamdocker.ir' }}
+          registry: ${{ env.REGISTRY_HOST }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 

@@ -30,24 +30,17 @@ Workflow: `.github/workflows/docker-publish.yml`
 Runs on push to `main` / `master`, on tags `v*.*.*`, or via **Actions → Docker
 Publish → Run workflow**.
 
-In the GitHub repo:
-
-**Secrets** (Settings → Secrets and variables → Actions → Secrets)
+In the GitHub repo, set only these **Secrets** (Settings → Secrets and
+variables → Actions → Secrets):
 
 | Name | Example |
 | --- | --- |
 | `REGISTRY_USERNAME` | registry user |
 | `REGISTRY_PASSWORD` | registry password / token |
 
-**Variables** (Settings → Secrets and variables → Actions → Variables)
-
-| Name | Example |
-| --- | --- |
-| `APP_IMAGE` | `registry.hamdocker.ir/amintvk/tandis-clinic` |
-| `NEXT_PUBLIC_APP_URL` | `https://tandisclinicyazd.ir` |
-| `REGISTRY_HOST` | `registry.hamdocker.ir` (optional; this is the default) |
-| `NODE_IMAGE` | Docker Hub mirror for Node (optional) |
-| `NPM_REGISTRY` | npm mirror URL (optional) |
+Image name and app URL are hardcoded in the workflow
+(`registry.hamdocker.ir/amintvk/tandis-clinic`,
+`https://tandisclinicyazd.ir`).
 
 Image tags:
 
