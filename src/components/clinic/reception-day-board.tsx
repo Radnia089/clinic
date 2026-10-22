@@ -40,7 +40,9 @@ import { cn } from "@/lib/utils";
 type VisitRow = Visit & { patient: Patient | null };
 type Lane = "consultation" | "package";
 
-const ROW_PX = 30;
+// هر ردیف ۱۵ دقیقه است. ویزیت پیش‌فرض ۳۰ دقیقه دو ردیف است و باید نام،
+// تیک حضور و لینک پرونده را داخل همان کارت جا بدهد.
+const ROW_PX = 72;
 const MIN_DURATION = 15;
 
 type Interaction =
@@ -672,7 +674,7 @@ function LaneColumn({
             key={visit.id}
             data-visit-block
             className={cn(
-              "absolute inset-x-1 z-10 overflow-hidden rounded-xl px-2 py-1 shadow-sm",
+              "absolute inset-x-1 z-10 flex flex-col overflow-hidden rounded-xl px-2 pt-1.5 pb-5 shadow-sm",
               cancelled
                 ? "bg-[#F3F3F3] text-[#8A8A8A] line-through decoration-[#C45C5C]/50"
                 : attended
@@ -694,24 +696,20 @@ function LaneColumn({
               onVisitMoveStart(visit, e.clientY);
             }}
           >
-            <div className="flex items-start justify-between gap-1">
-              <p className="truncate text-[11px] font-extrabold leading-tight">
+            <div className="flex min-w-0 items-center gap-1">
+              <p className="min-w-0 flex-1 truncate text-[11px] font-extrabold leading-tight">
                 {visit.patient ? patientFullName(visit.patient) : "بدون نام"}
               </p>
-              <div className="flex shrink-0 items-center gap-1">
-                <AttendanceMark status={visit.status} />
-                {visit.channel === "phone" ? (
-                  <span className="rounded-full bg-[#EEF2FF] px-1.5 py-0.5 text-[9px] font-bold text-[#3B5BDB]">
-                    تلفنی
-                  </span>
-                ) : null}
-                <VisitBadge n={n} />
-              </div>
+              {visit.channel === "phone" ? (
+                <span className="shrink-0 rounded-full bg-[#EEF2FF] px-1.5 py-0.5 text-[9px] font-bold text-[#3B5BDB]">
+                  تلفنی
+                </span>
+              ) : null}
             </div>
             {visit.patient?.phone ? (
               <a
                 href={`tel:${visit.patient.phone}`}
-                className="mt-0.5 block truncate text-[10px] font-semibold underline-offset-2 hover:underline"
+                className="mt-0.5 block truncate text-[10px] font-semibold leading-tight underline-offset-2 hover:underline"
                 dir="ltr"
                 title="تماس"
                 onMouseDown={(e) => e.stopPropagation()}
@@ -720,24 +718,24 @@ function LaneColumn({
                 {visit.patient.phone}
               </a>
             ) : null}
-            <p className="mt-0.5 text-[9px] opacity-80">
-              {formatTimeFa(start)}–{formatTimeFa(end)} · {visitStatusLabel(visit.status)}
+            <p className="mt-0.5 truncate text-[9px] leading-tight opacity-80">
+              {formatTimeFa(start)}–{formatTimeFa(end)} · مراجعه {toFaNumber(n)}
             </p>
 
             <div
               data-attend-btn
-              className="mt-1 flex items-center gap-1"
+              className="relative z-10 mt-auto flex shrink-0 flex-nowrap items-center gap-1 pt-1"
               onMouseDown={(e) => e.stopPropagation()}
             >
               <AttendanceButtons
                 status={visit.status}
-                size="sm"
+                size="xs"
                 onChange={(status) => onAttendance(visit.id, status)}
               />
               {visit.patient ? (
                 <Link
                   href={`/clinic/reception/customers/${visit.patient.id}`}
-                  className="mr-auto text-[9px] font-bold underline-offset-2 hover:underline"
+                  className="mr-auto text-[10px] font-bold underline-offset-2 hover:underline"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
                   پرونده
