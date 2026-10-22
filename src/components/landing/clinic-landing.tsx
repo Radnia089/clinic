@@ -92,6 +92,9 @@ export function ClinicLanding({
               <a href="#bmi" className="hover:text-[#14352A]">
                 BMI
               </a>
+              <a href="#android-app" className="hover:text-[#14352A]">
+                دانلود اپ
+              </a>
               <a href="#contact" className="hover:text-[#14352A]">
                 تماس
               </a>
@@ -102,6 +105,38 @@ export function ClinicLanding({
       </header>
 
       <PromoBannerSlider variant="landing" items={promoBanners} />
+
+      <section id="android-app" className="bg-[#14352A] text-white">
+        <div className="mx-auto grid max-w-5xl gap-8 px-4 py-12 sm:grid-cols-[1.3fr_auto] sm:items-center sm:px-6 sm:py-14">
+          <div>
+            <p className="text-xs font-bold tracking-wide text-[#F0B429]">
+              گوشی اندروید
+            </p>
+            <h2 className="mt-1 text-2xl font-extrabold sm:text-3xl">
+              نصب اپ مشتری
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-8 text-white/80">
+              نسخه اندروید را دانلود کنید و روی گوشی نصب کنید. بعد از نصب، آیکون
+              تندیس را باز کنید؛ دیگر لازم نیست از مرورگر وارد شوید.
+            </p>
+            <ol className="mt-5 space-y-2 text-sm leading-7 text-white/75">
+              <li>۱. فایل را دانلود کنید.</li>
+              <li>
+                ۲. فایل را باز کنید. اگر گوشی اجازه خواست، نصب از این منبع را
+                فعال کنید.
+              </li>
+              <li>۳. آیکون تندیس را باز کنید و با شماره موبایل وارد شوید.</li>
+            </ol>
+          </div>
+          <a
+            href="/downloads/tandis-patient.apk"
+            download="tandis-patient.apk"
+            className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#F0B429] px-6 text-sm font-extrabold text-[#14352A] shadow-sm"
+          >
+            دانلود نسخه اندروید
+          </a>
+        </div>
+      </section>
 
       {/* Services */}
       <section id="services" className="bg-[#F0F4F1]">
