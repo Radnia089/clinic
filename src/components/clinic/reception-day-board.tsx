@@ -40,7 +40,9 @@ import { cn } from "@/lib/utils";
 type VisitRow = Visit & { patient: Patient | null };
 type Lane = "consultation" | "package";
 
-const ROW_PX = 30;
+// هر ردیف ۱۵ دقیقه است. ویزیت پیش‌فرض ۳۰ دقیقه دو ردیف است و باید نام،
+// تیک حضور و لینک پرونده را داخل همان کارت جا بدهد.
+const ROW_PX = 72;
 const MIN_DURATION = 15;
 
 type Interaction =
@@ -354,9 +356,9 @@ export function ReceptionDayBoard({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 md:gap-4">
-      {/* بالای تقویم ثابت؛ فقط شبکه ساعت‌ها اسکرول می‌شود */}
-      <div className="shrink-0 space-y-3 md:space-y-4">
+    <div className="flex flex-col gap-3 md:h-full md:min-h-0 md:gap-4">
+      {/* موبایل: عنوان و جدول با صفحه اسکرول می‌شوند. دسکتاپ: فقط شبکه ساعت‌ها */}
+      <div className="space-y-3 md:shrink-0 md:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-medium text-muted-foreground">تقویم روزانه پذیرش</p>
@@ -434,7 +436,7 @@ export function ReceptionDayBoard({
       </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_6px_18px_rgba(35,70,55,0.06)] select-none">
+      <div className="flex flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_6px_18px_rgba(35,70,55,0.06)] select-none md:min-h-0 md:flex-1">
         <div className="grid shrink-0 grid-cols-[4.25rem_1fr_1fr] border-b border-black/5 bg-[#F7F8F6] text-center text-xs font-bold text-brand">
           <div className="px-1 py-3">ساعت</div>
           <div className="border-r border-black/5 px-2 py-3">
@@ -451,7 +453,7 @@ export function ReceptionDayBoard({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+        <div className="md:min-h-0 md:flex-1 md:overflow-y-auto md:overscroll-y-contain">
         <div className="grid grid-cols-[4.25rem_1fr_1fr]">
           <div className="relative bg-[#FAFBFA]">
             {gridSlots.map((slot) => (
@@ -512,7 +514,7 @@ export function ReceptionDayBoard({
       </div>
 
       {untimed.length > 0 ? (
-        <section className="max-h-40 shrink-0 overflow-y-auto rounded-[28px] bg-[#FFF8F5] p-4">
+        <section className="rounded-[28px] bg-[#FFF8F5] p-4 md:max-h-40 md:shrink-0 md:overflow-y-auto">
           <h2 className="text-sm font-bold text-[#9A4E42]">
             نوبت‌های بدون ساعت / تلفنی
           </h2>
@@ -672,7 +674,7 @@ function LaneColumn({
             key={visit.id}
             data-visit-block
             className={cn(
-              "absolute inset-x-1 z-10 overflow-hidden rounded-xl px-2 py-1 shadow-sm",
+              "absolute inset-x-1 z-10 flex flex-col overflow-hidden rounded-xl px-2 pt-1.5 pb-5 shadow-sm",
               cancelled
                 ? "bg-[#F3F3F3] text-[#8A8A8A] line-through decoration-[#C45C5C]/50"
                 : attended
@@ -694,24 +696,20 @@ function LaneColumn({
               onVisitMoveStart(visit, e.clientY);
             }}
           >
-            <div className="flex items-start justify-between gap-1">
-              <p className="truncate text-[11px] font-extrabold leading-tight">
+            <div className="flex min-w-0 items-center gap-1">
+              <p className="min-w-0 flex-1 truncate text-[11px] font-extrabold leading-tight">
                 {visit.patient ? patientFullName(visit.patient) : "بدون نام"}
               </p>
-              <div className="flex shrink-0 items-center gap-1">
-                <AttendanceMark status={visit.status} />
-                {visit.channel === "phone" ? (
-                  <span className="rounded-full bg-[#EEF2FF] px-1.5 py-0.5 text-[9px] font-bold text-[#3B5BDB]">
-                    تلفنی
-                  </span>
-                ) : null}
-                <VisitBadge n={n} />
-              </div>
+              {visit.channel === "phone" ? (
+                <span className="shrink-0 rounded-full bg-[#EEF2FF] px-1.5 py-0.5 text-[9px] font-bold text-[#3B5BDB]">
+                  تلفنی
+                </span>
+              ) : null}
             </div>
             {visit.patient?.phone ? (
               <a
                 href={`tel:${visit.patient.phone}`}
-                className="mt-0.5 block truncate text-[10px] font-semibold underline-offset-2 hover:underline"
+                className="mt-0.5 block truncate text-[10px] font-semibold leading-tight underline-offset-2 hover:underline"
                 dir="ltr"
                 title="تماس"
                 onMouseDown={(e) => e.stopPropagation()}
@@ -720,24 +718,24 @@ function LaneColumn({
                 {visit.patient.phone}
               </a>
             ) : null}
-            <p className="mt-0.5 text-[9px] opacity-80">
-              {formatTimeFa(start)}–{formatTimeFa(end)} · {visitStatusLabel(visit.status)}
+            <p className="mt-0.5 truncate text-[9px] leading-tight opacity-80">
+              {formatTimeFa(start)}–{formatTimeFa(end)} · مراجعه {toFaNumber(n)}
             </p>
 
             <div
               data-attend-btn
-              className="mt-1 flex items-center gap-1"
+              className="relative z-10 mt-auto flex shrink-0 flex-nowrap items-center gap-1 pt-1"
               onMouseDown={(e) => e.stopPropagation()}
             >
               <AttendanceButtons
                 status={visit.status}
-                size="sm"
+                size="xs"
                 onChange={(status) => onAttendance(visit.id, status)}
               />
               {visit.patient ? (
                 <Link
                   href={`/clinic/reception/customers/${visit.patient.id}`}
-                  className="mr-auto text-[9px] font-bold underline-offset-2 hover:underline"
+                  className="mr-auto text-[10px] font-bold underline-offset-2 hover:underline"
                   onMouseDown={(e) => e.stopPropagation()}
                 >
                   پرونده

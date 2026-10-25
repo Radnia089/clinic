@@ -12,14 +12,14 @@ export function AttendanceButtons({
 }: {
   status: VisitStatus;
   onChange: (status: VisitStatus) => void;
-  size?: "sm" | "md";
+  size?: "xs" | "sm" | "md";
   /** برچسب متنی کنار دکمه‌ها برای وضوح بیشتر در لیست‌ها */
   withLabels?: boolean;
 }) {
   const attended = status === "completed" || status === "admitted";
   const cancelled = status === "cancelled";
-  const btn = size === "sm" ? "size-7" : "size-8";
-  const icon = size === "sm" ? "size-3.5" : "size-4";
+  const btn = size === "xs" ? "size-6" : size === "sm" ? "size-7" : "size-8";
+  const icon = size === "xs" ? "size-3" : size === "sm" ? "size-3.5" : "size-4";
 
   return (
     <div className="flex flex-wrap items-center gap-1.5" data-attend-btn>

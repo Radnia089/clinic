@@ -139,13 +139,15 @@ export function ClinicShell({
     <div
       className={cn(
         "bg-[#EEF1EE] text-foreground",
-        isReceptionCalendar ? "h-dvh overflow-hidden" : "min-h-screen"
+        isReceptionCalendar
+          ? "min-h-dvh md:h-dvh md:overflow-hidden"
+          : "min-h-screen"
       )}
     >
       <div
         className={cn(
           "mx-auto flex max-w-[1200px]",
-          isReceptionCalendar ? "h-full" : "min-h-screen"
+          isReceptionCalendar ? "md:h-full" : "min-h-screen"
         )}
       >
         <aside className="sticky top-0 hidden h-screen w-[280px] shrink-0 flex-col border-l border-black/5 bg-[#F7F8F6] p-5 md:flex">
@@ -231,7 +233,7 @@ export function ClinicShell({
         <div
           className={cn(
             "flex min-w-0 flex-1 flex-col",
-            isReceptionCalendar && "min-h-0"
+            isReceptionCalendar && "md:min-h-0"
           )}
         >
           <header className="sticky top-0 z-20 shrink-0 border-b border-black/5 bg-[#F7F8F6]/90 px-4 py-3 backdrop-blur md:px-8">
@@ -283,11 +285,12 @@ export function ClinicShell({
           <main
             className={cn(
               "flex-1 px-4 py-5 md:px-8 md:py-8",
-              isReceptionCalendar && "flex min-h-0 flex-col overflow-hidden py-3 md:py-4"
+              isReceptionCalendar &&
+                "py-3 md:flex md:min-h-0 md:flex-col md:overflow-hidden md:py-4"
             )}
           >
             {isReceptionCalendar ? (
-              <div className="min-h-0 flex-1">{children}</div>
+              <div className="md:min-h-0 md:flex-1">{children}</div>
             ) : (
               children
             )}
