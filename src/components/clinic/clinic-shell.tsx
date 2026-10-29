@@ -22,6 +22,7 @@ import {
   Headphones,
   Info,
   Smartphone,
+  FileSpreadsheet,
 } from "lucide-react";
 
 const receptionLinks = [
@@ -80,6 +81,13 @@ const managementLinks = [
     label: "درباره ما",
     icon: Info,
     short: "درباره",
+    managerOnly: true,
+  },
+  {
+    href: "/clinic/backup",
+    label: "بکاپ مشتریان",
+    icon: FileSpreadsheet,
+    short: "بکاپ",
     managerOnly: true,
   },
   { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },
