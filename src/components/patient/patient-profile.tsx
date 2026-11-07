@@ -22,6 +22,7 @@ import {
   type Patient,
   type ProgressMeasurement,
 } from "@/lib/types";
+import { compressImageFile } from "@/lib/compress-image";
 import { cn } from "@/lib/utils";
 
 const fieldClass =
@@ -79,8 +80,9 @@ export function PatientProfile({
     setUploading(true);
     setError("");
     try {
+      const compressed = await compressImageFile(file);
       const body = new FormData();
-      body.append("file", file);
+      body.append("file", compressed);
       const res = await fetch("/api/patient-auth/upload-avatar", {
         method: "POST",
         body,
@@ -178,7 +180,7 @@ export function PatientProfile({
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             className="hidden"
             onChange={(e) => void onPickAvatar(e.target.files?.[0] ?? null)}
           />
