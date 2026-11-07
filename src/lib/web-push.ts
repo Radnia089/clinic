@@ -1,5 +1,8 @@
+import fs from "fs";
+import os from "os";
+import path from "path";
 import webpush from "web-push";
-import { prisma } from "@/lib/db";
+import { dbPath, prisma } from "@/lib/db";
 import { ensureDbReady } from "@/lib/store";
 
 export type PushPayload = {
@@ -9,26 +12,97 @@ export type PushPayload = {
   icon?: string;
 };
 
-function vapidConfigured() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() &&
-      process.env.VAPID_PRIVATE_KEY?.trim()
-  );
+type VapidKeys = { publicKey: string; privateKey: string };
+
+let cachedVapid: VapidKeys | null = null;
+
+function envVapidKeys(): VapidKeys | null {
+  const publicKey = (
+    process.env.VAPID_PUBLIC_KEY ||
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
+    ""
+  ).trim();
+  const privateKey = (process.env.VAPID_PRIVATE_KEY || "").trim();
+  if (!publicKey || !privateKey) return null;
+  return { publicKey, privateKey };
+}
+
+function vapidFilePath() {
+  const database = dbPath();
+  if (database === ":memory:") {
+    return path.join(os.tmpdir(), "tandis-vapid.json");
+  }
+  return path.join(path.dirname(database), "vapid.json");
+}
+
+function readVapidFile(file: string): VapidKeys | null {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, "utf8")) as Partial<VapidKeys>;
+    if (!parsed.publicKey || !parsed.privateKey) return null;
+    return { publicKey: parsed.publicKey, privateKey: parsed.privateKey };
+  } catch {
+    return null;
+  }
+}
+
+/** کلید محیط، وگرنه فایل پایدار کنار دیتابیس، وگرنه ساخت خودکار. */
+export function ensureVapidKeys(): VapidKeys {
+  if (cachedVapid) return cachedVapid;
+  const fromEnv = envVapidKeys();
+  if (fromEnv) {
+    cachedVapid = fromEnv;
+    return cachedVapid;
+  }
+
+  const file = vapidFilePath();
+  const existing = readVapidFile(file);
+  if (existing) {
+    cachedVapid = existing;
+    return cachedVapid;
+  }
+
+  const generated = webpush.generateVAPIDKeys();
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  try {
+    fs.writeFileSync(
+      file,
+      JSON.stringify({
+        publicKey: generated.publicKey,
+        privateKey: generated.privateKey,
+      }),
+      { flag: "wx", mode: 0o600 }
+    );
+    cachedVapid = {
+      publicKey: generated.publicKey,
+      privateKey: generated.privateKey,
+    };
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? (error as { code?: string }).code
+        : "";
+    if (code === "EEXIST") {
+      const raced = readVapidFile(file);
+      if (raced) {
+        cachedVapid = raced;
+        return cachedVapid;
+      }
+    }
+    throw error;
+  }
+  return cachedVapid;
 }
 
 export function getVapidPublicKey() {
-  return process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim() || "";
+  return ensureVapidKeys().publicKey;
 }
 
 function configureWebPush() {
-  if (!vapidConfigured()) return false;
+  const keys = ensureVapidKeys();
+  if (!keys.publicKey || !keys.privateKey) return false;
   const subject =
     process.env.VAPID_SUBJECT?.trim() || "mailto:info@tandisclinicyazd.ir";
-  webpush.setVapidDetails(
-    subject,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!.trim(),
-    process.env.VAPID_PRIVATE_KEY!.trim()
-  );
+  webpush.setVapidDetails(subject, keys.publicKey, keys.privateKey);
   return true;
 }
 
