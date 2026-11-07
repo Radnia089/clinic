@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["exceljs"],
   // Preview / Forwarded Ports در Cursor Cloud Agent
   allowedDevOrigins: [
     "127.0.0.1",
