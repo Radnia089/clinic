@@ -91,9 +91,10 @@ docker compose ps        # the app should become "healthy"
 docker compose logs -f app
 ```
 
-On first boot the entrypoint creates the SQLite database, applies migrations,
-and the app seeds default data and staff accounts (`admin` / `tandis`, password
-`123456`). **Change both passwords immediately after the first login.**
+On first boot the entrypoint creates the SQLite database and applies migrations.
+Set `STAFF_INITIAL_PASSWORD` (at least 8 characters) and `AUTH_SECRET` (at least
+16 characters) in the server env before the first start if the `admin` and
+`tandis` accounts do not exist yet. Existing staff passwords are left as they are.
 
 ### TLS
 

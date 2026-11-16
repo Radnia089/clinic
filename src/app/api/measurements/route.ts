@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import {
   createMeasurement,
   ensureDemoPatientProgress,
@@ -16,7 +18,17 @@ function parseOptionalPositive(raw: unknown) {
   return n;
 }
 
+async function requireStaff() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  return null;
+}
+
 export async function GET(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get("patientId");
   const demo = searchParams.get("demo") === "1";
@@ -30,7 +42,9 @@ export async function GET(request: Request) {
     listMeasurements(patientId ?? undefined),
     listPatients(),
   ]);
-  const patientMap = Object.fromEntries(patients.map((p) => [p.id, p]));
+  const patientMap = Object.fromEntries(
+    patients.map((p) => [p.id, toPublicPatient(p)])
+  );
 
   return NextResponse.json({
     patient: patientId ? patientMap[patientId] ?? null : null,
@@ -42,6 +56,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const body = await request.json();
   const patientId = String(body.patientId ?? "");
   const recordedAt = String(body.recordedAt ?? new Date().toISOString());

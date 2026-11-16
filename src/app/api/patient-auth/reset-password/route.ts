@@ -13,9 +13,8 @@ import { establishPatientSession } from "@/lib/patient-session";
 import { findPatientByPhone, updatePatient } from "@/lib/store";
 
 /**
- * بازیابی رمز: فقط وجود موبایل در پرونده لازم است.
- * اگر کد ملی ثبت نشده باشد، کد ملی واردشده ذخیره می‌شود.
- * اگر قبلاً ثبت شده باشد، باید با همان هم‌خوان باشد.
+ * بازیابی رمز فقط وقتی کد ملی از قبل در پرونده ثبت شده و با ورودی یکی باشد.
+ * کد ملی جدید در این مسیر ذخیره نمی‌شود.
  */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
@@ -39,7 +38,7 @@ export async function POST(request: Request) {
   }
 
   if (
-    patient.nationalId &&
+    !patient.nationalId ||
     !nationalIdsMatch(patient.nationalId, nationalId)
   ) {
     return NextResponse.json({ error: "national_id_mismatch" }, { status: 401 });
@@ -50,7 +49,6 @@ export async function POST(request: Request) {
     (await updatePatient(patient.id, {
       passwordHash: hashPatientPassword(validated.password),
       passwordSetAt: now,
-      ...(!patient.nationalId ? { nationalId } : {}),
     })) ?? patient;
 
   const remember = body.remember !== false;

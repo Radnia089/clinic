@@ -1,3 +1,5 @@
+import { readSignedPayload, signPayload } from "@/lib/session-sign";
+
 export const AUTH_COOKIE = "tandis_session";
 
 export type AuthUser = {
@@ -6,31 +8,18 @@ export type AuthUser = {
   role: "reception" | "management";
 };
 
-function toBase64Url(value: string): string {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(value, "utf8").toString("base64url");
-  }
-  return btoa(value).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-}
-
-function fromBase64Url(token: string): string {
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(token, "base64url").toString("utf8");
-  }
-  const padded = token.replace(/-/g, "+").replace(/_/g, "/");
-  const pad = padded.length % 4 === 0 ? "" : "=".repeat(4 - (padded.length % 4));
-  return atob(padded + pad);
-}
-
 export function encodeSession(user: AuthUser): string {
-  return toBase64Url(JSON.stringify(user));
+  return signPayload(JSON.stringify(user));
 }
 
 export function decodeSession(token?: string | null): AuthUser | null {
   if (!token) return null;
   try {
-    const parsed = JSON.parse(fromBase64Url(token)) as AuthUser;
+    const raw = readSignedPayload(token);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as AuthUser;
     if (!parsed?.username || !parsed?.name) return null;
+    if (parsed.role !== "reception" && parsed.role !== "management") return null;
     return parsed;
   } catch {
     return null;

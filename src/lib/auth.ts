@@ -13,7 +13,7 @@ export {
   type AuthUser,
 } from "@/lib/auth-shared";
 
-/** اعتبارسنجی کارکنان از دیتابیس (با seed پیش‌فرض tandis/admin) */
+/** اعتبارسنجی کارکنان از دیتابیس */
 export async function validateCredentials(
   username: string,
   password: string

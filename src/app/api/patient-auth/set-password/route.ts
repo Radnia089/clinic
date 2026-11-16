@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { normalizeIntegerInput } from "@/lib/digits";
 import {
   isValidNationalId,
+  nationalIdsMatch,
   normalizeNationalId,
 } from "@/lib/national-id";
 import {
@@ -40,6 +41,12 @@ export async function POST(request: Request) {
   if (patientHasPassword(patient)) {
     return NextResponse.json({ error: "password_exists" }, { status: 409 });
   }
+  if (
+    patient &&
+    (!patient.nationalId || !nationalIdsMatch(patient.nationalId, nationalId))
+  ) {
+    return NextResponse.json({ error: "national_id_mismatch" }, { status: 401 });
+  }
 
   const now = new Date().toISOString();
   const passwordHash = hashPatientPassword(validated.password);
@@ -63,7 +70,6 @@ export async function POST(request: Request) {
       (await updatePatient(patient.id, {
         passwordHash,
         passwordSetAt: now,
-        nationalId: patient.nationalId || nationalId,
         phoneVerifiedAt: patient.phoneVerifiedAt ?? now,
       })) ?? patient;
   }

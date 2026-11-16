@@ -2,22 +2,23 @@ import { prisma } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/password-hash";
 import type { AuthUser } from "@/lib/auth-shared";
 
-const DEFAULT_STAFF: Array<AuthUser & { password: string }> = [
+const DEFAULT_STAFF: AuthUser[] = [
   {
     username: "tandis",
-    password: "123456",
     name: "منشی تندیس",
     role: "reception",
   },
   {
     username: "admin",
-    password: "123456",
     name: "مدیر کلینیک",
     role: "management",
   },
 ];
 
 export async function ensureDefaultStaffUsers() {
+  const password = process.env.STAFF_INITIAL_PASSWORD?.trim();
+  if (!password || password.length < 8) return;
+
   for (const user of DEFAULT_STAFF) {
     const existing = await prisma.staffUser.findUnique({
       where: { username: user.username },
@@ -28,7 +29,7 @@ export async function ensureDefaultStaffUsers() {
         username: user.username,
         name: user.name,
         role: user.role,
-        passwordHash: hashPassword(user.password),
+        passwordHash: hashPassword(password),
       },
     });
   }

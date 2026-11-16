@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import {
   createMeasurement,
   createVisit,
@@ -10,11 +12,23 @@ import {
 } from "@/lib/store";
 import type { AdmissionForm, VisitStatus, VisitType } from "@/lib/types";
 
+async function requireStaff() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  return null;
+}
+
 export async function GET(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status") as VisitStatus | null;
   const [visits, patients] = await Promise.all([listVisits(), listPatients()]);
-  const patientMap = Object.fromEntries(patients.map((p) => [p.id, p]));
+  const patientMap = Object.fromEntries(
+    patients.map((p) => [p.id, toPublicPatient(p)])
+  );
   const filtered = status ? visits.filter((v) => v.status === status) : visits;
 
   return NextResponse.json({
@@ -26,6 +40,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const body = await request.json();
   const patientId = String(body.patientId ?? "");
   const visitDate = String(body.visitDate ?? "");
@@ -70,6 +86,8 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const body = await request.json();
   const id = String(body.id ?? "");
   if (!id) {

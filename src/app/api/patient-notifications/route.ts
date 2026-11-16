@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import {
   createPatientInboxMessage,
   listPatientInboxMessagesAdmin,
@@ -21,7 +22,10 @@ export async function GET() {
     listPatientInboxMessagesAdmin(),
     listPatients(),
   ]);
-  return NextResponse.json({ messages, patients });
+  return NextResponse.json({
+    messages,
+    patients: patients.map(toPublicPatient),
+  });
 }
 
 export async function POST(request: Request) {

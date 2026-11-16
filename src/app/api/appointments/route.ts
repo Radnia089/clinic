@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import {
   createAppointment,
   listAppointments,
@@ -7,7 +8,17 @@ import {
 } from "@/lib/store";
 import { isValidIranMobile, normalizeIntegerInput } from "@/lib/digits";
 
+async function requireStaff() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  return null;
+}
+
 export async function GET(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const { searchParams } = new URL(request.url);
   const phone = normalizeIntegerInput(searchParams.get("phone") ?? "");
   if (phone) {
@@ -63,6 +74,8 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const body = await request.json();
   const id = String(body.id ?? "");
   if (!id) {

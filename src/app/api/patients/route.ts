@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import {
   createPatient,
   findPatientByPhone,
@@ -22,15 +24,25 @@ function parseOptionalNumber(raw: unknown) {
   return Number.isFinite(n) ? n : NaN;
 }
 
+async function requireStaff() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  return null;
+}
+
 export async function GET(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
   const source = searchParams.get("source");
   if (source === "app") {
-    const patients = await listAppSignups();
+    const patients = (await listAppSignups()).map(toPublicPatient);
     return NextResponse.json({ patients });
   }
-  const patients = await listPatients();
+  const patients = (await listPatients()).map(toPublicPatient);
   if (id) {
     const patient = patients.find((p) => p.id === id) ?? null;
     if (!patient) {
@@ -42,6 +54,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const body = await request.json();
   const firstName = String(body.firstName ?? "").trim();
   const lastName = String(body.lastName ?? "").trim();
@@ -119,10 +133,15 @@ export async function POST(request: Request) {
     ? patient
     : (await listPatients()).find((p) => p.id === patient.id) ?? patient;
 
-  return NextResponse.json({ patient: fresh, welcomeSms: welcome }, { status: 201 });
+  return NextResponse.json(
+    { patient: toPublicPatient(fresh), welcomeSms: welcome },
+    { status: 201 }
+  );
 }
 
 export async function PATCH(request: Request) {
+  const denied = await requireStaff();
+  if (denied) return denied;
   const body = await request.json();
   const id = String(body.id ?? "").trim();
   if (!id) {
@@ -270,5 +289,5 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  return NextResponse.json({ patient });
+  return NextResponse.json({ patient: toPublicPatient(patient) });
 }

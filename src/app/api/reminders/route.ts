@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getCurrentUser } from "@/lib/auth";
 import {
   getReminderDashboard,
   processDueReminders,
@@ -11,13 +12,25 @@ import { mergeReminderSettings } from "@/lib/sms";
 import type { ReminderSettings } from "@/lib/types";
 import { ensureReminderScheduler } from "@/lib/reminder-scheduler";
 
+async function requireStaff() {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  return user;
+}
+
 export async function GET() {
+  if (!(await requireStaff())) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   ensureReminderScheduler();
   const dashboard = await getReminderDashboard();
   return NextResponse.json(dashboard);
 }
 
 export async function PATCH(request: Request) {
+  if (!(await requireStaff())) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
   const body = (await request.json()) as Partial<ReminderSettings>;
   const reminderSettings = mergeReminderSettings(body);
   const clinic = await updateClinic({ reminderSettings });
@@ -37,14 +50,17 @@ export async function POST(request: Request) {
     patientIds?: string[];
   };
 
+  const user = await requireStaff();
   const cronSecret = process.env.REMINDER_CRON_SECRET?.trim();
-  if (
-    cronSecret &&
+  const cronRun =
     body.action === "run" &&
-    body.secret &&
-    body.secret !== cronSecret
-  ) {
+    Boolean(cronSecret) &&
+    body.secret === cronSecret;
+  if (!user && !cronRun) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  if ((body.action === "test" || body.action === "promo") && user?.role !== "management") {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
   if (body.action === "test") {
