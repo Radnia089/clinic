@@ -110,6 +110,7 @@ export type ImportPlanItem = {
   warnings: string[];
   existingId: string | null;
   record: ImportRecord;
+  draft: ImportDraft;
   addMeasurement: boolean;
   unchanged: boolean;
 };
@@ -388,6 +389,7 @@ export function buildImportPlan(
         warnings: ["نامی برای این ردیف پیدا نشد."],
         existingId: null,
         record,
+        draft,
         addMeasurement: false,
         unchanged: false,
       });
@@ -434,6 +436,7 @@ export function buildImportPlan(
       warnings,
       existingId: match?.id ?? null,
       record,
+      draft,
       addMeasurement,
       unchanged,
     });

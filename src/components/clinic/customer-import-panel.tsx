@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Download, FileSpreadsheet, Mic, Square } from "lucide-react";
-import type { ImportPlanItem, ImportRecord } from "@/lib/customer-import";
+import type { ImportDraft, ImportPlanItem, ImportRecord } from "@/lib/customer-import";
 
 type Preview = {
   items: ImportPlanItem[];
@@ -45,6 +45,8 @@ export function CustomerImportPanel() {
   const [speech, setSpeech] = useState("");
   const [listening, setListening] = useState(false);
   const [speechPreview, setSpeechPreview] = useState<ImportPlanItem | null>(null);
+  const [fileDraft, setFileDraft] = useState<ImportDraft | null>(null);
+  const filePreviewRef = useRef<HTMLDivElement>(null);
   const [speechError, setSpeechError] = useState("");
 
   async function downloadTemplate() {
@@ -112,6 +114,7 @@ export function CustomerImportPanel() {
         setFile(null);
       } else {
         setSpeechPreview(null);
+        setFileDraft(null);
         setSpeech("");
         setResult(data);
       }
@@ -139,7 +142,9 @@ export function CustomerImportPanel() {
         setSpeechError(ERRORS[data.error] ?? "تبدیل متن انجام نشد.");
         return;
       }
-      setSpeechPreview(data.items?.[0] ?? null);
+      const item = data.items?.[0] ?? null;
+      setSpeechPreview(item);
+      setFileDraft(item ? blankDraft(item.draft) : null);
     } catch {
       setSpeechError("ارتباط با سرور قطع شد.");
     } finally {
@@ -182,6 +187,11 @@ export function CustomerImportPanel() {
     setListening(true);
     setSpeechError("");
   }
+
+  useEffect(() => {
+    if (!fileDraft) return;
+    filePreviewRef.current?.scrollIntoView({ block: "start" });
+  }, [fileDraft]);
 
   const visible = preview?.items.slice(0, 40) ?? [];
 
@@ -292,13 +302,14 @@ export function CustomerImportPanel() {
         </div>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">
           پرونده کاغذی را با این جمله‌ها بخوانید: نام، نام خانوادگی، موبایل، کد ملی، سن، شهر، آدرس، قد، وزن، سوابق، دارو، حساسیت و شکایت.
-          عددها را رقم‌به‌رقم بگویید. قبل از ذخیره، متن تبدیل‌شده را ببینید و اگر لازم است اصلاح کنید.
+          عددها را رقم‌به‌رقم بگویید. بعد از تبدیل، خود پرونده را می‌بینید و تا تأیید نکنید ذخیره نمی‌شود.
         </p>
         <textarea
           value={speech}
           onChange={(event) => {
             setSpeech(event.target.value);
             setSpeechPreview(null);
+            setFileDraft(null);
           }}
           rows={5}
           placeholder="مثلاً: نام فاطمه نام خانوادگی رضایی موبایل ۰۹۱۲۱۲۳۴۵۶۷ سن ۳۴ شهر یزد وزن ۷۸ سوابق کم‌کاری تیروئید"
@@ -323,33 +334,222 @@ export function CustomerImportPanel() {
           </button>
         </div>
         {speechError ? <p className="mt-3 text-sm font-medium text-rose-700">{speechError}</p> : null}
-        {speechPreview ? (
-          <div className="mt-4 rounded-2xl bg-[#F7F8F6] px-4 py-3 text-sm leading-7">
-            <p className="font-extrabold text-brand">
-              {speechPreview.name} · {actionLabel(speechPreview)}
-            </p>
-            <p className="text-muted-foreground">
-              {speechPreview.phone || "بدون موبایل"}
-              {speechPreview.missing.length ? ` · ناقص: ${speechPreview.missing.join("، ")}` : ""}
-            </p>
-            {speechPreview.warnings.map((warning) => (
-              <p key={warning} className="text-xs text-[#9A6B10]">
-                {warning}
-              </p>
-            ))}
-            <button
-              type="button"
-              disabled={speechPreview.action === "skip" || pending === "speech"}
-              onClick={() => commitRecords([speechPreview.record], "speech")}
-              className="mt-3 inline-flex h-11 items-center rounded-2xl bg-[#14352A] px-4 text-sm font-extrabold text-white disabled:opacity-60"
-            >
-              {pending === "speech" ? "در حال ذخیره..." : "ذخیره همین پرونده"}
-            </button>
+        {speechPreview && fileDraft ? (
+          <div ref={filePreviewRef}>
+          <SpokenFilePreview
+            item={speechPreview}
+            draft={fileDraft}
+            pending={pending === "speech"}
+            onChange={setFileDraft}
+            onCancel={() => {
+              setSpeechPreview(null);
+              setFileDraft(null);
+            }}
+            onSave={() => commitRecords([recordFromDraft(fileDraft)], "speech")}
+          />
           </div>
         ) : null}
       </section>
     </div>
   );
+}
+
+function SpokenFilePreview({
+  item,
+  draft,
+  pending,
+  onChange,
+  onCancel,
+  onSave,
+}: {
+  item: ImportPlanItem;
+  draft: ImportDraft;
+  pending: boolean;
+  onChange: (draft: ImportDraft) => void;
+  onCancel: () => void;
+  onSave: () => void;
+}) {
+  function text(key: keyof ImportDraft, value: string) {
+    onChange({ ...draft, [key]: value });
+  }
+  function number(key: keyof ImportDraft, value: string) {
+    const parsed = value.trim() ? Number(value) : undefined;
+    onChange({ ...draft, [key]: parsed != null && Number.isFinite(parsed) ? parsed : undefined });
+  }
+  const canSave = item.action !== "skip" && !item.unchanged && Boolean(draft.lastName || draft.firstName);
+
+  return (
+    <div className="mt-4 rounded-[28px] border border-[#D7E2D9] bg-[#F7F8F6] p-4">
+      <p className="text-xs font-medium text-muted-foreground">پیش‌نمایش پرونده، هنوز ذخیره نشده</p>
+      <h3 className="mt-1 text-xl font-extrabold text-brand">
+        {`${draft.firstName} ${draft.lastName}`.trim() || "بدون نام"}
+      </h3>
+      <p className="mt-1 text-sm font-bold text-[#9A6B10]">{actionLabel(item)}</p>
+      {item.missing.length ? (
+        <p className="mt-1 text-xs text-muted-foreground">ناقص: {item.missing.join("، ")}</p>
+      ) : null}
+      {item.warnings.map((warning) => (
+        <p key={warning} className="mt-1 text-xs text-[#9A6B10]">
+          {warning}
+        </p>
+      ))}
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <Field label="نام" value={draft.firstName} onChange={(value) => text("firstName", value)} />
+        <Field label="نام خانوادگی" value={draft.lastName} onChange={(value) => text("lastName", value)} />
+        <Field label="موبایل" value={draft.phone} onChange={(value) => text("phone", value)} dir="ltr" />
+        <Field label="کد ملی" value={draft.nationalId ?? ""} onChange={(value) => text("nationalId", value)} dir="ltr" />
+        <Field label="سن" value={draft.age?.toString() ?? ""} onChange={(value) => number("age", value)} />
+        <label className="block text-xs font-bold text-brand">
+          جنسیت
+          <select
+            value={draft.gender}
+            onChange={(event) => onChange({ ...draft, gender: event.target.value as ImportDraft["gender"] })}
+            className="mt-1 h-11 w-full rounded-2xl border border-[#D7E2D9] bg-white px-3 text-sm"
+          >
+            <option value="female">زن</option>
+            <option value="male">مرد</option>
+          </select>
+        </label>
+        <Field label="استان" value={draft.province ?? ""} onChange={(value) => text("province", value)} />
+        <Field label="شهر" value={draft.city ?? ""} onChange={(value) => text("city", value)} />
+        <Field label="آدرس" value={draft.address} onChange={(value) => text("address", value)} className="sm:col-span-2" />
+        <Field label="قد" value={draft.heightCm?.toString() ?? ""} onChange={(value) => number("heightCm", value)} />
+        <Field label="وزن" value={draft.weightKg?.toString() ?? ""} onChange={(value) => number("weightKg", value)} />
+        <Field label="وزن هدف" value={draft.goalWeightKg?.toString() ?? ""} onChange={(value) => number("goalWeightKg", value)} />
+        <Field label="دور کمر" value={draft.waistCm?.toString() ?? ""} onChange={(value) => number("waistCm", value)} />
+        <Field label="دور باسن" value={draft.hipCm?.toString() ?? ""} onChange={(value) => number("hipCm", value)} />
+        <Field label="فشار خون" value={draft.bloodPressure ?? ""} onChange={(value) => text("bloodPressure", value)} />
+        <Area label="سوابق پزشکی" value={draft.medicalHistory ?? ""} onChange={(value) => text("medicalHistory", value)} />
+        <Area label="داروها" value={draft.medications ?? ""} onChange={(value) => text("medications", value)} />
+        <Area label="حساسیت" value={draft.allergies ?? ""} onChange={(value) => text("allergies", value)} />
+        <Area label="شکایت" value={draft.chiefComplaint ?? ""} onChange={(value) => text("chiefComplaint", value)} />
+        <Area label="یادداشت" value={draft.therapistNotes ?? ""} onChange={(value) => text("therapistNotes", value)} />
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          type="button"
+          disabled={!canSave || pending}
+          onClick={onSave}
+          className="inline-flex h-11 items-center rounded-2xl bg-[#14352A] px-4 text-sm font-extrabold text-white disabled:opacity-60"
+        >
+          {pending ? "در حال ذخیره..." : "پرونده درست است، ذخیره شود"}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="inline-flex h-11 items-center rounded-2xl bg-white px-4 text-sm font-bold text-brand"
+        >
+          انصراف
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  dir,
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  dir?: "ltr";
+  className?: string;
+}) {
+  return (
+    <label className={`block text-xs font-bold text-brand ${className ?? ""}`}>
+      {label}
+      <input
+        value={value}
+        dir={dir}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1 h-11 w-full rounded-2xl border border-[#D7E2D9] bg-white px-3 text-sm font-normal text-foreground"
+      />
+    </label>
+  );
+}
+
+function Area({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block text-xs font-bold text-brand sm:col-span-2">
+      {label}
+      <textarea
+        value={value}
+        rows={2}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1 w-full rounded-2xl border border-[#D7E2D9] bg-white px-3 py-2 text-sm font-normal leading-6 text-foreground"
+      />
+    </label>
+  );
+}
+
+function blankDraft(draft: ImportDraft | undefined): ImportDraft {
+  return {
+    firstName: draft?.firstName ?? "",
+    lastName: draft?.lastName ?? "",
+    phone: draft?.phone ?? "",
+    nationalId: draft?.nationalId,
+    age: draft?.age,
+    gender: draft?.gender === "male" ? "male" : "female",
+    province: draft?.province,
+    city: draft?.city,
+    address: draft?.address ?? "",
+    birthDate: draft?.birthDate,
+    heightCm: draft?.heightCm,
+    goalWeightKg: draft?.goalWeightKg,
+    weightKg: draft?.weightKg,
+    waistCm: draft?.waistCm,
+    hipCm: draft?.hipCm,
+    bloodPressure: draft?.bloodPressure,
+    medicalHistory: draft?.medicalHistory,
+    medications: draft?.medications,
+    allergies: draft?.allergies,
+    chiefComplaint: draft?.chiefComplaint,
+    therapistNotes: draft?.therapistNotes,
+    previousDiets: draft?.previousDiets,
+    notes: draft?.notes,
+  };
+}
+
+function recordFromDraft(draft: ImportDraft): ImportRecord {
+  const record: ImportRecord = {
+    firstName: draft.firstName,
+    lastName: draft.lastName,
+    phone: draft.phone,
+    address: draft.address,
+    gender: draft.gender === "male" ? "مرد" : "زن",
+  };
+  if (draft.nationalId) record.nationalId = draft.nationalId;
+  if (draft.age != null) record.age = String(draft.age);
+  if (draft.province) record.province = draft.province;
+  if (draft.city) record.city = draft.city;
+  if (draft.birthDate) record.birthDate = draft.birthDate;
+  if (draft.heightCm != null) record.heightCm = String(draft.heightCm);
+  if (draft.goalWeightKg != null) record.goalWeightKg = String(draft.goalWeightKg);
+  if (draft.weightKg != null) record.weightKg = String(draft.weightKg);
+  if (draft.waistCm != null) record.waistCm = String(draft.waistCm);
+  if (draft.hipCm != null) record.hipCm = String(draft.hipCm);
+  if (draft.bloodPressure) record.bloodPressure = draft.bloodPressure;
+  if (draft.medicalHistory) record.medicalHistory = draft.medicalHistory;
+  if (draft.medications) record.medications = draft.medications;
+  if (draft.allergies) record.allergies = draft.allergies;
+  if (draft.chiefComplaint) record.chiefComplaint = draft.chiefComplaint;
+  if (draft.therapistNotes) record.therapistNotes = draft.therapistNotes;
+  if (draft.previousDiets) record.previousDiets = draft.previousDiets;
+  return record;
 }
 
 function Count({ label, value }: { label: string; value: number }) {
