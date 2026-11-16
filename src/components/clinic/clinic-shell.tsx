@@ -23,6 +23,7 @@ import {
   Info,
   Smartphone,
   FileSpreadsheet,
+  FileUp,
 } from "lucide-react";
 
 const receptionLinks = [
@@ -88,6 +89,13 @@ const managementLinks = [
     label: "بکاپ مشتریان",
     icon: FileSpreadsheet,
     short: "بکاپ",
+    managerOnly: true,
+  },
+  {
+    href: "/clinic/import",
+    label: "ورود پرونده‌ها",
+    icon: FileUp,
+    short: "ورود",
     managerOnly: true,
   },
   { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },

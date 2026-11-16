@@ -107,7 +107,7 @@ export function CustomerBackupPanel({
         {pending ? "در حال ساخت فایل..." : "دانلود فایل اکسل"}
       </button>
       <p className="mt-3 text-xs leading-6 text-muted-foreground">
-        رمز عبور مشتریان و کلید اعلان گوشی داخل فایل نیست.
+        رمز عبور مشتریان و کلید اعلان گوشی داخل فایل نیست. برای آوردن پرونده‌های قدیمی به بخش «ورود پرونده‌ها» بروید.
       </p>
       {error ? <p className="mt-3 text-sm font-medium text-rose-700">{error}</p> : null}
     </div>
