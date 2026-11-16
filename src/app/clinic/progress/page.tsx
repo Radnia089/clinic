@@ -1,7 +1,9 @@
 import { PageHeader } from "@/components/clinic/page-header";
 import { ProgressRecorder } from "@/components/clinic/progress-recorder";
+import { requireStaffPage } from "@/lib/auth";
 
-export default function ClinicProgressPage() {
+export default async function ClinicProgressPage() {
+  await requireStaffPage();
   return (
     <div>
       <PageHeader

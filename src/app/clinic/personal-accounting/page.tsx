@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import { PersonalLedgerPanel } from "@/components/clinic/personal-ledger-panel";
 import { PageHeader } from "@/components/clinic/page-header";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, requireStaffPage } from "@/lib/auth";
 import { listPersonalLedger } from "@/lib/store";
 
 export default async function PersonalAccountingPage() {
+  await requireStaffPage();
   const user = await getCurrentUser();
   if (!user || user.role !== "management") {
     redirect("/clinic");

@@ -1,8 +1,10 @@
 import { AppointmentsManager } from "@/components/clinic/appointments-manager";
 import { PageHeader } from "@/components/clinic/page-header";
 import { listAppointments } from "@/lib/store";
+import { requireStaffPage } from "@/lib/auth";
 
 export default async function AppointmentsPage() {
+  await requireStaffPage();
   const appointments = await listAppointments();
   return (
     <div>

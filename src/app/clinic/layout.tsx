@@ -1,5 +1,5 @@
 import { ClinicShell } from "@/components/clinic/clinic-shell";
-import { getCurrentUser } from "@/lib/auth";
+import { requireStaffPage } from "@/lib/auth";
 import { ensureReminderScheduler } from "@/lib/reminder-scheduler";
 import { getAppData } from "@/lib/store";
 
@@ -10,8 +10,9 @@ export default async function ClinicLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const user = await requireStaffPage();
   ensureReminderScheduler();
-  const [data, user] = await Promise.all([getAppData(), getCurrentUser()]);
+  const data = await getAppData();
   return (
     <ClinicShell
       version={data.clinic.version}

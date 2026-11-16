@@ -24,7 +24,7 @@ export function PatientPasswordLogin() {
   const [confirm, setConfirm] = useState("");
   const [rememberPassword, setRememberPassword] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [autoLoggingIn, setAutoLoggingIn] = useState(true);
+  const [autoLoggingIn, setAutoLoggingIn] = useState(false);
   const [error, setError] = useState("");
   const autoTried = useRef(false);
 
@@ -33,9 +33,9 @@ export function PatientPasswordLogin() {
     router.refresh();
   }
 
-  function persistRemember(nextPhone: string, nextPassword: string) {
+  function persistRemember(nextPhone: string) {
     if (rememberPassword) {
-      writeRememberedPatientLogin(nextPhone, nextPassword);
+      writeRememberedPatientLogin(nextPhone);
     } else {
       clearRememberedPatientLogin();
     }
@@ -45,42 +45,8 @@ export function PatientPasswordLogin() {
     if (autoTried.current) return;
     autoTried.current = true;
     const saved = readRememberedPatientLogin();
-    if (!saved) {
-      setAutoLoggingIn(false);
-      return;
-    }
-    setPhone(saved.phone);
-    setPassword(saved.password);
-    setRememberPassword(true);
-    setLoading(true);
-    fetch("/api/patient-auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        phone: saved.phone,
-        password: saved.password,
-        remember: true,
-      }),
-    })
-      .then(async (res) => {
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          clearRememberedPatientLogin();
-          setPassword("");
-          setError("رمز ذخیره‌شده منقضی شده؛ دوباره وارد شوید.");
-          return;
-        }
-        goAfterAuth(Boolean(data.needsProfile));
-      })
-      .catch(() => {
-        clearRememberedPatientLogin();
-        setError("ورود خودکار انجام نشد.");
-      })
-      .finally(() => {
-        setLoading(false);
-        setAutoLoggingIn(false);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- فقط یک‌بار روی mount
+    if (saved) setPhone(saved.phone);
+    setAutoLoggingIn(false);
   }, []);
 
   async function checkPhone(event: FormEvent) {
@@ -142,7 +108,7 @@ export function PatientPasswordLogin() {
         }
         throw new Error("ذخیره رمز انجام نشد.");
       }
-      persistRemember(phone, password);
+      persistRemember(phone);
       goAfterAuth(Boolean(data.needsProfile));
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
@@ -180,7 +146,7 @@ export function PatientPasswordLogin() {
         }
         throw new Error("ورود انجام نشد.");
       }
-      persistRemember(phone, password);
+      persistRemember(phone);
       goAfterAuth(Boolean(data.needsProfile));
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
@@ -223,7 +189,7 @@ export function PatientPasswordLogin() {
         }
         throw new Error("بازنشانی رمز انجام نشد.");
       }
-      persistRemember(phone, password);
+      persistRemember(phone);
       goAfterAuth(Boolean(data.needsProfile));
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
@@ -368,7 +334,7 @@ export function PatientPasswordLogin() {
                   onChange={(e) => setRememberPassword(e.target.checked)}
                   className="size-4 accent-[#14352A]"
                 />
-                <span className="font-medium">ذخیره رمز</span>
+                <span className="font-medium">مرا به خاطر بسپار</span>
               </label>
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button
@@ -417,7 +383,7 @@ export function PatientPasswordLogin() {
                   onChange={(e) => setRememberPassword(e.target.checked)}
                   className="size-4 accent-[#14352A]"
                 />
-                <span className="font-medium">ذخیره رمز</span>
+                <span className="font-medium">مرا به خاطر بسپار</span>
               </label>
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button
@@ -511,7 +477,7 @@ export function PatientPasswordLogin() {
                   onChange={(e) => setRememberPassword(e.target.checked)}
                   className="size-4 accent-[#14352A]"
                 />
-                <span className="font-medium">ذخیره رمز</span>
+                <span className="font-medium">مرا به خاطر بسپار</span>
               </label>
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button

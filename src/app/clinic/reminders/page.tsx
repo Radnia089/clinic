@@ -2,8 +2,10 @@ import { RemindersPanel } from "@/components/clinic/reminders-panel";
 import { PageHeader } from "@/components/clinic/page-header";
 import { getReminderDashboard } from "@/lib/reminders";
 import { ensureReminderScheduler } from "@/lib/reminder-scheduler";
+import { requireStaffPage } from "@/lib/auth";
 
 export default async function RemindersPage() {
+  await requireStaffPage();
   ensureReminderScheduler();
   const dashboard = await getReminderDashboard();
 

@@ -2,6 +2,7 @@ import { NewVisitorForm } from "@/components/clinic/new-visitor-form";
 import { PageHeader } from "@/components/clinic/page-header";
 import { getAppData } from "@/lib/store";
 import type { VisitType } from "@/lib/types";
+import { requireStaffPage } from "@/lib/auth";
 
 export default async function NewVisitorPage({
   searchParams,
@@ -14,6 +15,7 @@ export default async function NewVisitorPage({
     channel?: string;
   }>;
 }) {
+  await requireStaffPage();
   const params = await searchParams;
   const data = await getAppData();
   const initialType: VisitType | undefined =

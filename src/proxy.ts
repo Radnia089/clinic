@@ -22,7 +22,7 @@ function isPublicApi(method: string, pathname: string) {
   return false;
 }
 
-export function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/api/")) {

@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { CustomerFileClient } from "@/components/clinic/customer-file-client";
+import { requireStaffPage } from "@/lib/auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import {
   getPatient,
   listMeasurements,
@@ -12,6 +14,7 @@ export default async function CustomerFilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireStaffPage();
   const { id } = await params;
   const patient = await getPatient(id);
   if (!patient) notFound();
@@ -27,7 +30,7 @@ export default async function CustomerFilePage({
 
   return (
     <CustomerFileClient
-      patient={patient}
+      patient={toPublicPatient(patient)}
       initialVisits={patientVisits}
       measurements={measurements}
       payments={patientPayments}

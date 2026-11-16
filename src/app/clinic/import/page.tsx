@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import { CustomerImportPanel } from "@/components/clinic/customer-import-panel";
 import { PageHeader } from "@/components/clinic/page-header";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, requireStaffPage } from "@/lib/auth";
 
 export default async function CustomerImportPage() {
+  await requireStaffPage();
   const user = await getCurrentUser();
   if (!user || user.role !== "management") {
     redirect("/clinic");

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/clinic/page-header";
+import { requireStaffPage } from "@/lib/auth";
 import { getDashboardStats, listAppointments, listVisits } from "@/lib/store";
 import { formatDateFa, formatMoney } from "@/lib/types";
 
 export default async function ClinicDashboardPage() {
+  await requireStaffPage();
   const [stats, visits, appointments] = await Promise.all([
     getDashboardStats(),
     listVisits(),

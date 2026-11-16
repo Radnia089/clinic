@@ -1,11 +1,16 @@
 import { FinancePanel } from "@/components/clinic/finance-panel";
 import { PageHeader } from "@/components/clinic/page-header";
+import { requireStaffPage } from "@/lib/auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import { listPatients, listPayments } from "@/lib/store";
 import { formatMoney } from "@/lib/types";
 
 export default async function FinancePage() {
+  await requireStaffPage();
   const [payments, patients] = await Promise.all([listPayments(), listPatients()]);
-  const patientMap = Object.fromEntries(patients.map((p) => [p.id, p]));
+  const patientMap = Object.fromEntries(
+    patients.map((p) => [p.id, toPublicPatient(p)])
+  );
   const rows = payments.map((payment) => ({
     ...payment,
     patient: patientMap[payment.patientId] ?? null,

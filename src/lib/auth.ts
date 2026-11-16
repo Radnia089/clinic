@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import {
   AUTH_COOKIE,
   decodeSession,
@@ -24,4 +25,10 @@ export async function validateCredentials(
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const jar = await cookies();
   return decodeSession(jar.get(AUTH_COOKIE)?.value);
+}
+
+export async function requireStaffPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  return user;
 }

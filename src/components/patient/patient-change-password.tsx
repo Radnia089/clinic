@@ -73,7 +73,7 @@ export function PatientChangePassword({
 
       const remembered = readRememberedPatientLogin();
       if (remembered && remembered.phone === phone) {
-        writeRememberedPatientLogin(phone, newPassword);
+        writeRememberedPatientLogin(phone);
       }
 
       setOk(

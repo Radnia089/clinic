@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { VisitsTable } from "@/components/clinic/visits-table";
 import { PageHeader } from "@/components/clinic/page-header";
+import { requireStaffPage } from "@/lib/auth";
+import { toPublicPatient } from "@/lib/patient-public";
 import { getAppData, listPatients, listVisits } from "@/lib/store";
 
 export default async function VisitorsPage() {
+  await requireStaffPage();
   const [visits, patients, data] = await Promise.all([
     listVisits(),
     listPatients(),
     getAppData(),
   ]);
-  const patientMap = Object.fromEntries(patients.map((p) => [p.id, p]));
+  const patientMap = Object.fromEntries(
+    patients.map((p) => [p.id, toPublicPatient(p)])
+  );
   // صف پذیرش + علامت‌خورده‌ها (مراجعه کرد / نیامد) تا تیک و ضربدر دیده شوند
   const rows = visits
     .filter(
