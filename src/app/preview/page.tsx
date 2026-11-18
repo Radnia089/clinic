@@ -5,26 +5,26 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default function PreviewIndexPage() {
   return (
-    <main className="min-h-screen bg-[#F7F4EF] px-5 py-16 text-[#17241F]">
+    <main className="min-h-screen bg-white px-5 py-16 text-[#161616]">
       <div className="mx-auto max-w-3xl">
-        <p className="text-sm text-[#17241F]/55">دو پیشنهاد برای صفحه اول</p>
-        <h1 className="mt-3 text-4xl font-extrabold leading-snug">لندینگ فعلی دست نخورده است.</h1>
-        <p className="mt-4 text-base leading-8 text-[#17241F]/75">
-          سایت‌های تغذیه که حس بهتری دارند معمولاً با یک جمله درباره خود مراجع شروع می‌شوند، عکس آدم واقعی دارند، و فقط یک کار واضح برای قدم بعد می‌گذارند. این دو نمونه همان محتوای تندیس است، با دو حال‌وهوای مختلف.
+        <p className="text-sm text-[#14956C]">دو پیشنهاد تازه برای صفحه اول</p>
+        <h1 className="mt-3 text-4xl font-extrabold leading-snug">این بار با زبان همان سایت‌هایی که گفتید.</h1>
+        <p className="mt-4 text-base leading-8 text-[#555]">
+          نوتریشا سفید و سبز است، غذا وسط صفحه است و دکمه گرد دارد. حال تیتر درشت مشکی با هایلایت نعنایی و کارت شروع دارد. کرمانی ردیف رژیم‌ها و ماشین‌حساب وزن را جلو گذاشته. این دو نمونه همان کار را با محتوای تندیس می‌کنند. صفحه اصلی سایت هنوز عوض نشده.
         </p>
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          <Link href="/preview/calm" className="rounded-[1.6rem] bg-[#234237] p-6 text-[#F4EFE6]">
-            <p className="text-sm text-[#E7C98A]">نمونه اول</p>
-            <h2 className="mt-2 text-2xl font-extrabold">آرام</h2>
-            <p className="mt-3 text-sm leading-7 text-[#F4EFE6]/75">شروع با چهره پزشک، فضای کرم و سبز تیره، مسیر ویزیت تا پیگیری.</p>
+          <Link href="/preview/calm" className="rounded-[1.6rem] bg-[#F4FBF4] p-6 ring-1 ring-[#3caf2d]/20">
+            <p className="text-sm font-bold text-[#2E9B32]">نمونه نوتریشا</p>
+            <h2 className="mt-2 text-2xl font-extrabold">سبز و غذا</h2>
+            <p className="mt-3 text-sm leading-7 text-[#555]">صفحه سفید، تیتر سبز، عکس غذا، دکمه گرد، ردیف رژیم و محاسبه وزن.</p>
           </Link>
-          <Link href="/preview/bright" className="rounded-[1.6rem] bg-white p-6">
-            <p className="text-sm text-[#17241F]/50">نمونه دوم</p>
-            <h2 className="mt-2 text-2xl font-extrabold text-[#1B3C30]">روشن</h2>
-            <p className="mt-3 text-sm leading-7 text-[#17241F]/70">شروع با گرفتن نوبت. دو کارت بزرگ برای حضوری و آنلاین، و نوار پایین در گوشی.</p>
+          <Link href="/preview/bright" className="rounded-[1.6rem] bg-[#F3FAF7] p-6 ring-1 ring-[#14956C]/15">
+            <p className="text-sm font-bold text-[#14956C]">نمونه حال</p>
+            <h2 className="mt-2 text-2xl font-extrabold">نعنایی و شروع سریع</h2>
+            <p className="mt-3 text-sm leading-7 text-[#555]">تیتر درشت، یک کلمه هایلایت، دو راه حضوری و آنلاین، و کارت‌های ساده.</p>
           </Link>
         </div>
-        <Link href="/" className="mt-8 inline-block text-sm font-bold text-[#1E4A38]">برگشت به صفحه فعلی</Link>
+        <Link href="/" className="mt-8 inline-block text-sm font-bold text-[#14956C]">برگشت به صفحه فعلی</Link>
       </div>
     </main>
   );
