@@ -6,6 +6,7 @@ import {
   updateAppointment,
 } from "@/lib/store";
 import { isValidIranMobile, normalizeIntegerInput } from "@/lib/digits";
+import { notifyNewAppointment } from "@/lib/messenger";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
     channel,
   });
 
+  await notifyNewAppointment(appointment);
   return NextResponse.json({ appointment }, { status: 201 });
 }
 
