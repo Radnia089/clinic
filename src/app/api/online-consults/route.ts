@@ -12,6 +12,7 @@ import {
   listOnlineConsults,
   updateOnlineConsult,
 } from "@/lib/store";
+import { notifyNewConsult } from "@/lib/messenger";
 import { sendSms, getActiveSmsProvider } from "@/lib/sms-provider";
 import type { Gender, OnlineConsultStatus } from "@/lib/types";
 
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
     preferredDate,
   });
 
+  await notifyNewConsult(item);
   return NextResponse.json({ item }, { status: 201 });
 }
 

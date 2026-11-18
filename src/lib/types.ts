@@ -175,8 +175,23 @@ export interface ClinicProfile {
   packageSlotMinutes: number;
   /** تنظیمات پیامک یادآوری نوبت */
   reminderSettings: ReminderSettings;
+  /** اطلاع‌رسانی نوبت و مشاوره به تلگرام و بله */
+  messengerNotify: MessengerNotifySettings;
   /** درباره ما — قابل ویرایش توسط مدیر */
   about: ClinicAbout;
+}
+
+export interface MessengerChannelSettings {
+  enabled: boolean;
+  chatIds: string[];
+}
+
+export interface MessengerNotifySettings {
+  enabled: boolean;
+  appointments: boolean;
+  consults: boolean;
+  telegram: MessengerChannelSettings;
+  bale: MessengerChannelSettings;
 }
 
 export type ReminderKind =
@@ -447,6 +462,14 @@ export const DEFAULT_CLINIC_ABOUT: ClinicAbout = {
   mapUrl: "https://www.google.com/maps?q=31.839193,54.368628",
 };
 
+export const DEFAULT_MESSENGER_NOTIFY: MessengerNotifySettings = {
+  enabled: false,
+  appointments: true,
+  consults: true,
+  telegram: { enabled: true, chatIds: [] },
+  bale: { enabled: true, chatIds: [] },
+};
+
 export const DEFAULT_CLINIC: ClinicProfile = {
   name: "تندیس",
   fullName: "کلینیک رژیم درمانی تندیس",
@@ -462,6 +485,7 @@ export const DEFAULT_CLINIC: ClinicProfile = {
   visitSlotMinutes: 30,
   packageSlotMinutes: 60,
   reminderSettings: DEFAULT_REMINDER_SETTINGS,
+  messengerNotify: DEFAULT_MESSENGER_NOTIFY,
   about: DEFAULT_CLINIC_ABOUT,
 };
 

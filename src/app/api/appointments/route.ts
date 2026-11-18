@@ -7,6 +7,7 @@ import {
   updateAppointment,
 } from "@/lib/store";
 import { isValidIranMobile, normalizeIntegerInput } from "@/lib/digits";
+import { notifyNewAppointment } from "@/lib/messenger";
 
 async function requireStaff() {
   const user = await getCurrentUser();
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
     channel,
   });
 
+  await notifyNewAppointment(appointment);
   return NextResponse.json({ appointment }, { status: 201 });
 }
 

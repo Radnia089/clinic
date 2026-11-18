@@ -29,6 +29,7 @@ import {
   defaultPromoBanners,
   sortPromoBanners,
 } from "@/lib/promo-banners";
+import { mergeMessengerSettings } from "@/lib/messenger";
 import { mergeReminderSettings } from "@/lib/sms";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -485,6 +486,7 @@ function normalizeClinic(raw: Partial<ClinicProfile> | null | undefined): Clinic
     reminderSettings: mergeReminderSettings(
       raw?.reminderSettings ?? DEFAULT_REMINDER_SETTINGS
     ),
+    messengerNotify: mergeMessengerSettings(raw?.messengerNotify),
     about: {
       ...DEFAULT_CLINIC_ABOUT,
       ...(raw?.about ?? {}),
@@ -493,6 +495,11 @@ function normalizeClinic(raw: Partial<ClinicProfile> | null | undefined): Clinic
         : DEFAULT_CLINIC_ABOUT.gallery,
     },
   };
+}
+
+export async function getClinicProfile() {
+  await ensureDbReady();
+  return getClinic();
 }
 
 async function getClinic(): Promise<ClinicProfile> {
@@ -1067,6 +1074,22 @@ export async function updateClinic(patch: Partial<AppData["clinic"]>) {
       ...current.reminderSettings,
       ...(patch.reminderSettings ?? {}),
     }),
+    messengerNotify: mergeMessengerSettings(
+      patch.messengerNotify
+        ? {
+            ...current.messengerNotify,
+            ...patch.messengerNotify,
+            telegram: {
+              ...current.messengerNotify.telegram,
+              ...(patch.messengerNotify.telegram ?? {}),
+            },
+            bale: {
+              ...current.messengerNotify.bale,
+              ...(patch.messengerNotify.bale ?? {}),
+            },
+          }
+        : current.messengerNotify
+    ),
     about: {
       ...DEFAULT_CLINIC_ABOUT,
       ...current.about,
