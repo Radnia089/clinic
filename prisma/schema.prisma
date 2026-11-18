@@ -54,6 +54,7 @@ model Patient {
   visits             Visit[]
   payments           Payment[]
   measurements       Measurement[]
+  recordPhotos       PatientPhoto[]
   supportTickets     SupportTicket[]
   inboxReads         InboxRead[]
   smsLogs            SmsLog[]
@@ -165,6 +166,18 @@ model OnlineConsult {
 
   @@index([phone])
   @@index([status])
+}
+
+/// عکس‌های کاغذی یک پرونده. فایل روی دیسک است و از مسیر محافظت‌شده خوانده می‌شود.
+model PatientPhoto {
+  id        String   @id
+  patientId String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId])
 }
 
 model Measurement {

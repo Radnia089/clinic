@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { CustomerFileClient } from "@/components/clinic/customer-file-client";
 import { requireStaffPage } from "@/lib/auth";
 import { toPublicPatient } from "@/lib/patient-public";
+import { listRecordPhotos } from "@/lib/record-photos";
 import {
   getPatient,
   listMeasurements,
@@ -19,10 +20,11 @@ export default async function CustomerFilePage({
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const [visits, measurements, payments] = await Promise.all([
+  const [visits, measurements, payments, recordPhotos] = await Promise.all([
     listVisits(),
     listMeasurements(id),
     listPayments(),
+    listRecordPhotos(id),
   ]);
 
   const patientVisits = visits.filter((v) => v.patientId === id);
@@ -34,6 +36,7 @@ export default async function CustomerFilePage({
       initialVisits={patientVisits}
       measurements={measurements}
       payments={patientPayments}
+      recordPhotos={recordPhotos}
     />
   );
 }

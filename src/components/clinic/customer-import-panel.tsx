@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Camera, Download, FileSpreadsheet, ImagePlus, Mic, Square, X } from "lucide-react";
+import { Camera, Download, FileSpreadsheet, Mic, Square, X } from "lucide-react";
+import { compressPhoto, PhotoSourceButtons } from "@/components/clinic/photo-source-buttons";
+import { RECORD_PHOTO_LIMIT } from "@/lib/record-photo-limit";
 import type { ImportDraft, ImportPlanItem, ImportRecord } from "@/lib/customer-import";
 
 type Preview = {
@@ -24,6 +26,8 @@ type CommitResult = {
   unchanged: number;
   measurements: number;
   errors: string[];
+  patientId?: string;
+  photos?: number;
 };
 
 const ERRORS: Record<string, string> = {
@@ -33,7 +37,7 @@ const ERRORS: Record<string, string> = {
   unknown_headers: "ستون‌های فایل شناخته نشد. از فایل نمونه استفاده کنید.",
   unreadable: "این فایل خوانده نشد.",
   empty: "ردیف قابل استفاده‌ای در فایل نیست.",
-  too_many: "هر پرونده حداکثر پنج صفحه است.",
+  too_many: "هر پرونده حداکثر ۸ عکس دارد.",
   image_only: "فقط عکس JPG یا PNG قابل خواندن است.",
   empty_text: "متنی در عکس‌ها خوانده نشد. عکس را روشن‌تر و صاف‌تر بگیرید.",
   ocr_unavailable: "خواندن عکس روی این سرور آماده نیست.",
@@ -52,15 +56,13 @@ export function CustomerImportPanel() {
   const [fileDraft, setFileDraft] = useState<ImportDraft | null>(null);
   const filePreviewRef = useRef<HTMLDivElement>(null);
   const [speechError, setSpeechError] = useState("");
-  const [photos, setPhotos] = useState<Array<{ id: string; file: File; url: string }>>([]);
+  const [photos, setPhotos] = useState<Array<{ id: string; file: File; url: string; source: "camera" | "gallery" }>>([]);
   const [photoText, setPhotoText] = useState("");
   const [photoError, setPhotoError] = useState("");
   const [photoResult, setPhotoResult] = useState<CommitResult | null>(null);
   const [photoPreview, setPhotoPreview] = useState<ImportPlanItem | null>(null);
   const [photoDraft, setPhotoDraft] = useState<ImportDraft | null>(null);
   const photoPreviewRef = useRef<HTMLDivElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
 
   async function downloadTemplate() {
     setError("");
@@ -104,11 +106,10 @@ export function CustomerImportPanel() {
     }
   }
 
-  async function commitRecords(nextRecords: ImportRecord[], kind: "file" | "speech" | "photo") {
+  async function commitRecords(nextRecords: ImportRecord[], kind: "file" | "speech") {
     setPending(kind);
     setError("");
     setSpeechError("");
-    setPhotoError("");
     try {
       const response = await fetch("/api/clinic/customer-import", {
         method: "POST",
@@ -119,7 +120,6 @@ export function CustomerImportPanel() {
       if (!response.ok) {
         const message = ERRORS[data.error] ?? "ذخیره انجام نشد.";
         if (kind === "speech") setSpeechError(message);
-        else if (kind === "photo") setPhotoError(message);
         else setError(message);
         return;
       }
@@ -127,15 +127,6 @@ export function CustomerImportPanel() {
         setResult(data);
         setPreview(null);
         setFile(null);
-      } else if (kind === "photo") {
-        setPhotoPreview(null);
-        setPhotoDraft(null);
-        setPhotos((current) => {
-          current.forEach((page) => URL.revokeObjectURL(page.url));
-          return [];
-        });
-        setPhotoText("");
-        setPhotoResult(data);
       } else {
         setSpeechPreview(null);
         setFileDraft(null);
@@ -145,7 +136,6 @@ export function CustomerImportPanel() {
     } catch {
       const message = "ارتباط با سرور قطع شد.";
       if (kind === "speech") setSpeechError(message);
-      else if (kind === "photo") setPhotoError(message);
       else setError(message);
     } finally {
       setPending("");
@@ -223,25 +213,60 @@ export function CustomerImportPanel() {
     photoPreviewRef.current?.scrollIntoView({ block: "start" });
   }, [photoDraft]);
 
-  function addPhotos(list: FileList | null) {
-    if (!list?.length) return;
-    const incoming = Array.from(list).filter((file) => file.type.startsWith("image/"));
-    const room = 5 - photos.length;
+  function addPhotos(list: File[], source: "camera" | "gallery") {
+    const incoming = list.filter((file) => file.size > 0 && (source === "camera" || file.type.startsWith("image/") || /\.(jpe?g|png|webp|heic|heif|gif|bmp)$/i.test(file.name)));
+    if (!incoming.length) {
+      setPhotoError("این فایل عکس نیست.");
+      return;
+    }
+    const room = RECORD_PHOTO_LIMIT - photos.length;
     setPhotoError(incoming.length > room ? ERRORS.too_many : "");
     setPhotoPreview(null);
     setPhotoDraft(null);
     setPhotoText("");
     setPhotos((current) => {
-      const space = 5 - current.length;
+      const space = RECORD_PHOTO_LIMIT - current.length;
       return [
         ...current,
         ...incoming.slice(0, Math.max(0, space)).map((file) => ({
           id: crypto.randomUUID(),
           file,
           url: URL.createObjectURL(file),
+          source,
         })),
       ];
     });
+  }
+
+  async function savePhotoRecord(draft: ImportDraft) {
+    setPending("photo");
+    setPhotoError("");
+    try {
+      const body = new FormData();
+      body.set("action", "commit");
+      body.set("record", JSON.stringify(recordFromDraft(draft)));
+      for (const photo of photos) {
+        body.append("pages", await compressPhoto(photo.file), `page-${photo.source}.jpg`);
+      }
+      const response = await fetch("/api/clinic/customer-import/photos", { method: "POST", body });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setPhotoError(ERRORS[data.error] ?? "ذخیره انجام نشد.");
+        return;
+      }
+      setPhotoPreview(null);
+      setPhotoDraft(null);
+      setPhotos((current) => {
+        current.forEach((page) => URL.revokeObjectURL(page.url));
+        return [];
+      });
+      setPhotoText("");
+      setPhotoResult(data);
+    } catch {
+      setPhotoError("این عکس خوانده نشد. از دوربین یا گالری یک عکس معمولی انتخاب کنید.");
+    } finally {
+      setPending("");
+    }
   }
 
   async function analyzePhotos() {
@@ -380,51 +405,18 @@ export function CustomerImportPanel() {
           <h2 className="text-base font-extrabold">ورود از عکس پرونده</h2>
         </div>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">
-          از هر صفحه پرونده یک عکس بگیرید. پرونده‌های چهار یا پنج صفحه‌ای را پشت سر هم با دوربین گوشی ثبت کنید.
-          متن عکس در فیلدها می‌نشیند و تا تأیید نکنید ذخیره نمی‌شود. خود عکس‌ها نگه داشته نمی‌شوند.
+          برای یک پرونده چند عکس بگذارید. هر صفحه را با دوربین گوشی بگیرید، یا اگر عکس‌ها از قبل در گالری است همان‌ها را انتخاب کنید.
+          دوربین و گالری را می‌شود با هم مخلوط کرد. تا تأیید نکنید ذخیره نمی‌شود و بعد از تأیید، عکس‌ها روی همان پرونده می‌مانند.
         </p>
-        <input
-          ref={cameraRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={(event) => {
-            addPhotos(event.target.files);
-            event.target.value = "";
-          }}
+        <PhotoSourceButtons
+          disabled={photos.length >= RECORD_PHOTO_LIMIT}
+          onFiles={addPhotos}
         />
-        <input
-          ref={galleryRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(event) => {
-            addPhotos(event.target.files);
-            event.target.value = "";
-          }}
-        />
-        <div className="mt-4 flex flex-wrap gap-3">
-          <button
-            type="button"
-            disabled={photos.length >= 5}
-            onClick={() => cameraRef.current?.click()}
-            className="inline-flex h-12 items-center gap-2 rounded-2xl bg-[#14352A] px-4 text-sm font-extrabold text-white disabled:opacity-60"
-          >
-            <Camera className="size-4" />
-            عکس با دوربین گوشی
-          </button>
-          <button
-            type="button"
-            disabled={photos.length >= 5}
-            onClick={() => galleryRef.current?.click()}
-            className="inline-flex h-12 items-center gap-2 rounded-2xl bg-[#F7F8F6] px-4 text-sm font-bold text-brand disabled:opacity-60"
-          >
-            <ImagePlus className="size-4" />
-            انتخاب عکس‌ها
-          </button>
-        </div>
+        <p className="mt-3 text-sm font-bold text-brand">
+          {photos.length
+            ? `${photos.length} عکس برای این پرونده`
+            : "هنوز عکسی برای این پرونده انتخاب نشده است."}
+        </p>
         {photos.length ? (
           <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-5">
             {photos.map((photo, index) => (
@@ -437,7 +429,7 @@ export function CustomerImportPanel() {
                   className="h-28 w-full rounded-2xl bg-[#F7F8F6] object-contain"
                 />
                 <span className="absolute bottom-1 right-1 rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-brand">
-                  صفحه {index + 1}
+                  {index + 1} · {photo.source === "camera" ? "دوربین" : "گالری"}
                 </span>
                 <button
                   type="button"
@@ -485,7 +477,7 @@ export function CustomerImportPanel() {
                 setPhotoPreview(null);
                 setPhotoDraft(null);
               }}
-              onSave={() => commitRecords([recordFromDraft(photoDraft)], "photo")}
+              onSave={() => void savePhotoRecord(photoDraft)}
             />
           </div>
         ) : null}
@@ -494,10 +486,18 @@ export function CustomerImportPanel() {
             <p>
               {photoResult.created} مشتری جدید، {photoResult.filled} پرونده تکمیل شد
               {photoResult.measurements ? ` و ${photoResult.measurements} اندازه ثبت شد` : ""}.
+              {photoResult.photos ? ` ${photoResult.photos} عکس روی پرونده ماند.` : ""}
             </p>
             {photoResult.errors.length ? <p>{photoResult.errors[0]}</p> : null}
-            <Link href="/clinic/reception/customers" className="font-bold underline">
-              دیدن لیست مشتریان
+            <Link
+              href={
+                photoResult.patientId
+                  ? `/clinic/reception/customers/${photoResult.patientId}`
+                  : "/clinic/reception/customers"
+              }
+              className="font-bold underline"
+            >
+              دیدن پرونده و عکس‌ها
             </Link>
           </div>
         ) : null}
@@ -777,29 +777,6 @@ function actionLabel(item: ImportPlanItem) {
   if (item.unchanged) return "از قبل هست";
   if (item.action === "fill") return "پرونده موجود تکمیل می‌شود";
   return "مشتری جدید";
-}
-
-async function compressPhoto(file: File) {
-  try {
-    const bitmap = await createImageBitmap(file);
-    const longest = Math.max(bitmap.width, bitmap.height);
-    const scale = Math.min(1, 1600 / longest);
-    const width = Math.max(1, Math.round(bitmap.width * scale));
-    const height = Math.max(1, Math.round(bitmap.height * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext("2d");
-    if (!context) return file;
-    context.fillStyle = "#ffffff";
-    context.fillRect(0, 0, width, height);
-    context.drawImage(bitmap, 0, 0, width, height);
-    bitmap.close();
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.72));
-    return blob ?? file;
-  } catch {
-    return file;
-  }
 }
 
 declare global {

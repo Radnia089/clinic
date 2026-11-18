@@ -3,10 +3,11 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
+import { RECORD_PHOTO_LIMIT } from "@/lib/record-photo-limit";
 
 const execFileAsync = promisify(execFile);
 
-export const PHOTO_PAGE_LIMIT = 5;
+export const PHOTO_PAGE_LIMIT = RECORD_PHOTO_LIMIT;
 export const PHOTO_PAGE_BYTES = 4 * 1024 * 1024;
 
 export function isPhotoBuffer(bytes: Buffer) {

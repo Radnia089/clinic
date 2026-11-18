@@ -37,6 +37,7 @@ import {
   type VisitStatus,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { RecordPhotosCard } from "@/components/clinic/record-photos-card";
 
 const fieldClass =
   "h-11 rounded-xl border-[#D7E2D9] bg-[#F7F8F6] focus-visible:border-brand focus-visible:ring-brand/20";
@@ -55,11 +56,13 @@ export function CustomerFileClient({
   initialVisits,
   measurements: initialMeasurements,
   payments,
+  recordPhotos,
 }: {
   patient: Patient;
   initialVisits: Visit[];
   measurements: ProgressMeasurement[];
   payments: Payment[];
+  recordPhotos: Array<{ id: string }>;
 }) {
   const router = useRouter();
   const [patient, setPatient] = useState(initialPatient);
@@ -273,6 +276,8 @@ export function CustomerFileClient({
           بازگشت به لیست
         </Link>
       </div>
+
+      <RecordPhotosCard patientId={patient.id} initialPhotos={recordPhotos} />
 
       <form
         onSubmit={saveInfo}
