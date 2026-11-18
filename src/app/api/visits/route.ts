@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { toPublicPatient } from "@/lib/patient-public";
+import { visitFitsSchedule } from "@/lib/schedule";
 import {
   createMeasurement,
   createVisit,
+  getAppData,
   getPatient,
   listPatients,
   listVisits,
@@ -70,11 +72,24 @@ export async function POST(request: Request) {
       ? Math.round(rawDuration)
       : undefined;
 
+  const visitTime = body.visitTime ? String(body.visitTime) : undefined;
+  if (visitTime) {
+    const data = await getAppData();
+    const fits = visitFitsSchedule(
+      data.visits,
+      { visitDate, visitType, visitTime, durationMinutes },
+      data.clinic
+    );
+    if (!fits) {
+      return NextResponse.json({ error: "beds_full", visitType }, { status: 409 });
+    }
+  }
+
   const visit = await createVisit({
     patientId,
     visitDate,
     visitType,
-    visitTime: body.visitTime ? String(body.visitTime) : undefined,
+    visitTime,
     durationMinutes,
     channel: body.channel === "phone" ? "phone" : "clinic",
     packageName:
@@ -113,6 +128,39 @@ export async function PATCH(request: Request) {
   if (body.durationMinutes != null) {
     const d = Number(body.durationMinutes);
     if (Number.isFinite(d) && d > 0) patch.durationMinutes = Math.round(d);
+  }
+
+  const scheduleChanged =
+    patch.visitTime !== undefined ||
+    patch.durationMinutes !== undefined ||
+    patch.visitDate !== undefined ||
+    patch.visitType !== undefined;
+
+  if (scheduleChanged) {
+    const data = await getAppData();
+    const current = data.visits.find((visit) => visit.id === id);
+    if (!current) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+    const nextTime =
+      patch.visitTime !== undefined ? patch.visitTime : current.visitTime;
+    const fits = visitFitsSchedule(
+      data.visits,
+      {
+        id,
+        visitDate: patch.visitDate ?? current.visitDate,
+        visitType: patch.visitType ?? current.visitType,
+        visitTime: nextTime,
+        durationMinutes: patch.durationMinutes ?? current.durationMinutes,
+      },
+      data.clinic
+    );
+    if (!fits) {
+      return NextResponse.json(
+        { error: "beds_full", visitType: patch.visitType ?? current.visitType },
+        { status: 409 }
+      );
+    }
   }
 
   const visit = await updateVisit(id, patch);

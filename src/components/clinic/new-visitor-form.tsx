@@ -211,14 +211,25 @@ export function NewVisitorForm({
         }),
       });
 
-      if (!visitRes.ok) throw new Error("visit");
+      if (!visitRes.ok) {
+        const data = await visitRes.json().catch(() => ({}));
+        if (data.error === "beds_full") {
+          throw new Error(data.visitType === "package" ? "beds_full" : "visit_overlap");
+        }
+        throw new Error("visit");
+      }
       router.push(`/clinic/reception`);
       router.refresh();
     } catch (err) {
+      const code = err instanceof Error ? err.message : "";
       setError(
-        err instanceof Error && err.message === "national_id"
+        code === "national_id"
           ? "کد ملی معتبر نیست."
-          : "ثبت اطلاعات انجام نشد. لطفاً فیلدها را بررسی و دوباره تلاش کنید."
+          : code === "beds_full"
+            ? "هر دو تخت این بازه پر است. ساعت دیگری برای دستگاه انتخاب کنید."
+            : code === "visit_overlap"
+              ? "این ساعت با نوبت ویزیت دیگری تداخل دارد."
+              : "ثبت اطلاعات انجام نشد. لطفاً فیلدها را بررسی و دوباره تلاش کنید."
       );
       setLoading(false);
     }

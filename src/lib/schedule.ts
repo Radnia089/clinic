@@ -71,6 +71,108 @@ export function rangesOverlap(
   return a0 < b1 && b0 < a1;
 }
 
+/** ویزیت یک نفر؛ دستگاه دو تخت همزمان. */
+export const DEVICE_BED_COUNT = 2;
+
+export function laneCapacity(visitType: VisitType) {
+  return visitType === "package" ? DEVICE_BED_COUNT : 1;
+}
+
+export function maxConcurrent(ranges: Array<{ startMin: number; endMin: number }>) {
+  const points: Array<{ t: number; delta: number }> = [];
+  for (const range of ranges) {
+    points.push({ t: range.startMin, delta: 1 });
+    points.push({ t: range.endMin, delta: -1 });
+  }
+  points.sort((a, b) => a.t - b.t || a.delta - b.delta);
+  let current = 0;
+  let max = 0;
+  for (const point of points) {
+    current += point.delta;
+    if (current > max) max = current;
+  }
+  return max;
+}
+
+export function exceedsCapacity(
+  existing: Array<{ id?: string; start: string; duration: number }>,
+  candidate: { id?: string; start: string; duration: number },
+  capacity: number
+) {
+  const ranges = existing
+    .filter((item) => item.id !== candidate.id)
+    .map((item) => {
+      const startMin = timeToMinutes(item.start);
+      return { startMin, endMin: startMin + item.duration };
+    });
+  const startMin = timeToMinutes(candidate.start);
+  ranges.push({ startMin, endMin: startMin + candidate.duration });
+  return maxConcurrent(ranges) > capacity;
+}
+
+export function visitFitsSchedule(
+  existing: Array<
+    Pick<Visit, "id" | "visitDate" | "visitType" | "visitTime" | "durationMinutes">
+  >,
+  candidate: {
+    id?: string;
+    visitDate: string;
+    visitType: VisitType;
+    visitTime?: string;
+    durationMinutes?: number;
+  },
+  clinic: Pick<ClinicProfile, "visitSlotMinutes" | "packageSlotMinutes">
+) {
+  if (!candidate.visitTime) return true;
+  const duration =
+    candidate.durationMinutes ?? slotDurationForType(clinic, candidate.visitType);
+  const sameLane = existing.filter(
+    (visit) =>
+      visit.id !== candidate.id &&
+      visit.visitDate === candidate.visitDate &&
+      visit.visitType === candidate.visitType &&
+      visit.visitTime
+  );
+  return !exceedsCapacity(
+    sameLane.map((visit) => ({
+      id: visit.id,
+      start: visit.visitTime!,
+      duration: durationForVisit(visit, clinic),
+    })),
+    { id: candidate.id, start: candidate.visitTime, duration },
+    laneCapacity(candidate.visitType)
+  );
+}
+
+/** تخت ۰ سمت راست ستون دستگاه است و تخت ۱ سمت چپ. */
+export function assignBeds(
+  visits: Array<{ id: string; startMin: number; endMin: number }>,
+  bedCount: number
+) {
+  const sorted = visits
+    .slice()
+    .sort(
+      (a, b) =>
+        a.startMin - b.startMin ||
+        a.endMin - b.endMin ||
+        a.id.localeCompare(b.id)
+    );
+  const bedFreeAt = Array.from({ length: bedCount }, () => Number.NEGATIVE_INFINITY);
+  const assignment = new Map<string, number>();
+  for (const visit of sorted) {
+    let bed = bedFreeAt.findIndex((freeAt) => freeAt <= visit.startMin);
+    if (bed < 0) {
+      bed = bedFreeAt.reduce(
+        (best, freeAt, index) => (freeAt < bedFreeAt[best] ? index : best),
+        0
+      );
+    }
+    assignment.set(visit.id, bed);
+    bedFreeAt[bed] = visit.endMin;
+  }
+  return assignment;
+}
+
 /** شماره مراجعه این نوبت برای همان مشتری (۱، ۲، ۳، ...) */
 export function visitNumberForPatient(
   allVisits: Array<Pick<Visit, "id" | "patientId" | "visitDate" | "visitTime" | "createdAt">>,

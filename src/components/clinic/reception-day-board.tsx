@@ -16,12 +16,14 @@ import {
   isSameIsoDay,
 } from "@/lib/jalali";
 import {
+  assignBeds,
   buildGridSlots,
   durationForVisit,
   endTimeFromStart,
+  exceedsCapacity,
   formatTimeFa,
+  laneCapacity,
   minutesToTime,
-  rangesOverlap,
   slotDurationForType,
   timeToMinutes,
   toFaNumber,
@@ -139,15 +141,15 @@ export function ReceptionDayBoard({
     start: string,
     duration: number
   ) {
-    return laneVisits(lane).some((v) => {
-      if (v.id === visitId) return false;
-      return rangesOverlap(
-        start,
-        duration,
-        v.visitTime!,
-        durationForVisit(v, clinic)
-      );
-    });
+    return exceedsCapacity(
+      laneVisits(lane).map((visit) => ({
+        id: visit.id,
+        start: visit.visitTime!,
+        duration: durationForVisit(visit, clinic),
+      })),
+      { id: visitId, start, duration },
+      laneCapacity(lane)
+    );
   }
 
   async function persistVisit(
@@ -265,16 +267,13 @@ export function ReceptionDayBoard({
         duration = slotDurationForType(clinic, current.lane);
       }
       const start = minutesToTime(startMin);
-      const occupied = laneVisits(current.lane).some((v) =>
-        rangesOverlap(
-          start,
-          duration,
-          v.visitTime!,
-          durationForVisit(v, clinic)
-        )
-      );
+      const occupied = conflictsWithOthers(current.lane, "", start, duration);
       if (occupied) {
-        setHint("این بازه با نوبت دیگری تداخل دارد.");
+        setHint(
+          current.lane === "package"
+            ? "هر دو تخت این بازه پر است."
+            : "این بازه با نوبت دیگری تداخل دارد."
+        );
         return;
       }
       router.push(
@@ -301,7 +300,11 @@ export function ReceptionDayBoard({
           current.duration
         )
       ) {
-        setHint("جابه‌جایی ممکن نیست؛ با نوبت دیگری تداخل دارد.");
+        setHint(
+          current.lane === "package"
+            ? "جابه‌جایی ممکن نیست؛ هر دو تخت این بازه پر است."
+            : "جابه‌جایی ممکن نیست؛ با نوبت دیگری تداخل دارد."
+        );
         return;
       }
       void persistVisit(current.visitId, {
@@ -324,7 +327,11 @@ export function ReceptionDayBoard({
           current.previewDuration
         )
       ) {
-        setHint("کوتاه/بلند کردن ممکن نیست؛ با نوبت دیگری تداخل دارد.");
+        setHint(
+          current.lane === "package"
+            ? "کوتاه/بلند کردن ممکن نیست؛ هر دو تخت این بازه پر است."
+            : "کوتاه/بلند کردن ممکن نیست؛ با نوبت دیگری تداخل دارد."
+        );
         return;
       }
       void persistVisit(current.visitId, {
@@ -366,7 +373,7 @@ export function ReceptionDayBoard({
           <p className="mt-1 text-xs text-muted-foreground">
             بازه شناور {formatTimeFa(clinic.workStart)} تا {formatTimeFa(clinic.workEnd)} · واحد{" "}
             {toFaNumber(gridMinutes)} دقیقه · ویزیت معمولاً {toFaNumber(clinic.visitSlotMinutes)} دقیقه ·
-            دستگاه/پکیج معمولاً {toFaNumber(clinic.packageSlotMinutes)} دقیقه
+            دستگاه/پکیج معمولاً {toFaNumber(clinic.packageSlotMinutes)} دقیقه · دو تخت همزمان
           </p>
           <p className="mt-1 hidden text-[11px] text-muted-foreground sm:block">
             خانه خالی را بکشید تا نوبت جدید بسازید · نوبت را بکشید تا جابه‌جا شود · از لبه پایین
@@ -448,7 +455,7 @@ export function ReceptionDayBoard({
           <div className="px-2 py-3">
             پکیج / دستگاه
             <span className="mt-0.5 block font-medium text-muted-foreground">
-              پیش‌فرض {toFaNumber(clinic.packageSlotMinutes)} دقیقه
+              دو تخت · پیش‌فرض {toFaNumber(clinic.packageSlotMinutes)} دقیقه
             </span>
           </div>
         </div>
@@ -628,34 +635,63 @@ function LaneColumn({
         />
       ))}
 
+      {(() => {
+        const placed = visits.map((visit) => {
+          let start = visit.visitTime!;
+          let duration = durationForVisit(visit, clinic);
+          if (
+            interaction &&
+            (interaction.kind === "move" || interaction.kind === "resize") &&
+            interaction.visitId === visit.id
+          ) {
+            if (interaction.kind === "move") {
+              start = minutesToTime(interaction.previewStartMin);
+              duration = interaction.duration;
+            } else {
+              start = minutesToTime(interaction.startMin);
+              duration = interaction.previewDuration;
+            }
+          }
+          return { visit, start, duration, startMin: timeToMinutes(start) };
+        });
+        const bedMap =
+          lane === "package"
+            ? assignBeds(
+                [
+                  ...placed.map((item) => ({
+                    id: item.visit.id,
+                    startMin: item.startMin,
+                    endMin: item.startMin + item.duration,
+                  })),
+                  ...(selection
+                    ? [
+                        {
+                          id: "__selection",
+                          startMin: selection.startMin,
+                          endMin: selection.startMin + selection.duration,
+                        },
+                      ]
+                    : []),
+                ],
+                2
+              )
+            : new Map<string, number>();
+        const selectionBed = bedMap.get("__selection") ?? 0;
+
+        return (
+          <>
       {selection ? (
         <div
-          className="pointer-events-none absolute inset-x-1 z-20 rounded-xl bg-brand/20 ring-1 ring-brand/30"
+          className="pointer-events-none absolute z-20 rounded-xl bg-brand/20 ring-1 ring-brand/30"
           style={{
             top: ((selection.startMin - workStartMin) / gridMinutes) * ROW_PX + 1,
             height: (selection.duration / gridMinutes) * ROW_PX - 2,
+            ...bedBoxStyle(lane, selectionBed),
           }}
         />
       ) : null}
 
-      {visits.map((visit) => {
-        let start = visit.visitTime!;
-        let duration = durationForVisit(visit, clinic);
-
-        if (
-          interaction &&
-          (interaction.kind === "move" || interaction.kind === "resize") &&
-          interaction.visitId === visit.id
-        ) {
-          if (interaction.kind === "move") {
-            start = minutesToTime(interaction.previewStartMin);
-            duration = interaction.duration;
-          } else {
-            start = minutesToTime(interaction.startMin);
-            duration = interaction.previewDuration;
-          }
-        }
-
+      {placed.map(({ visit, start, duration }) => {
         const top =
           ((timeToMinutes(start) - workStartMin) / gridMinutes) * ROW_PX + 1;
         const height = (duration / gridMinutes) * ROW_PX - 2;
@@ -668,13 +704,15 @@ function LaneColumn({
         const saving = savingId === visit.id;
         const attended = visit.status === "completed" || visit.status === "admitted";
         const cancelled = visit.status === "cancelled";
+        const bed = bedMap.get(visit.id) ?? 0;
 
         return (
           <div
             key={visit.id}
             data-visit-block
             className={cn(
-              "absolute inset-x-1 z-10 flex flex-col overflow-hidden rounded-xl px-2 pt-1.5 pb-5 shadow-sm",
+              "absolute z-10 flex flex-col overflow-hidden rounded-xl pt-1.5 pb-5 shadow-sm",
+              lane === "package" ? "px-1.5" : "px-2",
               cancelled
                 ? "bg-[#F3F3F3] text-[#8A8A8A] line-through decoration-[#C45C5C]/50"
                 : attended
@@ -685,7 +723,12 @@ function LaneColumn({
               active && "ring-2 ring-brand/40",
               saving && "opacity-70"
             )}
-            style={{ top, height: Math.max(height, ROW_PX - 2), cursor: "grab" }}
+            style={{
+              top,
+              height: Math.max(height, ROW_PX - 2),
+              cursor: "grab",
+              ...bedBoxStyle(lane, bed),
+            }}
             onMouseDown={(e) => {
               if (e.button !== 0) return;
               if ((e.target as HTMLElement).closest("[data-resize-handle]")) return;
@@ -719,12 +762,17 @@ function LaneColumn({
               </a>
             ) : null}
             <p className="mt-0.5 truncate text-[9px] leading-tight opacity-80">
-              {formatTimeFa(start)}–{formatTimeFa(end)} · مراجعه {toFaNumber(n)}
+              {formatTimeFa(start)}–{formatTimeFa(end)}
+              {lane === "package" ? ` · تخت ${toFaNumber(bed + 1)}` : ""} · مراجعه{" "}
+              {toFaNumber(n)}
             </p>
 
             <div
               data-attend-btn
-              className="relative z-10 mt-auto flex shrink-0 flex-nowrap items-center gap-1 pt-1"
+              className={cn(
+                "relative z-10 mt-auto flex shrink-0 items-center gap-1 pt-1",
+                lane === "package" ? "flex-wrap" : "flex-nowrap"
+              )}
               onMouseDown={(e) => e.stopPropagation()}
             >
               <AttendanceButtons
@@ -759,8 +807,24 @@ function LaneColumn({
           </div>
         );
       })}
+          </>
+        );
+      })()}
     </div>
   );
+}
+
+function bedBoxStyle(lane: Lane, bed: number): {
+  left?: number;
+  right?: number;
+  width?: string;
+  insetInlineStart?: number | string;
+} {
+  if (lane !== "package") return { left: 4, right: 4 };
+  return {
+    width: "calc(50% - 8px)",
+    insetInlineStart: bed === 0 ? 4 : "calc(50% + 4px)",
+  };
 }
 
 function VisitBadge({ n }: { n: number }) {
