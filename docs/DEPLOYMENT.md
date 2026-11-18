@@ -151,6 +151,7 @@ docker compose start app
   `tini`, with a read-only root filesystem, `no-new-privileges`, all Linux
   capabilities dropped, resource limits, and rotated JSON logs.
 - **Health:** the app is healthy when its HTTP server answers.
+- **Paper-file photos:** the image includes Tesseract with Persian (`tesseract-ocr-fas`). Managers can photograph up to five pages; the text is read in `/tmp`, which must stay writable.
 - **Reminder scheduler:** it starts lazily inside the app; the entrypoint calls
   `/api/reminders` once after boot so reminders keep running after restarts.
   Disable with `REMINDER_SCHEDULER_AUTOSTART=false`.

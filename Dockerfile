@@ -110,7 +110,7 @@ LABEL org.opencontainers.image.title="tandis-clinic" \
       org.opencontainers.image.created="${BUILD_DATE}"
 
 RUN apt-get update \
- && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tini \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tini tesseract-ocr tesseract-ocr-fas \
  && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production \
