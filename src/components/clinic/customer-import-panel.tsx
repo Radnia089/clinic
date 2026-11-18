@@ -301,8 +301,8 @@ export function CustomerImportPanel() {
           <h2 className="text-base font-extrabold">خواندن شفاهی یک پرونده</h2>
         </div>
         <p className="mt-3 text-sm leading-7 text-muted-foreground">
-          پرونده کاغذی را با این جمله‌ها بخوانید: نام، نام خانوادگی، موبایل، کد ملی، سن، شهر، آدرس، قد، وزن، سوابق، دارو، حساسیت و شکایت.
-          عددها را رقم‌به‌رقم بگویید. بعد از تبدیل، خود پرونده را می‌بینید و تا تأیید نکنید ذخیره نمی‌شود.
+          متن را همان‌طور که حرف می‌زنید بخوانید. لازم نیست فیلدها را با ویرگول جدا کنید یا عددها را رقم‌به‌رقم بگویید.
+          نام، سن، قد، وزن، موبایل و بقیه از خود جمله درمی‌آید. بعد از تبدیل، پرونده را می‌بینید و تا تأیید نکنید ذخیره نمی‌شود.
         </p>
         <textarea
           value={speech}
@@ -312,7 +312,7 @@ export function CustomerImportPanel() {
             setFileDraft(null);
           }}
           rows={5}
-          placeholder="مثلاً: نام فاطمه نام خانوادگی رضایی موبایل ۰۹۱۲۱۲۳۴۵۶۷ سن ۳۴ شهر یزد وزن ۷۸ سوابق کم‌کاری تیروئید"
+          placeholder="مثلاً: نام و نام خانوادگی مشتری من وحید رادنیا است. سنش چهل و سه ساله. قدش صد و هشتاد و دو سانت. وزنش نود و چهار کیلو. شماره موبایلش صفر نهصد و دوازده، دویست و شصت، بیست و هفت، هفتاد و یک"
           className="mt-4 w-full rounded-2xl border border-[#D7E2D9] bg-[#F7F8F6] px-3 py-3 text-sm leading-7 outline-none focus:border-brand"
         />
         <div className="mt-3 flex flex-wrap gap-3">

@@ -2,6 +2,7 @@ import ExcelJS from "exceljs";
 import { toEnglishDigits } from "@/lib/digits";
 import { jalaliPartsToIsoDate } from "@/lib/jalali";
 import { isValidNationalId, normalizeNationalId } from "@/lib/national-id";
+import { embedSpokenNumbers } from "@/lib/spoken-numbers";
 import type { Gender, Patient } from "@/lib/types";
 
 export const IMPORT_ROW_LIMIT = 3000;
@@ -445,8 +446,102 @@ export function buildImportPlan(
   return items;
 }
 
+const SPOKEN_NAME_LEAD = /(?:^|\s)(نام و نام خانوادگی|اسم و فامیل|نام کامل)\s+/;
+const NAME_SKIP = new Set(["مشتری", "من", "ایشان", "خانم", "آقا", "مثلا", "حدود", "تقریبا", "حدودا", "هم", "را", "یه"]);
+const NAME_STOP = new Set([
+  "است",
+  "هست",
+  "هستش",
+  "سن",
+  "قد",
+  "وزن",
+  "شماره",
+  "موبایل",
+  "تلفن",
+  "کد",
+  "شهر",
+  "آدرس",
+  "سوابق",
+  "دارو",
+  "داروها",
+  "حساسیت",
+  "شکایت",
+  "دور",
+  "فشار",
+  "جنسیت",
+  "یادداشت",
+  "توضیحات",
+]);
+const NAME_TRAIL = new Set(["است", "هست", "هستش", "مشتری", "من", "ایشان", "مثلا", "حدود", "تقریبا", "حدودا", "هم", "را", "یه"]);
+const NUMERIC_FIELDS = new Set<ImportField>(["weightKg", "heightCm", "age", "waistCm", "hipCm", "goalWeightKg"]);
+
+function spokenSource(text: string) {
+  return embedSpokenNumbers(
+    cleanText(text)
+      .replace(/[\u064b-\u0652\u0670]/g, "")
+      .replace(/سنش(?=\s|$)/g, "سن")
+      .replace(/قدش(?=\s|$)/g, "قد")
+      .replace(/وزنش(?=\s|$)/g, "وزن")
+      .replace(/موبایلش(?=\s|$)/g, "موبایل")
+      .replace(/تلفنش(?=\s|$)/g, "تلفن")
+      .replace(/اسمش(?=\s|$)/g, "نام")
+      .replace(/کمرش(?=\s|$)/g, "کمر")
+      .replace(/باسنش(?=\s|$)/g, "باسن")
+  );
+}
+
+function tidyName(value: string) {
+  const words = value.split(" ").filter(Boolean);
+  while (words.length && NAME_SKIP.has(words[0])) words.shift();
+  while (words.length && NAME_TRAIL.has(words[words.length - 1])) words.pop();
+  return words.join(" ");
+}
+
+function takeSpokenName(text: string) {
+  const lead = SPOKEN_NAME_LEAD.exec(text);
+  if (!lead || lead.index == null) return { text };
+  const labelStart = lead.index + (lead[0].startsWith(" ") ? 1 : 0);
+  const cursor = lead.index + lead[0].length;
+  const words = text.slice(cursor).split(" ");
+  const name: string[] = [];
+  let consumed = 0;
+  for (let index = 0; index < words.length; index += 1) {
+    const word = words[index];
+    if (!word) {
+      consumed += 1;
+      continue;
+    }
+    if (NAME_STOP.has(word) || /^\d/.test(word)) break;
+    if (NAME_SKIP.has(word) && name.length === 0) {
+      consumed += word.length + 1;
+      continue;
+    }
+    name.push(word);
+    consumed += word.length + 1;
+    if (name.length === 4) break;
+  }
+  if (name.length === 0) return { text };
+  let end = cursor + consumed;
+  const stop = text.slice(end).match(/^\s*(است|هست|هستش)(?=\s|$)/);
+  if (stop) end += stop[0].length;
+  return {
+    text: `${text.slice(0, labelStart)} ${text.slice(end)}`.replace(/\s+/g, " ").trim(),
+    firstName: name[0],
+    lastName: name.slice(1).join(" "),
+  };
+}
+
+function stripSpokenFiller(value: string) {
+  return value
+    .replace(/^(?:(?:مثلا|حدود|تقریبا|حدودا|هم|من|ایشان)\s+)+/, "")
+    .replace(/\s+(?:ساله|سالشه|سالش|سال|سانتی|سانتیمتر|سانت|کیلوگرم|کیلو)$/, "")
+    .trim();
+}
+
 export function parseSpokenRecord(text: string): ImportRecord {
-  const source = cleanText(text);
+  const prepared = spokenSource(text);
+  const named = takeSpokenName(prepared);
+  const source = named.text;
   const hits: Array<{ start: number; end: number; key: ImportField; label: string }> = [];
   for (const [label, key] of HEADER_ALIASES) {
     const pattern = new RegExp(
@@ -457,8 +552,8 @@ export function parseSpokenRecord(text: string): ImportRecord {
     if (!match || match.index == null) continue;
     const valueStart = match.index + match[0].length;
     if (
-      ["weightKg", "heightCm", "age", "waistCm", "hipCm", "goalWeightKg"].includes(key) &&
-      !/^(?:حدود\s+|تقریبا\s+)?\d/.test(source.slice(valueStart))
+      NUMERIC_FIELDS.has(key) &&
+      !/^(?:(?:مثلا|حدود|تقریبا|حدودا|هم|من|ایشان)\s+)*\d/.test(source.slice(valueStart))
     ) {
       continue;
     }
@@ -482,7 +577,8 @@ export function parseSpokenRecord(text: string): ImportRecord {
   for (let index = 0; index < kept.length; index += 1) {
     const hit = kept[index];
     const next = kept[index + 1]?.start ?? source.length;
-    const value = source.slice(hit.end, next).trim();
+    let value = source.slice(hit.end, next).trim();
+    if (NUMERIC_FIELDS.has(hit.key) || hit.key === "phone") value = stripSpokenFiller(value);
     if (value && !record[hit.key]) record[hit.key] = value;
   }
 
@@ -493,11 +589,23 @@ export function parseSpokenRecord(text: string): ImportRecord {
   if (!record.nationalId && nationalMatch && isValidNationalId(nationalMatch[0])) {
     record.nationalId = nationalMatch[0];
   }
-  const ageMatch = source.match(/(\d{1,3})\s*ساله/);
+  const ageMatch = source.match(/(\d{1,3})\s*سال(?:ه|شه|ش)?/);
   if (!record.age && ageMatch) record.age = ageMatch[1];
   if (!record.gender) {
-    if (/(خانم|\bزن\b)/.test(source)) record.gender = "زن";
-    else if (/(آقا|\bمرد\b)/.test(source)) record.gender = "مرد";
+    if (/خانم/.test(prepared)) record.gender = "زن";
+    else if (/آقا/.test(prepared)) record.gender = "مرد";
+  }
+  if (named.firstName) {
+    record.firstName = named.firstName;
+    if (named.lastName) record.lastName = named.lastName;
+    else delete record.lastName;
+    delete record.fullName;
+  }
+  for (const key of ["firstName", "lastName", "fullName"] as const) {
+    if (!record[key]) continue;
+    const tidy = tidyName(record[key]);
+    if (tidy) record[key] = tidy;
+    else delete record[key];
   }
 
   if (!record.firstName && !record.lastName && !record.fullName) {
