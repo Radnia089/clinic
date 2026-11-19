@@ -12,7 +12,7 @@ export function SampleFrame({
     <div>
       <div className="sticky top-0 z-50 border-b border-black/5 bg-white/95 text-[#333] backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-2 text-xs sm:px-6">
-          <p>نمونه طراحی است. صفحه اصلی سایت هنوز عوض نشده.</p>
+          <p>نوار مقایسه. صفحهٔ اصلی سایت همان طرح نوتریشاست.</p>
           <nav className="flex flex-wrap gap-2">
             <Link
               href="/preview/calm"

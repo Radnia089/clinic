@@ -37,7 +37,7 @@ export function LandingLoginMenu({
   variant = "solid",
   className,
 }: {
-  variant?: "solid" | "outline" | "footer";
+  variant?: "solid" | "outline" | "footer" | "fresh";
   className?: string;
 }) {
   return (
@@ -51,6 +51,8 @@ export function LandingLoginMenu({
             "border border-[#14352A]/15 bg-white text-[#14352A] hover:bg-[#F0F4F1]",
           variant === "footer" &&
             "h-auto rounded-none bg-transparent p-0 px-0 font-normal text-white/75 hover:bg-transparent hover:text-white",
+          variant === "fresh" &&
+            "bg-[#3caf2d] text-white hover:bg-[#2E9B32]",
           className
         )}
       >
