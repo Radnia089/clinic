@@ -1,11 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarCheck2, Headset, Salad, UtensilsCrossed } from "lucide-react";
+import { LandingPromoSlider } from "@/components/landing/landing-promo-slider";
 import { SampleBmi } from "@/components/landing/sample-bmi";
 import { SampleLogo } from "@/components/landing/sample-frame";
 import { LandingLoginMenu } from "@/components/landing/landing-login-menu";
 import { lostKg, lostSizeCm } from "@/lib/champions";
-import type { Champion, ClinicProfile } from "@/lib/types";
+import type { Champion, ClinicProfile, PromoBanner } from "@/lib/types";
 
 const features = [
   { icon: UtensilsCrossed, title: "رژیم غذایی اختصاصی", text: "بر اساس ویژگی‌ها و شرایط خاص شما" },
@@ -21,9 +22,11 @@ function faNum(value: number) {
 export function NutrishaLanding({
   clinic,
   champions,
+  banners,
 }: {
   clinic: ClinicProfile;
   champions: Champion[];
+  banners: PromoBanner[];
 }) {
   const tel = clinic.phone.replace(/[^0-9+]/g, "");
   return (
@@ -49,9 +52,7 @@ export function NutrishaLanding({
       </header>
 
       <section id="start" className="mx-auto max-w-5xl px-5 pb-6 pt-8 text-center sm:px-8">
-        <div className="relative mx-auto h-[240px] max-w-4xl overflow-hidden rounded-[2.2rem] bg-[#F7F7F7] sm:h-[360px]">
-          <Image src="/images/landing-food-fresh.jpg" alt="یک وعده غذایی متعادل" fill priority className="object-cover" sizes="(max-width: 900px) 100vw, 900px" />
-        </div>
+        <LandingPromoSlider items={banners} />
         <h1 className="mt-8 text-3xl font-extrabold text-[#2E9B32] sm:text-5xl">کلینیک تخصصی تغذیه تندیس</h1>
         <p className="mt-3 text-xl font-bold text-[#3caf2d] sm:text-3xl">تندیس، دوست سلامتی تو</p>
         <Link
