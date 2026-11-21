@@ -125,7 +125,7 @@ export function NutrishaLanding({
         )}
       </section>
 
-      <section id="bmi" className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
+      <section id="bmi" className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
         <SampleBmi />
       </section>
 
