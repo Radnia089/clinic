@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
 import { DigitsInput } from "@/components/ui/digits-input";
+import { toEnglishDigits } from "@/lib/digits";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 import {
   buildGridSlots,
@@ -16,7 +17,14 @@ import {
   slotDurationForType,
   toFaNumber,
 } from "@/lib/schedule";
-import type { ClinicProfile, Gender, VisitType } from "@/lib/types";
+import {
+  genderLabel,
+  patientFullName,
+  type ClinicProfile,
+  type Gender,
+  type Patient,
+  type VisitType,
+} from "@/lib/types";
 
 const fieldClass =
   "h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6] px-3 text-base focus-visible:border-brand focus-visible:ring-brand/20";
@@ -46,20 +54,28 @@ function FieldLabel({
 
 export function NewVisitorForm({
   clinic,
+  patients,
   initialDate,
   initialTime,
   initialType,
   initialDuration,
   initialChannel,
+  initialPatientId,
 }: {
   clinic: ClinicProfile;
+  patients: Patient[];
   initialDate?: string;
   initialTime?: string;
   initialType?: VisitType;
   initialDuration?: number;
   initialChannel?: "clinic" | "phone";
+  initialPatientId?: string;
 }) {
   const router = useRouter();
+  const preset = patients.find((patient) => patient.id === initialPatientId) ?? null;
+  const [mode, setMode] = useState<"existing" | "new">(preset ? "existing" : "new");
+  const [customerQuery, setCustomerQuery] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(preset?.id ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -114,6 +130,23 @@ export function NewVisitorForm({
     visitTime && durationMinutes
       ? endTimeFromStart(visitTime, durationMinutes)
       : null;
+  const selectedPatient = patients.find((patient) => patient.id === selectedId) ?? null;
+  const customerMatches = useMemo(() => {
+    const raw = toEnglishDigits(customerQuery).trim().toLowerCase();
+    const digits = raw.replace(/\D/g, "");
+    const ranked = [...patients].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const matched = raw
+      ? ranked.filter((patient) => {
+          const name = patientFullName(patient).toLowerCase();
+          return (
+            name.includes(raw) ||
+            patient.phone.includes(digits || raw) ||
+            (patient.nationalId ?? "").includes(digits)
+          );
+        })
+      : ranked;
+    return matched.slice(0, raw ? 30 : 8);
+  }, [customerQuery, patients]);
 
   function changeVisitType(next: VisitType) {
     setVisitType(next);
@@ -126,11 +159,15 @@ export function NewVisitorForm({
     event.preventDefault();
     setError("");
 
-    if (!lastName.trim()) {
+    if (mode === "existing" && !selectedPatient) {
+      setError("یک مشتری را از فهرست انتخاب کنید.");
+      return;
+    }
+    if (mode === "new" && !lastName.trim()) {
       setError("نام خانوادگی الزامی است.");
       return;
     }
-    if (!/^09\d{9}$/.test(phone.replace(/\D/g, ""))) {
+    if (mode === "new" && !/^09\d{9}$/.test(phone.replace(/\D/g, ""))) {
       setError("شماره موبایل معتبر (۱۱ رقم، شروع با ۰۹) الزامی است.");
       return;
     }
@@ -145,45 +182,47 @@ export function NewVisitorForm({
     setLoading(true);
 
     try {
-      const patientRes = await fetch("/api/patients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
-          age: age.trim() || undefined,
-          gender: gender || "female",
-          phone,
-          nationalId: nationalId.trim() || undefined,
-          address: address.trim(),
-          notes: notes.trim() || undefined,
-        }),
-      });
+      let patientId = mode === "existing" ? selectedPatient?.id ?? null : null;
 
-      let patientId: string | null = null;
+      if (mode === "new") {
+        const patientRes = await fetch("/api/patients", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            age: age.trim() || undefined,
+            gender: gender || "female",
+            phone,
+            nationalId: nationalId.trim() || undefined,
+            address: address.trim(),
+            notes: notes.trim() || undefined,
+          }),
+        });
 
-      if (patientRes.status === 409) {
-        const data = await patientRes.json();
-        patientId = data.patient?.id ?? null;
-        if (patientId && nationalId.trim()) {
-          await fetch("/api/patients", {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              id: patientId,
-              nationalId: nationalId.trim(),
-            }),
-          });
+        if (patientRes.status === 409) {
+          const data = await patientRes.json();
+          patientId = data.patient?.id ?? null;
+          if (patientId && nationalId.trim()) {
+            await fetch("/api/patients", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: patientId,
+                nationalId: nationalId.trim(),
+              }),
+            });
+          }
+        } else if (!patientRes.ok) {
+          const data = await patientRes.json().catch(() => ({}));
+          if (data.error === "invalid_national_id") {
+            throw new Error("national_id");
+          }
+          throw new Error("patient");
+        } else {
+          const data = await patientRes.json();
+          patientId = data.patient.id;
         }
-      } else if (!patientRes.ok) {
-        const data = await patientRes.json().catch(() => ({}));
-        if (data.error === "invalid_national_id") {
-          throw new Error("national_id");
-        }
-        throw new Error("patient");
-      } else {
-        const data = await patientRes.json();
-        patientId = data.patient.id;
       }
 
       if (!patientId) throw new Error("patient");
@@ -241,10 +280,107 @@ export function NewVisitorForm({
         <div className="mb-4 rounded-2xl bg-[#E8F2EA] px-4 py-3">
           <p className="text-sm font-bold text-brand">۱ · اطلاعات عمومی مشتری</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            فقط فیلدهای دارای <span className="font-bold text-red-500">*</span>{" "}
-            اجباری‌اند؛ بقیه را می‌توانید بعداً تکمیل کنید.
+            مشتری قبلی را از فهرست انتخاب کنید. برای مشتری جدید، فقط فیلدهای دارای{" "}
+            <span className="font-bold text-red-500">*</span> اجباری‌اند.
           </p>
         </div>
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => setMode("existing")}
+            className={`h-11 rounded-2xl text-sm font-bold transition ${
+              mode === "existing" ? "bg-brand text-white" : "bg-[#F7F8F6] text-brand"
+            }`}
+          >
+            مشتری قبلی
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("new");
+              setSelectedId(null);
+            }}
+            className={`h-11 rounded-2xl text-sm font-bold transition ${
+              mode === "new" ? "bg-brand text-white" : "bg-[#F7F8F6] text-brand"
+            }`}
+          >
+            مشتری جدید
+          </button>
+        </div>
+        {mode === "existing" ? (
+          <div className="space-y-3">
+            {selectedPatient ? (
+              <div className="rounded-2xl bg-[#F7F8F6] px-4 py-4">
+                <p className="text-base font-extrabold text-brand">
+                  {patientFullName(selectedPatient)}
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground" dir="ltr">
+                  {selectedPatient.phone}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {selectedPatient.age != null ? `${toFaNumber(selectedPatient.age)} ساله · ` : ""}
+                  {genderLabel(selectedPatient.gender)}
+                </p>
+                <p className="mt-2 text-xs text-brand">
+                  نوبت روی همین پرونده ثبت می‌شود و اطلاعات دوباره وارد نمی‌شود.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(null)}
+                  className="mt-3 text-sm font-bold text-[#9A4E42]"
+                >
+                  انتخاب مشتری دیگر
+                </button>
+              </div>
+            ) : (
+              <>
+                <Input
+                  className={fieldClass}
+                  value={customerQuery}
+                  onChange={(e) => setCustomerQuery(e.target.value)}
+                  placeholder="جستجو با نام یا شماره موبایل"
+                  aria-label="جستجوی مشتری قبلی"
+                />
+                {patients.length === 0 ? (
+                  <p className="rounded-2xl bg-[#F7F8F6] px-4 py-3 text-sm text-muted-foreground">
+                    هنوز مشتری‌ای در پرونده‌ها نیست. مشتری جدید را ثبت کنید.
+                  </p>
+                ) : customerMatches.length === 0 ? (
+                  <p className="rounded-2xl bg-[#F7F8F6] px-4 py-3 text-sm text-muted-foreground">
+                    مشتری‌ای با این نام یا شماره پیدا نشد.
+                  </p>
+                ) : (
+                  <ul className="max-h-72 space-y-2 overflow-y-auto">
+                    {customerMatches.map((patient) => (
+                      <li key={patient.id}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedId(patient.id)}
+                          className="flex w-full items-center justify-between gap-3 rounded-2xl bg-[#F7F8F6] px-4 py-3 text-right hover:bg-[#E8F2EA]"
+                        >
+                          <span className="min-w-0">
+                            <span className="block text-sm font-extrabold text-brand">
+                              {patientFullName(patient)}
+                            </span>
+                            <span className="mt-0.5 block text-xs text-muted-foreground" dir="ltr">
+                              {patient.phone}
+                            </span>
+                          </span>
+                          <span className="shrink-0 text-xs font-bold text-brand">انتخاب</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {!customerQuery.trim() && patients.length > customerMatches.length ? (
+                  <p className="text-xs text-muted-foreground">
+                    برای دیدن بقیه، نام یا موبایل را جستجو کنید.
+                  </p>
+                ) : null}
+              </>
+            )}
+          </div>
+        ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <FieldLabel>نام</FieldLabel>
@@ -323,6 +459,7 @@ export function NewVisitorForm({
             />
           </div>
         </div>
+        )}
       </section>
 
       <section className="rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)] sm:p-6">

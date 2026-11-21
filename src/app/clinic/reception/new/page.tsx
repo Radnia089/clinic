@@ -1,8 +1,9 @@
 import { NewVisitorForm } from "@/components/clinic/new-visitor-form";
 import { PageHeader } from "@/components/clinic/page-header";
-import { getAppData } from "@/lib/store";
-import type { VisitType } from "@/lib/types";
 import { requireStaffPage } from "@/lib/auth";
+import { toPublicPatient } from "@/lib/patient-public";
+import { getAppData, listPatients } from "@/lib/store";
+import type { VisitType } from "@/lib/types";
 
 export default async function NewVisitorPage({
   searchParams,
@@ -13,11 +14,12 @@ export default async function NewVisitorPage({
     type?: string;
     duration?: string;
     channel?: string;
+    patient?: string;
   }>;
 }) {
   await requireStaffPage();
   const params = await searchParams;
-  const data = await getAppData();
+  const [data, patients] = await Promise.all([getAppData(), listPatients()]);
   const initialType: VisitType | undefined =
     params.type === "package" || params.type === "consultation"
       ? params.type
@@ -36,17 +38,19 @@ export default async function NewVisitorPage({
         title={initialChannel === "phone" ? "ثبت نوبت تلفنی" : "ثبت مراجعه‌کننده"}
         description={
           initialChannel === "phone"
-            ? "نوبت تلفنی هم ویزیت است؛ نام‌خانوادگی و موبایل کافی است و ساعت اختیاری است."
-            : "اطلاعات مشتری، نوع نوبت و بازه زمانی شناور (ربع‌ساعتی) را مشخص کنید."
+            ? "نوبت تلفنی هم ویزیت است؛ مشتری قبلی را انتخاب کنید یا نام‌خانوادگی و موبایل را وارد کنید."
+            : "مشتری قبلی را از فهرست انتخاب کنید، یا برای مشتری جدید اطلاعات و بازه زمانی را وارد کنید."
         }
       />
       <NewVisitorForm
         clinic={data.clinic}
+        patients={patients.map(toPublicPatient)}
         initialDate={params.date}
         initialTime={params.time}
         initialType={initialType}
         initialDuration={initialDuration}
         initialChannel={initialChannel}
+        initialPatientId={params.patient}
       />
     </div>
   );

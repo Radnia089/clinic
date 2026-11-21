@@ -74,13 +74,21 @@ export function CustomersList({ patients }: { patients: Patient[] }) {
                     {formatDateFa(patient.createdAt)}
                   </p>
                 </div>
-                <Link
-                  href={`/clinic/reception/customers/${patient.id}`}
-                  className="inline-flex items-center gap-1 rounded-2xl bg-[#E8F2EA] px-3 py-2 text-xs font-bold text-brand"
-                >
-                  پرونده
-                  <ChevronLeft className="size-3.5" />
-                </Link>
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Link
+                    href={`/clinic/reception/new?patient=${patient.id}`}
+                    className="inline-flex items-center justify-center rounded-2xl bg-[#D86B5C] px-3 py-2 text-xs font-bold text-white"
+                  >
+                    ثبت نوبت
+                  </Link>
+                  <Link
+                    href={`/clinic/reception/customers/${patient.id}`}
+                    className="inline-flex items-center gap-1 rounded-2xl bg-[#E8F2EA] px-3 py-2 text-xs font-bold text-brand"
+                  >
+                    پرونده
+                    <ChevronLeft className="size-3.5" />
+                  </Link>
+                </div>
               </div>
             </li>
           ))}
