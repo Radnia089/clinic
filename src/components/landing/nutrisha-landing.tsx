@@ -4,7 +4,8 @@ import { CalendarCheck2, Headset, Salad, UtensilsCrossed } from "lucide-react";
 import { SampleBmi } from "@/components/landing/sample-bmi";
 import { SampleLogo } from "@/components/landing/sample-frame";
 import { LandingLoginMenu } from "@/components/landing/landing-login-menu";
-import type { ClinicProfile } from "@/lib/types";
+import { lostKg, lostSizeCm } from "@/lib/champions";
+import type { Champion, ClinicProfile } from "@/lib/types";
 
 const features = [
   { icon: UtensilsCrossed, title: "رژیم غذایی اختصاصی", text: "بر اساس ویژگی‌ها و شرایط خاص شما" },
@@ -13,15 +14,17 @@ const features = [
   { icon: CalendarCheck2, title: "پیگیری تا نتیجه", text: "وزن و دورها ثبت می‌شود و مسیر گم نمی‌شود" },
 ];
 
-const diets = [
-  { title: "کاهش وزن", text: "غذای ایرانی، بدون گرسنگی", chip: "bg-[#E8F8E4] text-[#1F7A28]", tile: "bg-[#3caf2d]", mark: "ک" },
-  { title: "تثبیت", text: "وزن برگشت نکند", chip: "bg-[#E7F1FF] text-[#1D4E89]", tile: "bg-[#2F80ED]", mark: "ت" },
-  { title: "دیابت و کبد", text: "رژیم همراه بیماری", chip: "bg-[#FFF1D6] text-[#8A5A00]", tile: "bg-[#F2B544]", mark: "د" },
-  { title: "آنلاین", text: "اگر یزد نیستید", chip: "bg-[#F3E8FF] text-[#6B3FA0]", tile: "bg-[#8E5BD0]", mark: "آ" },
-  { title: "دستگاه", text: "فقط کنار رژیم", chip: "bg-[#FDECEC] text-[#A33B3B]", tile: "bg-[#E15B5B]", mark: "ج" },
-];
+function faNum(value: number) {
+  return new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 }).format(value);
+}
 
-export function NutrishaLanding({ clinic }: { clinic: ClinicProfile }) {
+export function NutrishaLanding({
+  clinic,
+  champions,
+}: {
+  clinic: ClinicProfile;
+  champions: Champion[];
+}) {
   const tel = clinic.phone.replace(/[^0-9+]/g, "");
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
@@ -38,7 +41,7 @@ export function NutrishaLanding({ clinic }: { clinic: ClinicProfile }) {
         <p className="mt-2 text-sm text-[#666]">کلینیک رژیم درمانی تندیس · یزد</p>
         <nav className="mx-auto mt-5 flex max-w-3xl flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-full bg-[#F8D9D6] px-4 py-3 text-sm font-bold text-[#555]">
           <a href="#start" className="text-[#2E9B32]">خانه</a>
-          <a href="#diets">رژیم‌ها</a>
+          <a href="#champions">قهرمانان</a>
           <a href="#bmi">ماشین حساب</a>
           <a href="#visit">نوبت</a>
           <a href={`tel:${tel}`}>تماس</a>
@@ -71,19 +74,55 @@ export function NutrishaLanding({ clinic }: { clinic: ClinicProfile }) {
         ))}
       </section>
 
-      <section id="diets" className="mx-auto max-w-6xl px-5 pb-6 sm:px-8">
-        <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">انواع رژیم تندیس</h2>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {diets.map((item) => (
-            <Link key={item.title} href={item.title === "آنلاین" ? "/patient/consult" : "/patient/book"} className="rounded-[1.4rem] bg-white p-3 text-center shadow-[0_8px_24px_rgba(0,0,0,0.04)] ring-1 ring-black/5">
-              <span className={`mx-auto flex size-16 items-center justify-center rounded-2xl text-xl font-extrabold text-white ${item.tile}`}>
-                {item.mark}
-              </span>
-              <span className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-extrabold ${item.chip}`}>{item.title}</span>
-              <p className="mt-2 text-xs leading-6 text-[#666]">{item.text}</p>
-            </Link>
-          ))}
-        </div>
+      <section id="champions" className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
+        <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">قهرمانان تندیس</h2>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-[#555]">
+          کسانی که به مجموعه آمدند و از رژیم غذایی و دستگاه‌ها استفاده کردند. عکس قبل و بعدشان اینجاست و بعضی از آن‌ها وزن کم کرده‌اند.
+        </p>
+        {champions.length === 0 ? (
+          <p className="mt-6 rounded-[1.4rem] bg-[#F7FBF7] px-4 py-6 text-sm text-[#666]">
+            نتیجه‌های قبل و بعد به‌زودی اینجا قرار می‌گیرد.
+          </p>
+        ) : (
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {champions.map((champion) => {
+              const lost = lostKg(champion);
+              const sizeLost = lostSizeCm(champion);
+              return (
+                <article key={champion.id} className="overflow-hidden rounded-[1.6rem] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] ring-1 ring-black/5">
+                  <div className="grid grid-cols-2">
+                    <div className="relative aspect-[3/4]">
+                      <Image src={champion.beforeImage} alt={`${champion.name} قبل`} fill className="object-cover object-top" sizes="(max-width: 640px) 50vw, 240px" />
+                      <span className="absolute bottom-2 right-2 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-bold text-white">قبل</span>
+                    </div>
+                    <div className="relative aspect-[3/4] border-r border-white">
+                      <Image src={champion.afterImage} alt={`${champion.name} بعد`} fill className="object-cover object-top" sizes="(max-width: 640px) 50vw, 240px" />
+                      <span className="absolute bottom-2 left-2 rounded-full bg-[#3caf2d] px-2.5 py-1 text-[11px] font-bold text-white">بعد</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2 p-4 text-right">
+                    <h3 className="text-base font-extrabold">{champion.name}</h3>
+                    {lost > 0 ? (
+                      <p className="text-sm font-extrabold text-[#2E9B32]">{faNum(lost)} کیلوگرم کمتر</p>
+                    ) : null}
+                    <p className="text-xs leading-6 text-[#666]">
+                      وزن{" "}
+                      <span dir="ltr" className="inline-block tabular-nums">
+                        {faNum(champion.startKg)} → {faNum(champion.endKg)}
+                      </span>
+                      {sizeLost !== undefined && sizeLost > 0 ? (
+                        <>
+                          {" · "}دور کمر {faNum(sizeLost)} سانتی‌متر کمتر
+                        </>
+                      ) : null}
+                    </p>
+                    {champion.quote ? <p className="text-sm leading-7 text-[#444]">{champion.quote}</p> : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       <section id="bmi" className="mx-auto max-w-3xl px-5 py-10 sm:px-8">
