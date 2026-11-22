@@ -18,19 +18,19 @@ const features = [
 const devices = [
   {
     name: "کویتیشن لیپولکس",
-    text: "لیپولکس دستگاه کویتیشن چانگ‌وو است و با اولتراسوند روی چربی موضعی کار می‌کند. هندپیس بزرگ‌تر برای شکم و پهلو است و هندپیس کوچک‌تر برای بازو و ران. اثرش بیشتر به‌صورت کاهش سایز دیده می‌شود و کنار رژیم انتخاب می‌شود.",
+    text: "شکم و پهلویی که با رژیم تکان نمی‌خورد، جای لیپولکس است. بدون جراحی روی همان نقطه می‌نشیند تا سایز پایین بیاید. اگر از آن ناحیه خسته شده‌اید، همین هفته وقتش را بگیرید.",
     image: "/images/device-lipolex.jpg",
     contain: true,
   },
   {
     name: "آر‌اف رافوس",
-    text: "رافوس دستگاه رادیوفرکوئنسی چانگ‌وو است. هندپیس فلزی برای چربی ضخیم‌تر شکم، پهلو و ران است و هندپیس سرامیکی برای نواحی نازک‌تر، ظاهر سلولیت و کمک به سفتی پوست. گرمای پوست در طول کار کنترل می‌شود.",
+    text: "پوست شل بعد از کم کردن وزن، یا چربی ضخیم شکم و پهلو، با رافوس جمع‌تر دیده می‌شود. گرما کنترل می‌شود و فقط همان ناحیه‌ای که خودتان نشان می‌دهید کار می‌شود.",
     image: "/images/device-rafos.jpg",
     contain: true,
   },
   {
     name: "ایندرمولوژی",
-    text: "ماساژ مکانیکی برای گردش بهتر و پوست یکدست‌تر.",
+    text: "پوست پرتقالی و ناهمواری را همین‌طور رها نکنید. ایندرمولوژی ماساژی است که گردش را راه می‌اندازد و پوست را یکدست‌تر می‌کند. جلسه‌اش راحت است و کنار رژیم، نتیجه را خوش‌فرم‌تر نشان می‌دهد.",
     image: "/images/device-endermologie.jpg",
     contain: false,
   },
@@ -65,9 +65,9 @@ export function NutrishaLanding({
         <p className="mt-2 text-sm text-[#666]">کلینیک رژیم درمانی تندیس · یزد</p>
         <nav className="mx-auto mt-5 flex max-w-3xl flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-full bg-[#F8D9D6] px-4 py-3 text-sm font-bold text-[#555]">
           <a href="#start" className="text-[#2E9B32]">خانه</a>
+          <a href="#bmi">ماشین حساب</a>
           <a href="#devices">دستگاه‌ها</a>
           <a href="#champions">قهرمانان</a>
-          <a href="#bmi">ماشین حساب</a>
           <a href="#visit">نوبت</a>
           <a href={`tel:${tel}`}>تماس</a>
         </nav>
@@ -97,11 +97,15 @@ export function NutrishaLanding({
         ))}
       </section>
 
+      <section id="bmi" className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
+        <SampleBmi />
+      </section>
+
       <section id="devices" className="bg-[#F7FBF7]">
         <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
           <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">دستگاه‌های کمک لاغری</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[#555]">
-            کنار رژیم غذایی، از دستگاه‌های موضعی هم استفاده می‌کنیم: کویتیشن لیپولکس، آر‌اف رافوس و ایندرمولوژی. هر کدام مکمل مسیر لاغری است و بعد از ویزیت، متناسب با ناحیه و هدف شما انتخاب می‌شود.
+            جایی که رژیم دیرتر جواب می‌دهد، دستگاه وارد می‌شود. شکم، پهلو، ران یا پوستی که شل شده؛ یک وقت بگیرید تا همان ناحیه را شروع کنیم.
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             {devices.map((device) => (
@@ -126,7 +130,7 @@ export function NutrishaLanding({
           </div>
           <div className="mt-6 text-center sm:text-right">
             <Link href="/patient/book" className="inline-flex h-11 items-center rounded-full bg-[#3caf2d] px-6 text-sm font-extrabold text-white">
-              وقت مشاوره دستگاه
+              وقت دستگاه را بگیر
             </Link>
           </div>
         </div>
@@ -181,10 +185,6 @@ export function NutrishaLanding({
             })}
           </div>
         )}
-      </section>
-
-      <section id="bmi" className="mx-auto max-w-5xl px-5 py-10 sm:px-8">
-        <SampleBmi />
       </section>
 
       <section id="visit" className="bg-[#F7FBF7]">
