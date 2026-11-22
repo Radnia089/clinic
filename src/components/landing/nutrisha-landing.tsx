@@ -15,6 +15,24 @@ const features = [
   { icon: CalendarCheck2, title: "پیگیری تا نتیجه", text: "وزن و دورها ثبت می‌شود و مسیر گم نمی‌شود" },
 ];
 
+const devices = [
+  {
+    name: "کویتیشن",
+    text: "کمک به کاهش چربی موضعی در نواحی مقاوم مثل شکم، پهلو و ران.",
+    image: "/images/device-cavitation.jpg",
+  },
+  {
+    name: "آر‌اف (RF)",
+    text: "فرم‌دهی موضعی و کمک به سفت‌تر شدن ظاهر پوست با رادیوفرکوئنسی.",
+    image: "/images/device-rf.jpg",
+  },
+  {
+    name: "ایندرمولوژی",
+    text: "ماساژ مکانیکی برای گردش بهتر و پوست یکدست‌تر.",
+    image: "/images/device-endermologie.jpg",
+  },
+];
+
 function faNum(value: number) {
   return new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 }).format(value);
 }
@@ -44,6 +62,7 @@ export function NutrishaLanding({
         <p className="mt-2 text-sm text-[#666]">کلینیک رژیم درمانی تندیس · یزد</p>
         <nav className="mx-auto mt-5 flex max-w-3xl flex-wrap items-center justify-center gap-x-5 gap-y-2 rounded-full bg-[#F8D9D6] px-4 py-3 text-sm font-bold text-[#555]">
           <a href="#start" className="text-[#2E9B32]">خانه</a>
+          <a href="#devices">دستگاه‌ها</a>
           <a href="#champions">قهرمانان</a>
           <a href="#bmi">ماشین حساب</a>
           <a href="#visit">نوبت</a>
@@ -73,6 +92,33 @@ export function NutrishaLanding({
             <p className="mt-1 text-sm leading-7 text-[#2E9B32]">{item.text}</p>
           </article>
         ))}
+      </section>
+
+      <section id="devices" className="bg-[#F7FBF7]">
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+          <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">دستگاه‌های کمک لاغری</h2>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#555]">
+            کنار رژیم غذایی، از دستگاه‌های موضعی هم استفاده می‌کنیم. کویتیشن، آر‌اف و ایندرمولوژی مکمل مسیر لاغری‌اند و بعد از ویزیت، متناسب با ناحیه و هدف شما انتخاب می‌شوند.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            {devices.map((device) => (
+              <article key={device.name} className="overflow-hidden rounded-[1.6rem] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] ring-1 ring-black/5">
+                <div className="relative aspect-[4/3]">
+                  <Image src={device.image} alt={device.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 360px" />
+                </div>
+                <div className="space-y-2 p-4 text-right">
+                  <h3 className="text-base font-extrabold">{device.name}</h3>
+                  <p className="text-sm leading-7 text-[#555]">{device.text}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="mt-6 text-center sm:text-right">
+            <Link href="/patient/book" className="inline-flex h-11 items-center rounded-full bg-[#3caf2d] px-6 text-sm font-extrabold text-white">
+              وقت مشاوره دستگاه
+            </Link>
+          </div>
+        </div>
       </section>
 
       <section id="champions" className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
