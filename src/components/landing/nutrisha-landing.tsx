@@ -17,19 +17,22 @@ const features = [
 
 const devices = [
   {
-    name: "کویتیشن",
-    text: "کمک به کاهش چربی موضعی در نواحی مقاوم مثل شکم، پهلو و ران.",
-    image: "/images/device-cavitation.jpg",
+    name: "کویتیشن لیپولکس",
+    text: "لیپولکس دستگاه کویتیشن چانگ‌وو است و با اولتراسوند روی چربی موضعی کار می‌کند. هندپیس بزرگ‌تر برای شکم و پهلو است و هندپیس کوچک‌تر برای بازو و ران. اثرش بیشتر به‌صورت کاهش سایز دیده می‌شود و کنار رژیم انتخاب می‌شود.",
+    image: "/images/device-lipolex.jpg",
+    contain: true,
   },
   {
-    name: "آر‌اف (RF)",
-    text: "فرم‌دهی موضعی و کمک به سفت‌تر شدن ظاهر پوست با رادیوفرکوئنسی.",
-    image: "/images/device-rf.jpg",
+    name: "آر‌اف رافوس",
+    text: "رافوس دستگاه رادیوفرکوئنسی چانگ‌وو است. هندپیس فلزی برای چربی ضخیم‌تر شکم، پهلو و ران است و هندپیس سرامیکی برای نواحی نازک‌تر، ظاهر سلولیت و کمک به سفتی پوست. گرمای پوست در طول کار کنترل می‌شود.",
+    image: "/images/device-rafos.jpg",
+    contain: true,
   },
   {
     name: "ایندرمولوژی",
     text: "ماساژ مکانیکی برای گردش بهتر و پوست یکدست‌تر.",
     image: "/images/device-endermologie.jpg",
+    contain: false,
   },
 ];
 
@@ -98,13 +101,21 @@ export function NutrishaLanding({
         <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
           <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">دستگاه‌های کمک لاغری</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[#555]">
-            کنار رژیم غذایی، از دستگاه‌های موضعی هم استفاده می‌کنیم. کویتیشن، آر‌اف و ایندرمولوژی مکمل مسیر لاغری‌اند و بعد از ویزیت، متناسب با ناحیه و هدف شما انتخاب می‌شوند.
+            کنار رژیم غذایی، از دستگاه‌های موضعی هم استفاده می‌کنیم: کویتیشن لیپولکس، آر‌اف رافوس و ایندرمولوژی. هر کدام مکمل مسیر لاغری است و بعد از ویزیت، متناسب با ناحیه و هدف شما انتخاب می‌شود.
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             {devices.map((device) => (
               <article key={device.name} className="overflow-hidden rounded-[1.6rem] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] ring-1 ring-black/5">
-                <div className="relative aspect-[4/3]">
-                  <Image src={device.image} alt={device.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 360px" />
+                <div className={`relative aspect-[4/3] ${device.contain ? "bg-[#F3F3F3]" : ""}`}>
+                  <div className={device.contain ? "absolute inset-3" : "absolute inset-0"}>
+                    <Image
+                      src={device.image}
+                      alt={device.name}
+                      fill
+                      className={device.contain ? "object-contain" : "object-cover"}
+                      sizes="(max-width: 640px) 100vw, 360px"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2 p-4 text-right">
                   <h3 className="text-base font-extrabold">{device.name}</h3>
