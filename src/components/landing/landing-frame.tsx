@@ -6,12 +6,17 @@ import { PhoneLink } from "@/components/landing/phone-link";
 import { TANDIS_INSTAGRAM_HANDLE, TANDIS_INSTAGRAM_URL } from "@/lib/social-links";
 import type { ClinicProfile } from "@/lib/types";
 
-const navLinks = [
-  { href: "/#start", label: "خانه" },
-  { href: "/#bmi", label: "ماشین حساب" },
+const headerLinks = [
+  { href: "/", label: "خانه" },
   { href: "/#devices", label: "دستگاه‌ها" },
-  { href: "/#champions", label: "قهرمانان" },
   { href: "/about", label: "درباره ما" },
+  { href: "/contact", label: "تماس با ما" },
+];
+
+const footerLinks = [
+  ...headerLinks,
+  { href: "/#bmi", label: "ماشین حساب" },
+  { href: "/#champions", label: "قهرمانان" },
   { href: "/#magazine", label: "مجله" },
   { href: "/patient/book", label: "نوبت" },
 ];
@@ -45,7 +50,7 @@ export function LandingFrame({
             </span>
           </Link>
           <nav className="hidden items-center gap-1 lg:flex">
-            {navLinks.map((item) => (
+            {headerLinks.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
@@ -54,25 +59,13 @@ export function LandingFrame({
                 {item.label}
               </a>
             ))}
-            <a
-              href="/#contact"
-              className="rounded-full px-3 py-2 text-sm font-bold text-[#3d4f45] transition hover:bg-[#F3FAF3] hover:text-[#2E9B32]"
-            >
-              تماس
-            </a>
           </nav>
           <div className="flex shrink-0 items-center gap-2">
-            <a
-              href="/api/app-download"
-              className="hidden h-10 items-center rounded-full border border-[#3caf2d]/35 px-4 text-sm font-extrabold text-[#2E9B32] transition hover:bg-[#F3FAF3] sm:inline-flex"
-            >
-              دانلود اپ
-            </a>
             <LandingLoginMenu variant="fresh" />
           </div>
         </div>
         <nav className="flex flex-wrap gap-2 px-4 pb-3 lg:hidden">
-          {navLinks.map((item) => (
+          {headerLinks.map((item) => (
             <a
               key={item.href}
               href={item.href}
@@ -81,12 +74,6 @@ export function LandingFrame({
               {item.label}
             </a>
           ))}
-          <a href="/#contact" className="shrink-0 rounded-full bg-[#F4F8F4] px-3.5 py-1.5 text-xs font-bold text-[#244033]">
-            تماس
-          </a>
-          <a href="/api/app-download" className="shrink-0 rounded-full bg-[#E8F6E8] px-3.5 py-1.5 text-xs font-extrabold text-[#2E9B32]">
-            دانلود اپ
-          </a>
         </nav>
       </header>
       {children}
@@ -100,7 +87,7 @@ export function LandingFrame({
           <div>
             <p className="text-xs font-bold text-[#F0B429]">دسترسی</p>
             <ul className="mt-4 space-y-2.5 text-sm">
-              {navLinks.map((item) => (
+              {footerLinks.map((item) => (
                 <li key={item.href}>
                   <a href={item.href} className="text-white/75 transition hover:text-white">
                     {item.label}
@@ -115,7 +102,9 @@ export function LandingFrame({
             </ul>
           </div>
           <div>
-            <p className="text-xs font-bold text-[#F0B429]">تماس با ما</p>
+            <a href="/contact" className="text-xs font-bold text-[#F0B429] hover:text-[#ffd36a]">
+              تماس با ما
+            </a>
             <ul className="mt-4 space-y-3 text-sm leading-7 text-white/80">
               <li className="flex items-start gap-2.5">
                 <MapPin className="mt-1 size-4 shrink-0 text-[#F0B429]" />
