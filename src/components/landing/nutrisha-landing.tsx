@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   CalendarCheck2,
+  ChevronDown,
   Clock3,
   Headset,
   MapPin,
@@ -284,14 +285,17 @@ export function NutrishaLanding({
         <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">
           سؤال‌های رژیم و لاغری
         </h2>
-        <dl className="mt-6 space-y-3">
+        <div className="mt-6 space-y-3">
           {clinicFaqs(clinic).map((item) => (
-            <div key={item.question} className="rounded-2xl bg-[#F7FBF7] px-5 py-4 text-right">
-              <dt className="font-extrabold text-[#14352A]">{item.question}</dt>
-              <dd className="mt-2 text-sm leading-7 text-[#444]">{item.answer}</dd>
-            </div>
+            <details key={item.question} className="group rounded-2xl bg-[#F7FBF7] px-5 text-right">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-4 font-extrabold text-[#14352A] [&::-webkit-details-marker]:hidden">
+                <span>{item.question}</span>
+                <ChevronDown className="size-4 shrink-0 text-[#2E9B32] transition-transform group-open:rotate-180" />
+              </summary>
+              <p className="pb-4 text-sm leading-7 text-[#444]">{item.answer}</p>
+            </details>
           ))}
-        </dl>
+        </div>
       </section>
 
       <footer className="bg-[#0E241C] text-white">
