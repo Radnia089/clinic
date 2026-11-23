@@ -61,6 +61,12 @@ export function LandingFrame({
             ))}
           </nav>
           <div className="flex shrink-0 items-center gap-2">
+            <a
+              href="/api/app-download"
+              className="hidden h-10 items-center rounded-full border border-[#3caf2d]/35 px-4 text-sm font-extrabold text-[#2E9B32] transition hover:bg-[#F3FAF3] sm:inline-flex"
+            >
+              دانلود اپ
+            </a>
             <LandingLoginMenu variant="fresh" />
           </div>
         </div>
@@ -74,6 +80,9 @@ export function LandingFrame({
               {item.label}
             </a>
           ))}
+          <a href="/api/app-download" className="shrink-0 rounded-full bg-[#E8F6E8] px-3.5 py-1.5 text-xs font-extrabold text-[#2E9B32]">
+            دانلود اپ
+          </a>
         </nav>
       </header>
       {children}
