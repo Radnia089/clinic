@@ -47,36 +47,36 @@ export async function POST(request: Request) {
   const body = await request.json();
   const patientId = String(body.patientId ?? "");
   const title = String(body.title ?? "").trim();
-  const amount = parseNormalizedNumber(String(body.amount ?? ""));
-  const paidAmount = parseNormalizedNumber(String(body.paidAmount ?? "0"));
+  const paidRaw = body.paidAmount ?? body.amount ?? "";
+  const paidAmount = parseNormalizedNumber(String(paidRaw));
   const method = body.method as PaymentMethod;
   const visitId = body.visitId ? String(body.visitId) : undefined;
   const note = body.note ? String(body.note).trim() : undefined;
+  const checkDate = String(body.checkDate ?? "").trim();
 
   if (
     !patientId ||
     !title ||
-    !Number.isFinite(amount) ||
-    amount < 0 ||
-    !["cash", "card", "transfer"].includes(method)
+    !Number.isFinite(paidAmount) ||
+    paidAmount <= 0 ||
+    !["cash", "card", "check"].includes(method) ||
+    (method === "check" && !/^\d{4}-\d{2}-\d{2}$/.test(checkDate))
   ) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
   }
 
-  let status: PaymentStatus = "pending";
-  if (paidAmount <= 0) status = "pending";
-  else if (paidAmount >= amount) status = "paid";
-  else status = "partial";
+  const status: PaymentStatus = "paid";
 
   const payment = await createPayment({
     patientId,
     visitId,
     title,
-    amount,
-    paidAmount: Math.min(paidAmount, amount),
+    amount: paidAmount,
+    paidAmount,
     method,
     status,
     note,
+    checkDate: method === "check" ? checkDate : undefined,
   });
 
   return NextResponse.json({ payment }, { status: 201 });

@@ -26,7 +26,10 @@ export default async function FinancePage() {
         title="بخش مالی"
         description={`ثبت و پیگیری پرداختی‌های خدمات کلینیک. مجموع دریافت‌شده: ${formatMoney(revenue)}`}
       />
-      <FinancePanel initialPayments={rows} />
+      <FinancePanel
+        initialPayments={rows}
+        patients={patients.map((patient) => toPublicPatient(patient))}
+      />
     </div>
   );
 }

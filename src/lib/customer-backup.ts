@@ -311,6 +311,7 @@ export async function buildCustomerBackupWorkbook(now = new Date()) {
       { header: "روش", key: "method", width: 14 },
       { header: "وضعیت", key: "status", width: 16 },
       { header: "یادداشت", key: "note", width: 28 },
+      { header: "تاریخ چک", key: "checkDate", width: 16 },
       { header: "تاریخ ثبت", key: "createdAt", width: 20 },
     ],
     payments.map((payment) => {
@@ -327,6 +328,7 @@ export async function buildCustomerBackupWorkbook(now = new Date()) {
         method: paymentMethodLabel(payment.method as PaymentMethod),
         status: paymentStatusLabel(payment.status as PaymentStatus),
         note: payment.note ?? "",
+        checkDate: payment.checkDate ?? "",
         createdAt: formatDateTime(payment.createdAt),
       };
     })

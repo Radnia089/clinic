@@ -21,6 +21,7 @@ export function ShamsiDateInput({
   onChange,
   id,
   required,
+  disabled = false,
   variant = "default",
   className,
 }: {
@@ -29,6 +30,7 @@ export function ShamsiDateInput({
   onChange: (isoDate: string) => void;
   id?: string;
   required?: boolean;
+  disabled?: boolean;
   /** birth = بازه سال مناسب تاریخ تولد */
   variant?: "default" | "birth";
   className?: string;
@@ -71,6 +73,7 @@ export function ShamsiDateInput({
           className={selectClass}
           value={parts.jd}
           required={required}
+          disabled={disabled}
           onChange={(e) => update({ jd: Number(e.target.value) })}
           aria-label="روز شمسی"
         >
@@ -87,6 +90,7 @@ export function ShamsiDateInput({
           className={selectClass}
           value={parts.jm}
           required={required}
+          disabled={disabled}
           onChange={(e) => update({ jm: Number(e.target.value) })}
           aria-label="ماه شمسی"
         >
@@ -103,6 +107,7 @@ export function ShamsiDateInput({
           className={selectClass}
           value={parts.jy}
           required={required}
+          disabled={disabled}
           onChange={(e) => update({ jy: Number(e.target.value) })}
           aria-label="سال شمسی"
         >

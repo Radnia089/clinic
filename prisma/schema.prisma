@@ -120,6 +120,7 @@ model Payment {
   method     String   @default("cash")
   status     String   @default("pending")
   note       String?
+  checkDate  String?
   createdAt  DateTime @default(now())
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)

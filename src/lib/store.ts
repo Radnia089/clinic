@@ -183,6 +183,7 @@ function mapPayment(row: {
   method: string;
   status: string;
   note: string | null;
+  checkDate?: string | null;
   createdAt: Date;
 }): Payment {
   return {
@@ -195,6 +196,7 @@ function mapPayment(row: {
     method: row.method as Payment["method"],
     status: row.status as Payment["status"],
     note: row.note ?? undefined,
+    checkDate: row.checkDate ?? undefined,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -1588,6 +1590,7 @@ export async function createPayment(input: Omit<Payment, "id" | "createdAt">) {
       method: input.method,
       status: input.status,
       note: input.note ?? null,
+      checkDate: input.checkDate ?? null,
     },
   });
   return mapPayment(row);
@@ -1610,6 +1613,9 @@ export async function updatePayment(id: string, patch: Partial<Payment>) {
       ...(patch.method !== undefined ? { method: patch.method } : {}),
       ...(patch.status !== undefined ? { status: patch.status } : {}),
       ...(patch.note !== undefined ? { note: patch.note ?? null } : {}),
+      ...(patch.checkDate !== undefined
+        ? { checkDate: patch.checkDate ?? null }
+        : {}),
     },
   });
   return mapPayment(row);

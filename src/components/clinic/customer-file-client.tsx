@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   AttendanceButtons,
   AttendanceMark,
@@ -27,6 +27,7 @@ import {
   avatarImageUnoptimized,
   patientAvatarSrc,
   patientFullName,
+  paymentMethodLabel,
   visitChannelLabel,
   visitStatusLabel,
   visitTypeLabel,
@@ -44,6 +45,7 @@ import {
   visitSessionChoices,
   visitSessionTitle,
 } from "@/lib/visit-sessions";
+import { PaymentEntryForm } from "@/components/clinic/payment-entry-form";
 import { RecordPhotosCard } from "@/components/clinic/record-photos-card";
 
 const fieldClass =
@@ -144,6 +146,11 @@ export function CustomerFileClient({
 }) {
   const router = useRouter();
   const [patient, setPatient] = useState(initialPatient);
+  const [paymentRows, setPaymentRows] = useState(payments);
+
+  useEffect(() => {
+    setPaymentRows(payments);
+  }, [payments]);
   const [visits, setVisits] = useState(initialVisits);
   const [measurements, setMeasurements] = useState(initialMeasurements);
 
@@ -790,15 +797,26 @@ export function CustomerFileClient({
 
       <section className="rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)]">
         <h2 className="text-sm font-bold text-brand">پرداخت‌ها</h2>
-        {payments.length === 0 ? (
+        <div className="mt-4">
+          <PaymentEntryForm
+            lockedPatient={patient}
+            heading="ثبت پرداخت برای این مشتری"
+            onCreated={(payment) =>
+              setPaymentRows((current) => [payment, ...current.filter((row) => row.id !== payment.id)])
+            }
+          />
+        </div>
+        {paymentRows.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">پرداختی ثبت نشده.</p>
         ) : (
           <ul className="mt-4 space-y-2">
-            {payments.map((p) => (
+            {paymentRows.map((p) => (
               <li key={p.id} className="rounded-2xl bg-[#F7F8F6] px-3 py-3 text-sm">
                 <p className="font-semibold">{p.title}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {formatMoney(p.paidAmount)} از {formatMoney(p.amount)} ·{" "}
+                  {formatMoney(p.paidAmount)} · {paymentMethodLabel(p.method)}
+                  {p.method === "check" && p.checkDate ? ` · تاریخ چک ${formatDateFa(p.checkDate)}` : ""}
+                  {" · "}
                   {formatDateFa(p.createdAt)}
                 </p>
               </li>

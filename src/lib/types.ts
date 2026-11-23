@@ -8,7 +8,7 @@ export type VisitStatus = "visitor" | "admitted" | "completed" | "cancelled";
 
 export type PaymentStatus = "pending" | "paid" | "partial" | "refunded";
 
-export type PaymentMethod = "cash" | "card" | "transfer";
+export type PaymentMethod = "cash" | "card" | "transfer" | "check";
 
 export type ClinicRole = "reception" | "management";
 
@@ -108,6 +108,8 @@ export interface Payment {
   status: PaymentStatus;
   createdAt: string;
   note?: string;
+  /** تاریخ چک، فقط وقتی روش پرداخت چک است */
+  checkDate?: string;
 }
 
 export interface AppointmentRequest {
@@ -628,6 +630,8 @@ export function paymentMethodLabel(method: PaymentMethod) {
       return "کارتخوان";
     case "transfer":
       return "واریز";
+    case "check":
+      return "چک";
   }
 }
 
