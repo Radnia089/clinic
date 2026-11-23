@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { OnlineConsultForm } from "@/components/patient/online-consult-form";
+import { CONSULT_DESCRIPTION, CONSULT_TITLE, shareMetadata } from "@/lib/site-seo";
+
+export const metadata: Metadata = {
+  title: { absolute: CONSULT_TITLE },
+  description: CONSULT_DESCRIPTION,
+  robots: { index: true, follow: true },
+  ...shareMetadata(CONSULT_TITLE, CONSULT_DESCRIPTION, "/patient/consult"),
+};
 
 export default function PatientOnlineConsultPage() {
   return (

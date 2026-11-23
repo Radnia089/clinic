@@ -10,6 +10,11 @@ import {
   TANDIS_INSTAGRAM_URL,
 } from "@/lib/social-links";
 import {
+  absoluteUrl,
+  jsonLdScript,
+  SITE_NAME,
+} from "@/lib/site-seo";
+import {
   getArticleBySlug,
   incrementArticleViews,
   listArticles,
@@ -29,12 +34,16 @@ export async function generateMetadata({
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article || !article.published) {
-    return { title: "مقاله یافت نشد | مجله تندیس یزد" };
+    return {
+      title: { absolute: "مقاله یافت نشد | مجله تندیس یزد" },
+      robots: { index: false, follow: false },
+    };
   }
-  const title = `${article.title} | کلینیک لاغری تندیس یزد`;
+  const title = `${article.title} | ${SITE_NAME}`;
   const description = `${article.excerpt} مشاوره تغذیه و رژیم درمانی در کلینیک تندیس یزد · اینستاگرام @${TANDIS_INSTAGRAM_HANDLE}`;
+  const image = absoluteUrl(article.coverImage);
   return {
-    title,
+    title: { absolute: title },
     description,
     keywords: [
       "کلینیک لاغری تندیس",
@@ -50,16 +59,17 @@ export async function generateMetadata({
     openGraph: {
       title: article.title,
       description: article.excerpt,
-      images: [{ url: article.coverImage }],
+      url: `/magazine/${article.slug}`,
+      images: [{ url: image, alt: article.title }],
       type: "article",
       locale: "fa_IR",
-      siteName: "کلینیک لاغری تندیس یزد",
+      siteName: SITE_NAME,
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description: article.excerpt,
-      images: [article.coverImage],
+      images: [image],
     },
   };
 }
@@ -85,25 +95,25 @@ export default async function MagazineArticlePage({
     "@type": "Article",
     headline: article.title,
     description: article.excerpt,
-    image: [article.coverImage],
+    image: [absoluteUrl(article.coverImage)],
     datePublished: article.createdAt,
     dateModified: article.updatedAt,
     author: {
       "@type": "Organization",
       name: "کلینیک تخصصی لاغری و رژیم درمانی تندیس",
-      url: "https://www.instagram.com/tandis_clinic_yazd/",
+      url: TANDIS_INSTAGRAM_URL,
     },
     publisher: {
       "@type": "Organization",
-      name: "کلینیک تندیس یزد",
+      name: SITE_NAME,
       logo: {
         "@type": "ImageObject",
-        url: "/tandis-logo.png",
+        url: absoluteUrl("/tandis-logo.png"),
       },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `/magazine/${article.slug}`,
+      "@id": absoluteUrl(`/magazine/${article.slug}`),
     },
     about: [
       "لاغری",
@@ -119,7 +129,7 @@ export default async function MagazineArticlePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+          __html: jsonLdScript(jsonLd),
         }}
       />
       <header className="border-b border-[#1A2E26]/08 bg-white">

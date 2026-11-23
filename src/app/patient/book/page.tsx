@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PatientBookingForm } from "@/components/patient/booking-form";
+import { BOOK_DESCRIPTION, BOOK_TITLE, shareMetadata } from "@/lib/site-seo";
+
+export const metadata: Metadata = {
+  title: { absolute: BOOK_TITLE },
+  description: BOOK_DESCRIPTION,
+  robots: { index: true, follow: true },
+  ...shareMetadata(BOOK_TITLE, BOOK_DESCRIPTION, "/patient/book"),
+};
 
 export default function PatientBookPage() {
   return (

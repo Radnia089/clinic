@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Vazirmatn } from "next/font/google";
+import { HOME_DESCRIPTION, HOME_TITLE, SITE_NAME, siteOrigin } from "@/lib/site-seo";
 import "./globals.css";
 
 const vazirmatn = Vazirmatn({
@@ -15,9 +16,12 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "کلینیک لاغری تندیس یزد | رژیم درمانی و مشاوره آنلاین",
-  description:
-    "کلینیک رژیم درمانی و لاغری تندیس در یزد — رزرو نوبت حضوری، مشاوره آنلاین، برنامه غذایی شخصی و پیگیری کاهش وزن.",
+  metadataBase: new URL(siteOrigin()),
+  title: {
+    default: HOME_TITLE,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: HOME_DESCRIPTION,
   applicationName: "تندیس",
   appleWebApp: {
     capable: true,
