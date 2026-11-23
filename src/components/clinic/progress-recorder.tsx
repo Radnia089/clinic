@@ -33,24 +33,24 @@ import {
 type Row = ProgressMeasurement & { patient: Patient | null };
 
 const paperFields = [
-  ["heightCm", "قد (cm)"],
-  ["bmi", "BMI"],
-  ["bodyFatPct", "چربی بدن"],
-  ["muscleMassKg", "توده عضلانی (kg)"],
-  ["visceralFat", "چربی احشایی"],
-  ["rmr", "سوخت‌وساز استراحت"],
-  ["armRightCm", "بازو راست"],
-  ["armLeftCm", "بازو چپ"],
-  ["chestCm", "دور سینه"],
-  ["waistCm", "دور شکم بالای ناف"],
-  ["waistBelowCm", "دور شکم پایین ناف"],
-  ["hipCm", "دور باسن"],
-  ["thighRightCm", "ران راست"],
-  ["thighLeftCm", "ران چپ"],
-  ["kneeRightCm", "زانوی راست"],
-  ["kneeLeftCm", "زانوی چپ"],
-  ["calfRightCm", "ساق پای راست"],
-  ["calfLeftCm", "ساق پای چپ"],
+  ["heightCm", "قد (cm)", "Height"],
+  ["bmi", "شاخص توده بدنی", "BMI"],
+  ["bodyFatPct", "چربی بدن", "Body Fat"],
+  ["muscleMassKg", "توده عضلانی (kg)", "Muscle Mass"],
+  ["visceralFat", "چربی احشایی", "Visceral Fat"],
+  ["rmr", "سوخت‌وساز استراحت", "RMR"],
+  ["armRightCm", "بازو راست", ""],
+  ["armLeftCm", "بازو چپ", ""],
+  ["chestCm", "دور سینه", ""],
+  ["waistCm", "دور شکم بالای ناف", ""],
+  ["waistBelowCm", "دور شکم پایین ناف", ""],
+  ["hipCm", "دور باسن", ""],
+  ["thighRightCm", "ران راست", ""],
+  ["thighLeftCm", "ران چپ", ""],
+  ["kneeRightCm", "زانوی راست", ""],
+  ["kneeLeftCm", "زانوی چپ", ""],
+  ["calfRightCm", "ساق پای راست", ""],
+  ["calfLeftCm", "ساق پای چپ", ""],
 ] as const;
 
 type PaperKey = (typeof paperFields)[number][0];
@@ -199,7 +199,12 @@ export function ProgressRecorder() {
           </select>
         </div>
         <div className="space-y-2">
-          <Label>وزن (kg)</Label>
+          <Label className="flex-col items-stretch gap-0.5">
+            <span>وزن (kg)</span>
+            <span dir="ltr" className="text-right text-[11px] font-medium text-muted-foreground">
+              Weight
+            </span>
+          </Label>
           <DigitsInput
             mode="decimal"
             className="h-11 rounded-xl"
@@ -208,9 +213,16 @@ export function ProgressRecorder() {
             required
           />
         </div>
-        {paperFields.map(([key, label]) => (
+        {paperFields.map(([key, label, english]) => (
           <div key={key} className="space-y-2">
-            <Label>{label}</Label>
+            <Label className={english ? "flex-col items-stretch gap-0.5" : undefined}>
+              <span>{label}</span>
+              {english ? (
+                <span dir="ltr" className="text-right text-[11px] font-medium text-muted-foreground">
+                  {english}
+                </span>
+              ) : null}
+            </Label>
             <DigitsInput
               mode="decimal"
               className="h-11 rounded-xl"

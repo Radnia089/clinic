@@ -53,18 +53,27 @@ const selectClass =
 
 function SizeField({
   label,
+  english,
   value,
   onChange,
   required,
 }: {
   label: string;
+  english?: string;
   value: string;
   onChange: (value: string) => void;
   required?: boolean;
 }) {
   return (
     <div className="space-y-1.5">
-      <Label>{label}</Label>
+      <Label className={english ? "flex-col items-stretch gap-0.5" : undefined}>
+        <span>{label}</span>
+        {english ? (
+          <span dir="ltr" className="text-right text-[11px] font-medium text-muted-foreground">
+            {english}
+          </span>
+        ) : null}
+      </Label>
       <DigitsInput
         mode="decimal"
         className={fieldClass}
@@ -632,13 +641,13 @@ export function CustomerFileClient({
         </div>
         <p className="text-xs font-bold text-[#2E9B32]">آنالیز بدن</p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <SizeField label="وزن (kg) *" value={weightKg} onChange={setWeightKg} required />
-          <SizeField label="قد (cm)" value={sizeFields.heightCm} onChange={(value) => setSizeField("heightCm", value)} />
-          <SizeField label="BMI" value={sizeFields.bmi} onChange={(value) => setSizeField("bmi", value)} />
-          <SizeField label="چربی بدن" value={sizeFields.bodyFatPct} onChange={(value) => setSizeField("bodyFatPct", value)} />
-          <SizeField label="توده عضلانی (kg)" value={sizeFields.muscleMassKg} onChange={(value) => setSizeField("muscleMassKg", value)} />
-          <SizeField label="چربی احشایی" value={sizeFields.visceralFat} onChange={(value) => setSizeField("visceralFat", value)} />
-          <SizeField label="سوخت‌وساز استراحت" value={sizeFields.rmr} onChange={(value) => setSizeField("rmr", value)} />
+          <SizeField label="وزن (kg) *" english="Weight" value={weightKg} onChange={setWeightKg} required />
+          <SizeField label="قد (cm)" english="Height" value={sizeFields.heightCm} onChange={(value) => setSizeField("heightCm", value)} />
+          <SizeField label="شاخص توده بدنی" english="BMI" value={sizeFields.bmi} onChange={(value) => setSizeField("bmi", value)} />
+          <SizeField label="چربی بدن" english="Body Fat" value={sizeFields.bodyFatPct} onChange={(value) => setSizeField("bodyFatPct", value)} />
+          <SizeField label="توده عضلانی (kg)" english="Muscle Mass" value={sizeFields.muscleMassKg} onChange={(value) => setSizeField("muscleMassKg", value)} />
+          <SizeField label="چربی احشایی" english="Visceral Fat" value={sizeFields.visceralFat} onChange={(value) => setSizeField("visceralFat", value)} />
+          <SizeField label="سوخت‌وساز استراحت" english="RMR" value={sizeFields.rmr} onChange={(value) => setSizeField("rmr", value)} />
         </div>
         <p className="text-xs font-bold text-[#2E9B32]">سایز (سانتی‌متر)</p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
