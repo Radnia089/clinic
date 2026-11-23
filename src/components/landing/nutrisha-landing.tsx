@@ -280,10 +280,7 @@ export function NutrishaLanding({
         <div className="h-1 bg-gradient-to-l from-[#F0B429] via-[#3caf2d] to-[#0E241C]" />
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.3fr_0.8fr_1.15fr]">
           <div>
-            <div className="inline-flex rounded-2xl bg-white px-3 py-2 shadow-sm">
-              <Image src="/tandis-logo.png" alt="تندیس" width={120} height={48} className="h-10 w-auto" />
-            </div>
-            <p className="mt-4 text-lg font-extrabold">تندیس، دوست سلامتی تو</p>
+            <p className="text-lg font-extrabold">تندیس، دوست سلامتی تو</p>
             <p className="mt-2 max-w-sm text-sm leading-7 text-white/70">{clinic.tagline}</p>
           </div>
           <div>
@@ -343,15 +340,9 @@ export function NutrishaLanding({
           </div>
         </div>
         <div className="border-t border-white/10">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-4 text-xs text-white/55 sm:px-8">
-            <p>کلینیک تخصصی تغذیه تندیس · یزد</p>
-            <div className="flex items-center gap-4">
-              <LandingLoginMenu variant="footer" />
-              <Link href="/patient/consult" className="hover:text-white">
-                مشاوره آنلاین
-              </Link>
-            </div>
-          </div>
+          <p className="px-5 py-4 text-center text-xs leading-6 text-white/55 sm:px-8">
+            کلیه حقوق این وب‌سایت متعلق به کلینیک تندیس می‌باشد.
+          </p>
         </div>
       </footer>
     </div>
