@@ -1,6 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
-import { prisma } from "@/lib/db";
+import { ensureSchema, prisma } from "@/lib/db";
 import { ensureDefaultStaffUsers } from "@/lib/staff-auth";
 import {
   AppData,
@@ -903,7 +903,10 @@ async function importLegacyJsonIfPresent() {
 }
 
 async function seedDefaults() {
-  await fs.mkdir(DATA_DIR, { recursive: true });
+  await fs.mkdir(DATA_DIR, { recursive: true }).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "EACCES" || error.code === "EROFS" || error.code === "EPERM") return;
+    throw error;
+  });
   await ensureDefaultStaffUsers();
 
   const settings = await prisma.clinicSettings.findUnique({
@@ -1030,7 +1033,10 @@ async function seedDefaults() {
 
 export async function ensureDbReady() {
   if (!seedPromise) {
-    seedPromise = seedDefaults().catch((err) => {
+    seedPromise = (async () => {
+      await ensureSchema();
+      await seedDefaults();
+    })().catch((err) => {
       seedPromise = null;
       throw err;
     });

@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["exceljs"],
+  serverExternalPackages: ["exceljs", "better-sqlite3"],
+  outputFileTracingIncludes: {
+    "/*": ["./prisma/migrations/**/*.sql"],
+  },
   // Preview / Forwarded Ports در Cursor Cloud Agent
   allowedDevOrigins: [
     "127.0.0.1",
