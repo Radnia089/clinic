@@ -37,6 +37,12 @@ model Patient {
   province         String?
   city             String?
   birthDate        String?
+  /** میزان تحصیلات، مثل پرونده کاغذی */
+  education        String?
+  /** مجرد یا متاهل */
+  maritalStatus    String?
+  /** شغل */
+  occupation       String?
   notes            String?
   heightCm         Float?
   goalWeightKg     Float?
@@ -181,17 +187,35 @@ model PatientPhoto {
 }
 
 model Measurement {
-  id         String   @id @default(cuid())
-  patientId  String
-  recordedAt DateTime
-  weightKg   Float
-  waistCm    Float?
-  hipCm      Float?
-  armCm      Float?
-  thighCm    Float?
-  calfCm     Float?
-  note       String?
-  createdAt  DateTime @default(now())
+  id            String   @id @default(cuid())
+  patientId     String
+  recordedAt    DateTime
+  weightKg      Float
+  /** دور شکم بالای ناف؛ ستون قدیمی دور کمر */
+  waistCm       Float?
+  hipCm         Float?
+  armCm         Float?
+  thighCm       Float?
+  calfCm        Float?
+  heightCm      Float?
+  bmi           Float?
+  bodyFatPct    Float?
+  muscleMassKg  Float?
+  visceralFat   Float?
+  rmr           Float?
+  sessionLabel  String?
+  armRightCm    Float?
+  armLeftCm     Float?
+  chestCm       Float?
+  waistBelowCm  Float?
+  thighRightCm  Float?
+  thighLeftCm   Float?
+  kneeRightCm   Float?
+  kneeLeftCm    Float?
+  calfRightCm   Float?
+  calfLeftCm    Float?
+  note          String?
+  createdAt     DateTime @default(now())
 
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 

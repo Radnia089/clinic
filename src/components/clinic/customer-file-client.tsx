@@ -45,6 +45,60 @@ const fieldClass =
 const selectClass =
   "h-11 w-full rounded-xl border border-[#D7E2D9] bg-[#F7F8F6] px-3 text-sm outline-none focus:border-brand focus:ring-3 focus:ring-brand/20";
 
+function SizeField({
+  label,
+  value,
+  onChange,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label>{label}</Label>
+      <DigitsInput
+        mode="decimal"
+        className={fieldClass}
+        value={value}
+        onValueChange={onChange}
+        required={required}
+      />
+    </div>
+  );
+}
+
+function measurementSummary(m: ProgressMeasurement) {
+  const parts: string[] = [];
+  const add = (label: string, value?: number, unit = "") => {
+    if (value == null) return;
+    parts.push(`${label} ${value}${unit}`);
+  };
+  if (m.sessionLabel) parts.push(`جلسه ${m.sessionLabel}`);
+  add("وزن", m.weightKg, " kg");
+  add("قد", m.heightCm);
+  add("BMI", m.bmi);
+  add("چربی", m.bodyFatPct);
+  add("عضله", m.muscleMassKg, " kg");
+  add("احشایی", m.visceralFat);
+  add("سوخت‌وساز", m.rmr);
+  add("بازو راست", m.armRightCm ?? m.armCm);
+  add("بازو چپ", m.armLeftCm);
+  add("سینه", m.chestCm);
+  add("شکم بالای ناف", m.waistCm);
+  add("شکم پایین ناف", m.waistBelowCm);
+  add("باسن", m.hipCm);
+  add("ران راست", m.thighRightCm ?? m.thighCm);
+  add("ران چپ", m.thighLeftCm);
+  add("زانوی راست", m.kneeRightCm);
+  add("زانوی چپ", m.kneeLeftCm);
+  add("ساق راست", m.calfRightCm ?? m.calfCm);
+  add("ساق چپ", m.calfLeftCm);
+  return parts.join(" · ");
+}
+
 function numToStr(value?: number) {
   return value === undefined || value === null || Number.isNaN(value)
     ? ""
@@ -81,6 +135,9 @@ export function CustomerFileClient({
   const [province, setProvince] = useState(initialPatient.province || "");
   const [city, setCity] = useState(initialPatient.city || "");
   const [birthDate, setBirthDate] = useState(initialPatient.birthDate || "");
+  const [education, setEducation] = useState(initialPatient.education || "");
+  const [maritalStatus, setMaritalStatus] = useState(initialPatient.maritalStatus || "");
+  const [occupation, setOccupation] = useState(initialPatient.occupation || "");
   const [address, setAddress] = useState(initialPatient.address);
   const [notes, setNotes] = useState(initialPatient.notes ?? "");
   const [heightCm, setHeightCm] = useState(numToStr(initialPatient.heightCm));
@@ -99,12 +156,32 @@ export function CustomerFileClient({
     jalaliPartsToIsoDate(todayJalaliParts())
   );
   const [weightKg, setWeightKg] = useState("");
-  const [waistCm, setWaistCm] = useState("");
-  const [hipCm, setHipCm] = useState("");
-  const [armCm, setArmCm] = useState("");
-  const [thighCm, setThighCm] = useState("");
-  const [calfCm, setCalfCm] = useState("");
   const [sizeNote, setSizeNote] = useState("");
+  const emptySize = {
+    sessionLabel: "",
+    heightCm: "",
+    bmi: "",
+    bodyFatPct: "",
+    muscleMassKg: "",
+    visceralFat: "",
+    rmr: "",
+    armRightCm: "",
+    armLeftCm: "",
+    chestCm: "",
+    waistCm: "",
+    waistBelowCm: "",
+    hipCm: "",
+    thighRightCm: "",
+    thighLeftCm: "",
+    kneeRightCm: "",
+    kneeLeftCm: "",
+    calfRightCm: "",
+    calfLeftCm: "",
+  };
+  const [sizeFields, setSizeFields] = useState(emptySize);
+  function setSizeField(key: keyof typeof emptySize, value: string) {
+    setSizeFields((current) => ({ ...current, [key]: value }));
+  }
 
   async function setAttendance(visitId: string, status: VisitStatus) {
     const current = visits.find((v) => v.id === visitId);
@@ -147,6 +224,9 @@ export function CustomerFileClient({
           province: province || null,
           city: city || null,
           birthDate: birthDate || null,
+          education,
+          maritalStatus,
+          occupation,
           address,
           notes,
           heightCm: heightCm || null,
@@ -186,13 +266,8 @@ export function CustomerFileClient({
           patientId: patient.id,
           recordedAt: new Date(recordedAt).toISOString(),
           weightKg,
-          waistCm,
-          hipCm: hipCm || undefined,
-          armCm: armCm || undefined,
-          thighCm: thighCm || undefined,
-          calfCm: calfCm || undefined,
+          ...sizeFields,
           note: sizeNote || undefined,
-          heightCm: heightCm || undefined,
           goalWeightKg: goalWeightKg || undefined,
         }),
       });
@@ -205,16 +280,12 @@ export function CustomerFileClient({
         )
       );
       setWeightKg("");
-      setWaistCm("");
-      setHipCm("");
-      setArmCm("");
-      setThighCm("");
-      setCalfCm("");
+      setSizeFields(emptySize);
       setSizeNote("");
-      setSizeOk("سایز ثبت شد و در اپ مشتری هم نمایش داده می‌شود.");
+      setSizeOk("اندازه‌گیری ثبت شد و در اپ مشتری هم نمایش داده می‌شود.");
       router.refresh();
     } catch {
-      setSizeError("ثبت سایز انجام نشد. وزن و دور کمر الزامی است.");
+      setSizeError("ثبت اندازه‌گیری انجام نشد. وزن را وارد کنید.");
     } finally {
       setSizeSaving(false);
     }
@@ -258,8 +329,8 @@ export function CustomerFileClient({
           </h1>
           {latest ? (
             <p className="mt-1 text-xs text-muted-foreground">
-              آخرین سایز: {latest.weightKg} kg
-              {latest.waistCm != null ? ` · کمر ${latest.waistCm} cm` : ""}
+              آخرین اندازه‌گیری: {latest.weightKg} kg
+              {latest.waistCm != null ? ` · شکم بالای ناف ${latest.waistCm} cm` : ""}
               {patient.goalWeightKg != null
                 ? ` · هدف ${patient.goalWeightKg} kg`
                 : ""}
@@ -453,6 +524,35 @@ export function CustomerFileClient({
               onValueChange={setGoalWeightKg}
             />
           </div>
+          <div className="space-y-1.5">
+            <Label>میزان تحصیلات</Label>
+            <Input
+              className={fieldClass}
+              value={education}
+              onChange={(e) => setEducation(e.target.value)}
+              placeholder="مثلاً دیپلم، لیسانس"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>وضعیت تأهل</Label>
+            <select
+              className={selectClass}
+              value={maritalStatus}
+              onChange={(e) => setMaritalStatus(e.target.value)}
+            >
+              <option value="">انتخاب نشده</option>
+              <option value="مجرد">مجرد</option>
+              <option value="متاهل">متاهل</option>
+            </select>
+          </div>
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>شغل</Label>
+            <Input
+              className={fieldClass}
+              value={occupation}
+              onChange={(e) => setOccupation(e.target.value)}
+            />
+          </div>
           <div className="space-y-1.5 sm:col-span-2">
             <Label>آدرس</Label>
             <Input
@@ -485,79 +585,57 @@ export function CustomerFileClient({
         className="space-y-4 rounded-[28px] bg-white p-5 shadow-[0_6px_18px_rgba(35,70,55,0.06)]"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-bold text-brand">ثبت سایز جدید</h2>
+          <h2 className="text-sm font-bold text-brand">ثبت اندازه‌گیری</h2>
           <p className="text-[11px] text-muted-foreground">
-            بلافاصله در نمودار اپ مشتری دیده می‌شود
+            همان جدول آنالیز بدن و سایز پرونده کاغذی
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
-            <Label>تاریخ اندازه‌گیری</Label>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-1.5">
+            <Label>تاریخ</Label>
             <ShamsiDateInput value={recordedAt} onChange={setRecordedAt} required />
           </div>
           <div className="space-y-1.5">
-            <Label>وزن (kg) *</Label>
-            <DigitsInput
-              mode="decimal"
+            <Label>جلسه</Label>
+            <Input
               className={fieldClass}
-              value={weightKg}
-              onValueChange={setWeightKg}
-              required
+              value={sizeFields.sessionLabel}
+              onChange={(e) => setSizeField("sessionLabel", e.target.value)}
+              placeholder="اول، دوم، ..."
             />
           </div>
-          <div className="space-y-1.5">
-            <Label>دور کمر (cm) *</Label>
-            <DigitsInput
-              mode="decimal"
-              className={fieldClass}
-              value={waistCm}
-              onValueChange={setWaistCm}
-              required
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>دور باسن (cm)</Label>
-            <DigitsInput
-              mode="decimal"
-              className={fieldClass}
-              value={hipCm}
-              onValueChange={setHipCm}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>دور بازو (cm)</Label>
-            <DigitsInput
-              mode="decimal"
-              className={fieldClass}
-              value={armCm}
-              onValueChange={setArmCm}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>دور ران (cm)</Label>
-            <DigitsInput
-              mode="decimal"
-              className={fieldClass}
-              value={thighCm}
-              onValueChange={setThighCm}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label>دور ساق (cm)</Label>
-            <DigitsInput
-              mode="decimal"
-              className={fieldClass}
-              value={calfCm}
-              onValueChange={setCalfCm}
-            />
-          </div>
-          <div className="space-y-1.5 sm:col-span-2 lg:col-span-3">
+        </div>
+        <p className="text-xs font-bold text-[#2E9B32]">آنالیز بدن</p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SizeField label="وزن (kg) *" value={weightKg} onChange={setWeightKg} required />
+          <SizeField label="قد (cm)" value={sizeFields.heightCm} onChange={(value) => setSizeField("heightCm", value)} />
+          <SizeField label="BMI" value={sizeFields.bmi} onChange={(value) => setSizeField("bmi", value)} />
+          <SizeField label="چربی بدن" value={sizeFields.bodyFatPct} onChange={(value) => setSizeField("bodyFatPct", value)} />
+          <SizeField label="توده عضلانی (kg)" value={sizeFields.muscleMassKg} onChange={(value) => setSizeField("muscleMassKg", value)} />
+          <SizeField label="چربی احشایی" value={sizeFields.visceralFat} onChange={(value) => setSizeField("visceralFat", value)} />
+          <SizeField label="سوخت‌وساز استراحت" value={sizeFields.rmr} onChange={(value) => setSizeField("rmr", value)} />
+        </div>
+        <p className="text-xs font-bold text-[#2E9B32]">سایز (سانتی‌متر)</p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <SizeField label="بازو راست" value={sizeFields.armRightCm} onChange={(value) => setSizeField("armRightCm", value)} />
+          <SizeField label="بازو چپ" value={sizeFields.armLeftCm} onChange={(value) => setSizeField("armLeftCm", value)} />
+          <SizeField label="دور سینه" value={sizeFields.chestCm} onChange={(value) => setSizeField("chestCm", value)} />
+          <SizeField label="دور شکم بالای ناف" value={sizeFields.waistCm} onChange={(value) => setSizeField("waistCm", value)} />
+          <SizeField label="دور شکم پایین ناف" value={sizeFields.waistBelowCm} onChange={(value) => setSizeField("waistBelowCm", value)} />
+          <SizeField label="دور باسن" value={sizeFields.hipCm} onChange={(value) => setSizeField("hipCm", value)} />
+          <SizeField label="ران راست" value={sizeFields.thighRightCm} onChange={(value) => setSizeField("thighRightCm", value)} />
+          <SizeField label="ران چپ" value={sizeFields.thighLeftCm} onChange={(value) => setSizeField("thighLeftCm", value)} />
+          <SizeField label="زانوی راست" value={sizeFields.kneeRightCm} onChange={(value) => setSizeField("kneeRightCm", value)} />
+          <SizeField label="زانوی چپ" value={sizeFields.kneeLeftCm} onChange={(value) => setSizeField("kneeLeftCm", value)} />
+          <SizeField label="ساق پای راست" value={sizeFields.calfRightCm} onChange={(value) => setSizeField("calfRightCm", value)} />
+          <SizeField label="ساق پای چپ" value={sizeFields.calfLeftCm} onChange={(value) => setSizeField("calfLeftCm", value)} />
+          <div className="space-y-1.5 sm:col-span-2 lg:col-span-4">
             <Label>یادداشت جلسه</Label>
             <Input
               className={fieldClass}
               value={sizeNote}
               onChange={(e) => setSizeNote(e.target.value)}
-              placeholder="مثلاً هفته چهارم رژیم"
+              placeholder="مثلاً جلسه دوم رژیم"
             />
           </div>
         </div>
@@ -566,7 +644,7 @@ export function CustomerFileClient({
         ) : null}
         {sizeOk ? <p className="text-sm text-[#2F6B4F]">{sizeOk}</p> : null}
         <Button type="submit" disabled={sizeSaving} className="rounded-full">
-          {sizeSaving ? "در حال ثبت..." : "ثبت سایز در پرونده و اپ مشتری"}
+          {sizeSaving ? "در حال ثبت..." : "ثبت اندازه‌گیری در پرونده"}
         </Button>
       </form>
 
@@ -579,13 +657,8 @@ export function CustomerFileClient({
             {[...measurements].reverse().map((m) => (
               <li key={m.id} className="rounded-2xl bg-[#F7F8F6] px-3 py-3 text-sm">
                 <p className="font-semibold">{formatDateFa(m.recordedAt)}</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  وزن {m.weightKg} kg
-                  {m.waistCm != null ? ` · کمر ${m.waistCm} cm` : ""}
-                  {m.hipCm != null ? ` · باسن ${m.hipCm} cm` : ""}
-                  {m.armCm != null ? ` · بازو ${m.armCm} cm` : ""}
-                  {m.thighCm != null ? ` · ران ${m.thighCm} cm` : ""}
-                  {m.calfCm != null ? ` · ساق ${m.calfCm} cm` : ""}
+                <p className="mt-1 text-xs leading-6 text-muted-foreground">
+                  {measurementSummary(m)}
                 </p>
                 {m.note ? (
                   <p className="mt-1 text-xs text-muted-foreground">{m.note}</p>

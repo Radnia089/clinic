@@ -7,8 +7,8 @@ export default async function ClinicProgressPage() {
   return (
     <div>
       <PageHeader
-        title="ثبت پیشرفت وزن و سایز"
-        description="در هر مراجعه، وزن و سایز مشتری را ثبت کنید تا نمودار پیشرفت در اپ مشتری به‌روز شود."
+        title="ثبت آنالیز بدن و سایز"
+        description="همان جدول پرونده کاغذی: وزن، قد، BMI، چربی، عضله، چربی احشایی، سوخت‌وساز و سایز هر دو سمت بدن."
       />
       <ProgressRecorder />
     </div>

@@ -86,6 +86,9 @@ function mapPatient(row: {
   province: string | null;
   city: string | null;
   birthDate: string | null;
+  education: string | null;
+  maritalStatus: string | null;
+  occupation: string | null;
   notes: string | null;
   heightCm: number | null;
   goalWeightKg: number | null;
@@ -112,6 +115,9 @@ function mapPatient(row: {
     province: row.province ?? undefined,
     city: row.city ?? undefined,
     birthDate: row.birthDate ?? undefined,
+    education: row.education ?? undefined,
+    maritalStatus: row.maritalStatus ?? undefined,
+    occupation: row.occupation ?? undefined,
     notes: row.notes ?? undefined,
     heightCm: row.heightCm ?? undefined,
     goalWeightKg: row.goalWeightKg ?? undefined,
@@ -272,19 +278,54 @@ function mapMeasurement(row: {
   armCm: number | null;
   thighCm: number | null;
   calfCm: number | null;
+  heightCm: number | null;
+  bmi: number | null;
+  bodyFatPct: number | null;
+  muscleMassKg: number | null;
+  visceralFat: number | null;
+  rmr: number | null;
+  sessionLabel: string | null;
+  armRightCm: number | null;
+  armLeftCm: number | null;
+  chestCm: number | null;
+  waistBelowCm: number | null;
+  thighRightCm: number | null;
+  thighLeftCm: number | null;
+  kneeRightCm: number | null;
+  kneeLeftCm: number | null;
+  calfRightCm: number | null;
+  calfLeftCm: number | null;
   note: string | null;
   createdAt: Date;
 }): ProgressMeasurement {
+  const optional = (value: number | null) => value ?? undefined;
   return {
     id: row.id,
     patientId: row.patientId,
     recordedAt: row.recordedAt.toISOString(),
     weightKg: row.weightKg,
-    waistCm: row.waistCm ?? undefined,
-    hipCm: row.hipCm ?? undefined,
-    armCm: row.armCm ?? undefined,
-    thighCm: row.thighCm ?? undefined,
-    calfCm: row.calfCm ?? undefined,
+    waistCm: optional(row.waistCm),
+    hipCm: optional(row.hipCm),
+    armCm: optional(row.armCm),
+    thighCm: optional(row.thighCm),
+    calfCm: optional(row.calfCm),
+    heightCm: optional(row.heightCm),
+    bmi: optional(row.bmi),
+    bodyFatPct: optional(row.bodyFatPct),
+    muscleMassKg: optional(row.muscleMassKg),
+    visceralFat: optional(row.visceralFat),
+    rmr: optional(row.rmr),
+    sessionLabel: row.sessionLabel ?? undefined,
+    armRightCm: optional(row.armRightCm),
+    armLeftCm: optional(row.armLeftCm),
+    chestCm: optional(row.chestCm),
+    waistBelowCm: optional(row.waistBelowCm),
+    thighRightCm: optional(row.thighRightCm),
+    thighLeftCm: optional(row.thighLeftCm),
+    kneeRightCm: optional(row.kneeRightCm),
+    kneeLeftCm: optional(row.kneeLeftCm),
+    calfRightCm: optional(row.calfRightCm),
+    calfLeftCm: optional(row.calfLeftCm),
     note: row.note ?? undefined,
     createdAt: row.createdAt.toISOString(),
   };
@@ -1281,6 +1322,9 @@ export async function updatePatient(
   if ("province" in patch) data.province = patch.province || null;
   if ("city" in patch) data.city = patch.city || null;
   if ("birthDate" in patch) data.birthDate = patch.birthDate || null;
+  if ("education" in patch) data.education = patch.education || null;
+  if ("maritalStatus" in patch) data.maritalStatus = patch.maritalStatus || null;
+  if ("occupation" in patch) data.occupation = patch.occupation || null;
   if ("notes" in patch) data.notes = patch.notes ?? null;
   if ("heightCm" in patch) data.heightCm = patch.heightCm ?? null;
   if ("goalWeightKg" in patch) data.goalWeightKg = patch.goalWeightKg ?? null;
@@ -1632,6 +1676,23 @@ export async function createMeasurement(
       armCm: input.armCm ?? null,
       thighCm: input.thighCm ?? null,
       calfCm: input.calfCm ?? null,
+      heightCm: input.heightCm ?? null,
+      bmi: input.bmi ?? null,
+      bodyFatPct: input.bodyFatPct ?? null,
+      muscleMassKg: input.muscleMassKg ?? null,
+      visceralFat: input.visceralFat ?? null,
+      rmr: input.rmr ?? null,
+      sessionLabel: input.sessionLabel ?? null,
+      armRightCm: input.armRightCm ?? null,
+      armLeftCm: input.armLeftCm ?? null,
+      chestCm: input.chestCm ?? null,
+      waistBelowCm: input.waistBelowCm ?? null,
+      thighRightCm: input.thighRightCm ?? null,
+      thighLeftCm: input.thighLeftCm ?? null,
+      kneeRightCm: input.kneeRightCm ?? null,
+      kneeLeftCm: input.kneeLeftCm ?? null,
+      calfRightCm: input.calfRightCm ?? null,
+      calfLeftCm: input.calfLeftCm ?? null,
       note: input.note ?? null,
     },
   });

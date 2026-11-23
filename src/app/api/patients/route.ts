@@ -210,6 +210,19 @@ export async function PATCH(request: Request) {
     const city = String(body.city ?? "").trim();
     patch.city = city || undefined;
   }
+  if (body.education !== undefined) {
+    patch.education = String(body.education ?? "").trim().slice(0, 80) || undefined;
+  }
+  if (body.maritalStatus !== undefined) {
+    const maritalStatus = String(body.maritalStatus ?? "").trim();
+    if (maritalStatus && maritalStatus !== "مجرد" && maritalStatus !== "متاهل") {
+      return NextResponse.json({ error: "invalid_marital_status" }, { status: 400 });
+    }
+    patch.maritalStatus = maritalStatus || undefined;
+  }
+  if (body.occupation !== undefined) {
+    patch.occupation = String(body.occupation ?? "").trim().slice(0, 80) || undefined;
+  }
   if (body.birthDate !== undefined) {
     const birthDate = String(body.birthDate ?? "").trim();
     if (!birthDate) {

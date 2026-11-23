@@ -9,6 +9,7 @@ import {
   listPatients,
   updatePatient,
 } from "@/lib/store";
+import { calculateBmi } from "@/lib/bmi";
 import { parseNormalizedNumber } from "@/lib/digits";
 
 function parseOptionalPositive(raw: unknown) {
@@ -66,11 +67,40 @@ export async function POST(request: Request) {
     body.waistCm !== undefined && body.waistCm !== ""
       ? parseNormalizedNumber(String(body.waistCm))
       : undefined;
-  const hipCm = parseOptionalPositive(body.hipCm);
-  const armCm = parseOptionalPositive(body.armCm);
-  const thighCm = parseOptionalPositive(body.thighCm);
-  const calfCm = parseOptionalPositive(body.calfCm);
+  const numericKeys = [
+    "hipCm",
+    "armCm",
+    "thighCm",
+    "calfCm",
+    "heightCm",
+    "bmi",
+    "bodyFatPct",
+    "muscleMassKg",
+    "visceralFat",
+    "rmr",
+    "armRightCm",
+    "armLeftCm",
+    "chestCm",
+    "waistBelowCm",
+    "thighRightCm",
+    "thighLeftCm",
+    "kneeRightCm",
+    "kneeLeftCm",
+    "calfRightCm",
+    "calfLeftCm",
+  ] as const;
+  const numbers: Partial<Record<(typeof numericKeys)[number], number>> = {};
+  for (const key of numericKeys) {
+    const value = parseOptionalPositive(body[key]);
+    if (Number.isNaN(value as number)) {
+      return NextResponse.json({ error: `invalid_${key}` }, { status: 400 });
+    }
+    if (value !== undefined && Number.isFinite(value)) numbers[key] = value;
+  }
   const note = body.note ? String(body.note).trim() : undefined;
+  const sessionLabel = body.sessionLabel
+    ? String(body.sessionLabel).trim().slice(0, 40)
+    : undefined;
 
   if (!patientId || !Number.isFinite(weightKg) || weightKg <= 0) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
@@ -78,11 +108,11 @@ export async function POST(request: Request) {
   if (waistRaw !== undefined && (!Number.isFinite(waistRaw) || waistRaw <= 0)) {
     return NextResponse.json({ error: "invalid_waist" }, { status: 400 });
   }
-
-  for (const [key, value] of Object.entries({ hipCm, armCm, thighCm, calfCm })) {
-    if (Number.isNaN(value as number)) {
-      return NextResponse.json({ error: `invalid_${key}` }, { status: 400 });
-    }
+  if (
+    numbers.heightCm !== undefined &&
+    (numbers.heightCm < 100 || numbers.heightCm > 230)
+  ) {
+    return NextResponse.json({ error: "invalid_heightCm" }, { status: 400 });
   }
 
   const patient = await getPatient(patientId);
@@ -90,17 +120,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "patient_not_found" }, { status: 404 });
   }
 
+  const heightForBmi = numbers.heightCm;
+  const bmi =
+    numbers.bmi ??
+    (heightForBmi
+      ? Math.round(calculateBmi(weightKg, heightForBmi) * 10) / 10
+      : undefined);
+
   const measurement = await createMeasurement({
     patientId,
     recordedAt,
     weightKg,
     waistCm: waistRaw,
-    hipCm: hipCm !== undefined && Number.isFinite(hipCm) ? hipCm : undefined,
-    armCm: armCm !== undefined && Number.isFinite(armCm) ? armCm : undefined,
-    thighCm:
-      thighCm !== undefined && Number.isFinite(thighCm) ? thighCm : undefined,
-    calfCm:
-      calfCm !== undefined && Number.isFinite(calfCm) ? calfCm : undefined,
+    ...numbers,
+    bmi,
+    armCm: numbers.armCm ?? numbers.armRightCm ?? numbers.armLeftCm,
+    thighCm: numbers.thighCm ?? numbers.thighRightCm ?? numbers.thighLeftCm,
+    calfCm: numbers.calfCm ?? numbers.calfRightCm ?? numbers.calfLeftCm,
+    sessionLabel,
     note,
   });
 

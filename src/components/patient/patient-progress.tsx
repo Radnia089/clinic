@@ -96,7 +96,7 @@ export function PatientProgressScreen() {
                 </p>
               </div>
               <div className="rounded-3xl bg-[#F6E6E1] p-4">
-                <p className="text-xs text-[#9A4E42]/80">کاهش سایز کمر</p>
+                <p className="text-xs text-[#9A4E42]/80">کاهش شکم بالای ناف</p>
                 <p className="mt-1 text-xl font-extrabold text-[#9A4E42]">
                   {first.waistCm != null && last.waistCm != null
                     ? new Intl.NumberFormat("fa-IR", {
@@ -120,7 +120,7 @@ export function PatientProgressScreen() {
           </section>
 
           <section className="rounded-[28px] bg-white p-4 shadow-[0_6px_18px_rgba(35,70,55,0.06)]">
-            <h2 className="mb-3 text-sm font-bold text-brand">نمودار سایز (دور کمر)</h2>
+            <h2 className="mb-3 text-sm font-bold text-brand">نمودار سایز (شکم بالای ناف)</h2>
             <TrendChart
               measurements={measurements}
               metric="waistCm"
@@ -144,7 +144,7 @@ export function PatientProgressScreen() {
                   <tr>
                     <th className="px-4 py-3 text-right font-medium">زمان</th>
                     <th className="px-4 py-3 text-right font-medium">وزن</th>
-                    <th className="px-4 py-3 text-right font-medium">سایز کمر</th>
+                    <th className="px-4 py-3 text-right font-medium">شکم بالای ناف</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -163,6 +163,7 @@ export function PatientProgressScreen() {
                               maximumFractionDigits: 1,
                             }).format(row.waistCm)} cm`
                           : "—"}
+                        <ProgressExtras row={row} />
                       </td>
                     </tr>
                   ))}
@@ -173,5 +174,32 @@ export function PatientProgressScreen() {
         </>
       )}
     </div>
+  );
+}
+
+function ProgressExtras({ row }: { row: ProgressMeasurement }) {
+  const bits = [
+    ["BMI", row.bmi],
+    ["چربی", row.bodyFatPct],
+    ["عضله", row.muscleMassKg],
+    ["احشایی", row.visceralFat],
+    ["سوخت‌وساز", row.rmr],
+    ["شکم پایین ناف", row.waistBelowCm],
+    ["سینه", row.chestCm],
+    ["باسن", row.hipCm],
+    ["بازو راست", row.armRightCm],
+    ["بازو چپ", row.armLeftCm],
+    ["ران راست", row.thighRightCm],
+    ["ران چپ", row.thighLeftCm],
+    ["زانوی راست", row.kneeRightCm],
+    ["زانوی چپ", row.kneeLeftCm],
+    ["ساق راست", row.calfRightCm],
+    ["ساق چپ", row.calfLeftCm],
+  ].filter((item): item is [string, number] => typeof item[1] === "number");
+  if (bits.length === 0) return null;
+  return (
+    <span className="mt-1 block text-[11px] leading-5 text-muted-foreground">
+      {bits.map(([label, value]) => `${label} ${value}`).join(" · ")}
+    </span>
   );
 }

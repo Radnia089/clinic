@@ -32,6 +32,12 @@ export interface Patient {
   city?: string;
   /** تاریخ تولد میلادی YYYY-MM-DD (نمایش شمسی در فرم) */
   birthDate?: string;
+  /** میزان تحصیلات */
+  education?: string;
+  /** وضعیت تأهل: مجرد یا متاهل */
+  maritalStatus?: string;
+  /** شغل */
+  occupation?: string;
   notes?: string;
   /** قد ثابت مشتری (cm) — در اپ مشتری و پرونده مشترک است */
   heightCm?: number;
@@ -125,12 +131,34 @@ export interface ProgressMeasurement {
   patientId: string;
   recordedAt: string;
   weightKg: number;
-  /** اختیاری — ممکن است فقط وزن از اپ ثبت شود */
+  /** دور شکم بالای ناف؛ اندازه‌های قدیمی دور کمر همین‌جا مانده‌اند */
   waistCm?: number;
   hipCm?: number;
   armCm?: number;
   thighCm?: number;
   calfCm?: number;
+  heightCm?: number;
+  bmi?: number;
+  /** درصد چربی بدن */
+  bodyFatPct?: number;
+  /** توده عضلانی، کیلوگرم */
+  muscleMassKg?: number;
+  visceralFat?: number;
+  /** سوخت‌وساز استراحت */
+  rmr?: number;
+  /** عنوان جلسه روی فرم کاغذی، مثل اول یا دوم */
+  sessionLabel?: string;
+  armRightCm?: number;
+  armLeftCm?: number;
+  chestCm?: number;
+  /** دور شکم پایین ناف */
+  waistBelowCm?: number;
+  thighRightCm?: number;
+  thighLeftCm?: number;
+  kneeRightCm?: number;
+  kneeLeftCm?: number;
+  calfRightCm?: number;
+  calfLeftCm?: number;
   note?: string;
   createdAt: string;
 }

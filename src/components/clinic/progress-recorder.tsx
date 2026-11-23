@@ -26,15 +26,53 @@ import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
 
 type Row = ProgressMeasurement & { patient: Patient | null };
 
+const paperFields = [
+  ["heightCm", "قد (cm)"],
+  ["bmi", "BMI"],
+  ["bodyFatPct", "چربی بدن"],
+  ["muscleMassKg", "توده عضلانی (kg)"],
+  ["visceralFat", "چربی احشایی"],
+  ["rmr", "سوخت‌وساز استراحت"],
+  ["armRightCm", "بازو راست"],
+  ["armLeftCm", "بازو چپ"],
+  ["chestCm", "دور سینه"],
+  ["waistCm", "دور شکم بالای ناف"],
+  ["waistBelowCm", "دور شکم پایین ناف"],
+  ["hipCm", "دور باسن"],
+  ["thighRightCm", "ران راست"],
+  ["thighLeftCm", "ران چپ"],
+  ["kneeRightCm", "زانوی راست"],
+  ["kneeLeftCm", "زانوی چپ"],
+  ["calfRightCm", "ساق پای راست"],
+  ["calfLeftCm", "ساق پای چپ"],
+] as const;
+
+type PaperKey = (typeof paperFields)[number][0];
+
+const emptyPaper = Object.fromEntries(paperFields.map(([key]) => [key, ""])) as Record<PaperKey, string>;
+
+function rowSummary(row: ProgressMeasurement) {
+  const bits = [
+    ["قد", row.heightCm],
+    ["BMI", row.bmi],
+    ["چربی", row.bodyFatPct],
+    ["عضله", row.muscleMassKg],
+    ["شکم بالا", row.waistCm],
+    ["شکم پایین", row.waistBelowCm],
+    ["باسن", row.hipCm],
+  ].filter((item): item is [string, number] => typeof item[1] === "number");
+  return bits.map(([label, value]) => `${label} ${value}`).join(" · ");
+}
+
 export function ProgressRecorder() {
   const router = useRouter();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [rows, setRows] = useState<Row[]>([]);
   const [patientId, setPatientId] = useState("");
   const [recordedAt, setRecordedAt] = useState(() => jalaliPartsToIsoDate(todayJalaliParts()));
+  const [sessionLabel, setSessionLabel] = useState("");
   const [weightKg, setWeightKg] = useState("");
-  const [waistCm, setWaistCm] = useState("");
-  const [hipCm, setHipCm] = useState("");
+  const [paper, setPaper] = useState(emptyPaper);
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -63,22 +101,25 @@ export function ProgressRecorder() {
     setLoading(true);
     setError("");
     try {
+      const numbers = Object.fromEntries(
+        paperFields.flatMap(([key]) => (paper[key] ? [[key, paper[key]]] : []))
+      );
       const res = await fetch("/api/measurements", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           patientId,
           recordedAt: new Date(recordedAt).toISOString(),
-          weightKg: Number(weightKg),
-          waistCm: Number(waistCm),
-          hipCm: hipCm ? Number(hipCm) : undefined,
-          note,
+          weightKg,
+          sessionLabel: sessionLabel || undefined,
+          ...numbers,
+          note: note || undefined,
         }),
       });
       if (!res.ok) throw new Error("failed");
       setWeightKg("");
-      setWaistCm("");
-      setHipCm("");
+      setSessionLabel("");
+      setPaper(emptyPaper);
       setNote("");
       await load();
       router.refresh();
@@ -96,7 +137,7 @@ export function ProgressRecorder() {
         className="grid gap-4 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-sm sm:grid-cols-2 sm:p-8"
       >
         <h3 className="text-lg font-semibold text-brand sm:col-span-2">
-          ثبت وزن و سایز جلسه
+          آنالیز بدن و سایز، مثل پرونده کاغذی
         </h3>
         <div className="space-y-2 sm:col-span-2">
           <Label>مشتری</Label>
@@ -122,6 +163,15 @@ export function ProgressRecorder() {
           <ShamsiDateInput value={recordedAt} onChange={setRecordedAt} required />
         </div>
         <div className="space-y-2">
+          <Label>جلسه</Label>
+          <Input
+            className="h-11 rounded-xl"
+            value={sessionLabel}
+            onChange={(e) => setSessionLabel(e.target.value)}
+            placeholder="اول، دوم، ..."
+          />
+        </div>
+        <div className="space-y-2">
           <Label>وزن (kg)</Label>
           <DigitsInput
             mode="decimal"
@@ -131,25 +181,17 @@ export function ProgressRecorder() {
             required
           />
         </div>
-        <div className="space-y-2">
-          <Label>دور کمر (cm)</Label>
-          <DigitsInput
-            mode="decimal"
-            className="h-11 rounded-xl"
-            value={waistCm}
-            onValueChange={setWaistCm}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>دور باسن (cm)</Label>
-          <DigitsInput
-            mode="decimal"
-            className="h-11 rounded-xl"
-            value={hipCm}
-            onValueChange={setHipCm}
-          />
-        </div>
+        {paperFields.map(([key, label]) => (
+          <div key={key} className="space-y-2">
+            <Label>{label}</Label>
+            <DigitsInput
+              mode="decimal"
+              className="h-11 rounded-xl"
+              value={paper[key]}
+              onValueChange={(value) => setPaper((current) => ({ ...current, [key]: value }))}
+            />
+          </div>
+        ))}
         <div className="space-y-2 sm:col-span-2">
           <Label>یادداشت</Label>
           <Input
@@ -171,7 +213,7 @@ export function ProgressRecorder() {
       {rows.length === 0 ? (
         <EmptyState
           title="هنوز اندازه‌گیری ثبت نشده"
-          hint="با هر مراجعه، وزن و سایز را اینجا وارد کنید تا در اپ مشتری نمایش داده شود."
+          hint="با هر مراجعه، آنالیز بدن و سایز را اینجا وارد کنید تا در پرونده و اپ مشتری بماند."
         />
       ) : (
         <div className="overflow-hidden rounded-3xl border border-border/80 bg-card/90 shadow-sm">
@@ -180,9 +222,9 @@ export function ProgressRecorder() {
               <TableRow>
                 <TableHead className="text-right">مشتری</TableHead>
                 <TableHead className="text-right">زمان</TableHead>
+                <TableHead className="text-right">جلسه</TableHead>
                 <TableHead className="text-right">وزن</TableHead>
-                <TableHead className="text-right">دور کمر</TableHead>
-                <TableHead className="text-right">دور باسن</TableHead>
+                <TableHead className="text-right">آنالیز و سایز</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -192,9 +234,9 @@ export function ProgressRecorder() {
                     {row.patient ? patientFullName(row.patient) : "—"}
                   </TableCell>
                   <TableCell>{formatDateFa(row.recordedAt)}</TableCell>
+                  <TableCell>{row.sessionLabel || "—"}</TableCell>
                   <TableCell>{row.weightKg} kg</TableCell>
-                  <TableCell>{row.waistCm} cm</TableCell>
-                  <TableCell>{row.hipCm ? `${row.hipCm} cm` : "—"}</TableCell>
+                  <TableCell>{rowSummary(row) || "—"}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
