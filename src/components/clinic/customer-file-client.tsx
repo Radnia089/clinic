@@ -133,12 +133,14 @@ export function CustomerFileClient({
   measurements: initialMeasurements,
   payments,
   recordPhotos,
+  canDelete = false,
 }: {
   patient: Patient;
   initialVisits: Visit[];
   measurements: ProgressMeasurement[];
   payments: Payment[];
   recordPhotos: Array<{ id: string }>;
+  canDelete?: boolean;
 }) {
   const router = useRouter();
   const [patient, setPatient] = useState(initialPatient);
@@ -146,6 +148,7 @@ export function CustomerFileClient({
   const [measurements, setMeasurements] = useState(initialMeasurements);
 
   const [infoSaving, setInfoSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [infoError, setInfoError] = useState("");
   const [infoOk, setInfoOk] = useState("");
   const [firstName, setFirstName] = useState(initialPatient.firstName);
@@ -285,6 +288,25 @@ export function CustomerFileClient({
     }
   }
 
+  async function removePatient() {
+    const name = patientFullName(patient) || patient.phone;
+    if (!confirm(`پروندهٔ ${name} با نوبت‌ها و اندازه‌ها حذف شود؟ این کار برنمی‌گردد.`)) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/patients?id=${encodeURIComponent(patient.id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("failed");
+      router.push("/clinic/reception/customers");
+      router.refresh();
+    } catch {
+      window.alert("حذف مشتری انجام نشد.");
+      setDeleting(false);
+    }
+  }
+
   async function saveSize(event: FormEvent) {
     event.preventDefault();
     setSizeSaving(true);
@@ -377,9 +399,21 @@ export function CustomerFileClient({
           ) : null}
           </div>
         </div>
-        <Link href="/clinic/reception/customers" className="text-sm font-medium text-brand">
-          بازگشت به لیست
-        </Link>
+        <div className="flex items-center gap-4">
+          {canDelete ? (
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={removePatient}
+              className="text-sm font-bold text-rose-700 disabled:opacity-60"
+            >
+              {deleting ? "در حال حذف..." : "حذف مشتری"}
+            </button>
+          ) : null}
+          <Link href="/clinic/reception/customers" className="text-sm font-medium text-brand">
+            بازگشت به لیست
+          </Link>
+        </div>
       </div>
 
       <RecordPhotosCard patientId={patient.id} initialPhotos={recordPhotos} />

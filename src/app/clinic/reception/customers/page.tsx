@@ -4,7 +4,12 @@ import { toPublicPatient } from "@/lib/patient-public";
 import { listPatients } from "@/lib/store";
 
 export default async function CustomersPage() {
-  await requireStaffPage();
+  const user = await requireStaffPage();
   const patients = (await listPatients()).map(toPublicPatient);
-  return <CustomersList patients={patients} />;
+  return (
+    <CustomersList
+      patients={patients}
+      canDelete={user.role === "management"}
+    />
+  );
 }

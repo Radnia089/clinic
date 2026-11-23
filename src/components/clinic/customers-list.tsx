@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Search, ChevronLeft } from "lucide-react";
 import {
   formatDateFa,
@@ -10,13 +11,42 @@ import {
   type Patient,
 } from "@/lib/types";
 
-export function CustomersList({ patients }: { patients: Patient[] }) {
+export function CustomersList({
+  patients,
+  canDelete = false,
+}: {
+  patients: Patient[];
+  canDelete?: boolean;
+}) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
+  const [items, setItems] = useState(patients);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  async function removePatient(patient: Patient) {
+    const name = patientFullName(patient) || patient.phone;
+    if (!confirm(`پروندهٔ ${name} با نوبت‌ها و اندازه‌ها حذف شود؟ این کار برنمی‌گردد.`)) {
+      return;
+    }
+    setBusyId(patient.id);
+    try {
+      const res = await fetch(`/api/patients?id=${encodeURIComponent(patient.id)}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("failed");
+      setItems((list) => list.filter((item) => item.id !== patient.id));
+      router.refresh();
+    } catch {
+      window.alert("حذف مشتری انجام نشد.");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return patients;
-    return patients.filter((p) => {
+    if (!q) return items;
+    return items.filter((p) => {
       const full = patientFullName(p).toLowerCase();
       return (
         full.includes(q) ||
@@ -24,7 +54,7 @@ export function CustomersList({ patients }: { patients: Patient[] }) {
         p.address.toLowerCase().includes(q)
       );
     });
-  }, [patients, query]);
+  }, [items, query]);
 
   return (
     <div className="space-y-5">
@@ -88,6 +118,16 @@ export function CustomersList({ patients }: { patients: Patient[] }) {
                     پرونده
                     <ChevronLeft className="size-3.5" />
                   </Link>
+                  {canDelete ? (
+                    <button
+                      type="button"
+                      disabled={busyId === patient.id}
+                      onClick={() => removePatient(patient)}
+                      className="rounded-2xl px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 disabled:opacity-60"
+                    >
+                      {busyId === patient.id ? "در حال حذف..." : "حذف"}
+                    </button>
+                  ) : null}
                 </div>
               </div>
             </li>

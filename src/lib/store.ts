@@ -1244,6 +1244,54 @@ export async function deletePersonalLedgerEntry(id: string) {
   }
 }
 
+export async function deletePatient(id: string) {
+  await ensureDbReady();
+  if (!/^[a-z0-9]+$/i.test(id)) return false;
+  const existing = await prisma.patient.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+  if (!existing) return false;
+
+  const visits = await prisma.visit.findMany({
+    where: { patientId: id },
+    select: { id: true },
+  });
+  const visitIds = visits.map((visit) => visit.id);
+  await prisma.$transaction([
+    prisma.inboxRead.deleteMany({ where: { patientId: id } }),
+    prisma.supportTicket.deleteMany({ where: { patientId: id } }),
+    prisma.pushSubscription.deleteMany({ where: { patientId: id } }),
+    prisma.patientPhoto.deleteMany({ where: { patientId: id } }),
+    prisma.measurement.deleteMany({ where: { patientId: id } }),
+    prisma.payment.deleteMany({ where: { patientId: id } }),
+    prisma.smsLog.updateMany({
+      where: {
+        OR: [
+          { patientId: id },
+          ...(visitIds.length > 0 ? [{ visitId: { in: visitIds } }] : []),
+        ],
+      },
+      data: { patientId: null, visitId: null },
+    }),
+    prisma.visit.deleteMany({ where: { patientId: id } }),
+    prisma.patient.delete({ where: { id } }),
+  ]);
+
+  await fs
+    .rm(path.join(process.cwd(), ".data", "record-photos", id), {
+      recursive: true,
+      force: true,
+    })
+    .catch(() => undefined);
+  for (const ext of ["jpg", "png", "webp"]) {
+    await fs
+      .unlink(path.join(process.cwd(), ".data", "avatars", `${id}.${ext}`))
+      .catch(() => undefined);
+  }
+  return true;
+}
+
 export async function listPatients() {
   await ensureDbReady();
   const rows = await prisma.patient.findMany({

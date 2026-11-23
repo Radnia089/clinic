@@ -15,7 +15,7 @@ export default async function CustomerFilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireStaffPage();
+  const user = await requireStaffPage();
   const { id } = await params;
   const patient = await getPatient(id);
   if (!patient) notFound();
@@ -37,6 +37,7 @@ export default async function CustomerFilePage({
       measurements={measurements}
       payments={patientPayments}
       recordPhotos={recordPhotos}
+      canDelete={user.role === "management"}
     />
   );
 }

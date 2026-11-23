@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { toPublicPatient } from "@/lib/patient-public";
 import {
   createPatient,
+  deletePatient,
   findPatientByPhone,
   listAppSignups,
   listPatients,
@@ -30,6 +31,11 @@ async function requireStaff() {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   return null;
+}
+
+async function requireManager() {
+  const user = await getCurrentUser();
+  return user?.role === "management";
 }
 
 export async function GET(request: Request) {
@@ -303,4 +309,25 @@ export async function PATCH(request: Request) {
   }
 
   return NextResponse.json({ patient: toPublicPatient(patient) });
+}
+
+export async function DELETE(request: Request) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  if (!(await requireManager())) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
+  const id = new URL(request.url).searchParams.get("id")?.trim() ?? "";
+  if (!id) {
+    return NextResponse.json({ error: "missing_id" }, { status: 400 });
+  }
+
+  const removed = await deletePatient(id);
+  if (!removed) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  return NextResponse.json({ ok: true });
 }
