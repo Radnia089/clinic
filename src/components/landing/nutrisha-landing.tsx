@@ -11,6 +11,7 @@ import {
   UtensilsCrossed,
 } from "lucide-react";
 import { LandingPromoSlider } from "@/components/landing/landing-promo-slider";
+import { PhoneLink } from "@/components/landing/phone-link";
 import { SampleBmi } from "@/components/landing/sample-bmi";
 import { LandingLoginMenu } from "@/components/landing/landing-login-menu";
 import { lostKg, lostSizeCm } from "@/lib/champions";
@@ -77,7 +78,6 @@ export function NutrishaLanding({
   champions: Champion[];
   banners: PromoBanner[];
 }) {
-  const tel = clinic.phone.replace(/[^0-9+]/g, "");
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
       <header className="sticky top-0 z-40 border-b border-[#E5F0E6] bg-white/92 shadow-[0_8px_24px_rgba(20,53,42,0.04)] backdrop-blur-md">
@@ -107,7 +107,7 @@ export function NutrishaLanding({
               </a>
             ))}
             <a
-              href={`tel:${tel}`}
+              href="#contact"
               className="rounded-full px-3 py-2 text-sm font-bold text-[#3d4f45] transition hover:bg-[#F3FAF3] hover:text-[#2E9B32]"
             >
               تماس
@@ -133,7 +133,7 @@ export function NutrishaLanding({
               {item.label}
             </a>
           ))}
-          <a href={`tel:${tel}`} className="shrink-0 rounded-full bg-[#F4F8F4] px-3.5 py-1.5 text-xs font-bold text-[#244033]">
+          <a href="#contact" className="shrink-0 rounded-full bg-[#F4F8F4] px-3.5 py-1.5 text-xs font-bold text-[#244033]">
             تماس
           </a>
           <a href="/api/app-download" className="shrink-0 rounded-full bg-[#E8F6E8] px-3.5 py-1.5 text-xs font-extrabold text-[#2E9B32]">
@@ -270,9 +270,12 @@ export function NutrishaLanding({
             <p className="mt-1 text-sm text-[#666]">{clinic.about.doctorTitle}</p>
             <p className="mt-3 text-sm leading-7 text-[#444]">{clinic.hours}</p>
             <div className="mt-4 flex flex-wrap justify-center gap-3 md:justify-start">
-              <a href={`tel:${tel}`} className="inline-flex h-11 items-center rounded-full bg-[#3caf2d] px-5 text-sm font-extrabold text-white" dir="ltr">
-                {clinic.phone}
-              </a>
+              <PhoneLink
+                phone={clinic.phone}
+                className="inline-flex h-11 items-center rounded-full bg-[#3caf2d] px-5 text-sm font-extrabold text-white"
+              >
+                <span dir="ltr">{clinic.phone}</span>
+              </PhoneLink>
               <Link href="/patient/consult" className="inline-flex h-11 items-center rounded-full border border-[#3caf2d] px-5 text-sm font-extrabold text-[#2E9B32]">
                 مشاوره آنلاین
               </Link>
@@ -298,7 +301,7 @@ export function NutrishaLanding({
         </div>
       </section>
 
-      <footer className="bg-[#0E241C] text-white">
+      <footer id="contact" className="scroll-mt-24 bg-[#0E241C] text-white">
         <div className="h-1 bg-gradient-to-l from-[#F0B429] via-[#3caf2d] to-[#0E241C]" />
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.3fr_0.8fr_1.15fr]">
           <div>
@@ -328,7 +331,7 @@ export function NutrishaLanding({
             </ul>
           </div>
           <div>
-            <p className="text-xs font-bold text-[#F0B429]">ارتباط</p>
+            <p className="text-xs font-bold text-[#F0B429]">تماس با ما</p>
             <ul className="mt-4 space-y-3 text-sm leading-7 text-white/80">
               <li className="flex items-start gap-2.5">
                 <MapPin className="mt-1 size-4 shrink-0 text-[#F0B429]" />
@@ -336,9 +339,9 @@ export function NutrishaLanding({
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="size-4 shrink-0 text-[#F0B429]" />
-                <a href={`tel:${tel}`} className="font-bold text-white" dir="ltr">
-                  {clinic.phone}
-                </a>
+                <PhoneLink phone={clinic.phone} className="font-bold text-white">
+                  <span dir="ltr">{clinic.phone}</span>
+                </PhoneLink>
               </li>
               <li className="flex items-start gap-2.5">
                 <Clock3 className="mt-1 size-4 shrink-0 text-[#F0B429]" />
