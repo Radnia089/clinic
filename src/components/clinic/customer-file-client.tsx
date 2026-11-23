@@ -37,6 +37,12 @@ import {
   type VisitStatus,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import {
+  isVisitSessionAllowed,
+  nextVisitSession,
+  visitSessionChoices,
+  visitSessionTitle,
+} from "@/lib/visit-sessions";
 import { RecordPhotosCard } from "@/components/clinic/record-photos-card";
 
 const fieldClass =
@@ -158,7 +164,6 @@ export function CustomerFileClient({
   const [weightKg, setWeightKg] = useState("");
   const [sizeNote, setSizeNote] = useState("");
   const emptySize = {
-    sessionLabel: "",
     heightCm: "",
     bmi: "",
     bodyFatPct: "",
@@ -179,6 +184,17 @@ export function CustomerFileClient({
     calfLeftCm: "",
   };
   const [sizeFields, setSizeFields] = useState(emptySize);
+  const [sessionPick, setSessionPick] = useState<string | null>(null);
+  const sessionLabels = useMemo(
+    () => measurements.map((item) => item.sessionLabel),
+    [measurements]
+  );
+  const nextSession = nextVisitSession(sessionLabels);
+  const sessionChoices = visitSessionChoices(nextSession);
+  const sessionLabel =
+    sessionPick && isVisitSessionAllowed(sessionPick, sessionLabels)
+      ? sessionPick
+      : visitSessionTitle(nextSession);
   function setSizeField(key: keyof typeof emptySize, value: string) {
     setSizeFields((current) => ({ ...current, [key]: value }));
   }
@@ -266,6 +282,7 @@ export function CustomerFileClient({
           patientId: patient.id,
           recordedAt: new Date(recordedAt).toISOString(),
           weightKg,
+          sessionLabel,
           ...sizeFields,
           note: sizeNote || undefined,
           goalWeightKg: goalWeightKg || undefined,
@@ -281,6 +298,7 @@ export function CustomerFileClient({
       );
       setWeightKg("");
       setSizeFields(emptySize);
+      setSessionPick(null);
       setSizeNote("");
       setSizeOk("اندازه‌گیری ثبت شد و در اپ مشتری هم نمایش داده می‌شود.");
       router.refresh();
@@ -597,12 +615,19 @@ export function CustomerFileClient({
           </div>
           <div className="space-y-1.5">
             <Label>جلسه</Label>
-            <Input
-              className={fieldClass}
-              value={sizeFields.sessionLabel}
-              onChange={(e) => setSizeField("sessionLabel", e.target.value)}
-              placeholder="اول، دوم، ..."
-            />
+            <select
+              className={selectClass}
+              value={sessionChoices.includes(sessionLabel) ? sessionLabel : ""}
+              onChange={(e) => setSessionPick(e.target.value)}
+              required
+              disabled={sessionChoices.length === 0}
+            >
+              {sessionChoices.map((title) => (
+                <option key={title} value={title}>
+                  {title}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <p className="text-xs font-bold text-[#2E9B32]">آنالیز بدن</p>

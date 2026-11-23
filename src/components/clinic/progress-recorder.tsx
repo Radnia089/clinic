@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,12 @@ import {
 import { ShamsiDateInput } from "@/components/ui/shamsi-date-input";
 import { DigitsInput } from "@/components/ui/digits-input";
 import { jalaliPartsToIsoDate, todayJalaliParts } from "@/lib/jalali";
+import {
+  isVisitSessionAllowed,
+  nextVisitSession,
+  visitSessionChoices,
+  visitSessionTitle,
+} from "@/lib/visit-sessions";
 
 type Row = ProgressMeasurement & { patient: Patient | null };
 
@@ -70,7 +76,7 @@ export function ProgressRecorder() {
   const [rows, setRows] = useState<Row[]>([]);
   const [patientId, setPatientId] = useState("");
   const [recordedAt, setRecordedAt] = useState(() => jalaliPartsToIsoDate(todayJalaliParts()));
-  const [sessionLabel, setSessionLabel] = useState("");
+  const [sessionPick, setSessionPick] = useState<string | null>(null);
   const [weightKg, setWeightKg] = useState("");
   const [paper, setPaper] = useState(emptyPaper);
   const [note, setNote] = useState("");
@@ -96,6 +102,17 @@ export function ProgressRecorder() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const patientLabels = useMemo(
+    () => rows.filter((row) => row.patientId === patientId).map((row) => row.sessionLabel),
+    [rows, patientId]
+  );
+  const nextSession = nextVisitSession(patientLabels);
+  const sessionChoices = visitSessionChoices(nextSession);
+  const sessionLabel =
+    sessionPick && isVisitSessionAllowed(sessionPick, patientLabels)
+      ? sessionPick
+      : visitSessionTitle(nextSession);
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
@@ -118,7 +135,7 @@ export function ProgressRecorder() {
       });
       if (!res.ok) throw new Error("failed");
       setWeightKg("");
-      setSessionLabel("");
+      setSessionPick(null);
       setPaper(emptyPaper);
       setNote("");
       await load();
@@ -144,7 +161,10 @@ export function ProgressRecorder() {
           <select
             className="h-11 w-full rounded-xl border border-input bg-transparent px-3"
             value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
+            onChange={(e) => {
+              setPatientId(e.target.value);
+              setSessionPick(null);
+            }}
             required
           >
             {patients.length === 0 ? (
@@ -164,12 +184,19 @@ export function ProgressRecorder() {
         </div>
         <div className="space-y-2">
           <Label>جلسه</Label>
-          <Input
-            className="h-11 rounded-xl"
-            value={sessionLabel}
-            onChange={(e) => setSessionLabel(e.target.value)}
-            placeholder="اول، دوم، ..."
-          />
+          <select
+            className="h-11 w-full rounded-xl border border-input bg-transparent px-3"
+            value={sessionChoices.includes(sessionLabel) ? sessionLabel : ""}
+            onChange={(e) => setSessionPick(e.target.value)}
+            required
+            disabled={sessionChoices.length === 0}
+          >
+            {sessionChoices.map((title) => (
+              <option key={title} value={title}>
+                {title}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="space-y-2">
           <Label>وزن (kg)</Label>

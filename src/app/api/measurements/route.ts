@@ -11,6 +11,7 @@ import {
 } from "@/lib/store";
 import { calculateBmi } from "@/lib/bmi";
 import { parseNormalizedNumber } from "@/lib/digits";
+import { isVisitSessionAllowed } from "@/lib/visit-sessions";
 
 function parseOptionalPositive(raw: unknown) {
   if (raw === undefined || raw === null || raw === "") return undefined;
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
   const note = body.note ? String(body.note).trim() : undefined;
   const sessionLabel = body.sessionLabel
     ? String(body.sessionLabel).trim().slice(0, 40)
-    : undefined;
+    : "";
 
   if (!patientId || !Number.isFinite(weightKg) || weightKg <= 0) {
     return NextResponse.json({ error: "validation_failed" }, { status: 400 });
@@ -118,6 +119,11 @@ export async function POST(request: Request) {
   const patient = await getPatient(patientId);
   if (!patient) {
     return NextResponse.json({ error: "patient_not_found" }, { status: 404 });
+  }
+
+  const earlier = await listMeasurements(patientId);
+  if (!isVisitSessionAllowed(sessionLabel, earlier.map((item) => item.sessionLabel))) {
+    return NextResponse.json({ error: "session_in_past" }, { status: 400 });
   }
 
   const heightForBmi = numbers.heightCm;
