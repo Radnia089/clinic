@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import { getAppData, updateClinic } from "@/lib/store";
+import { getAppData, releaseStoredUpload, updateClinic } from "@/lib/store";
 import { DEFAULT_CLINIC_ABOUT, type ClinicAbout } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +71,18 @@ export async function PATCH(request: Request) {
     clinicPatch.tagline = String(body.tagline).trim();
   }
 
+  const previous = await getAppData();
   const clinic = await updateClinic(clinicPatch);
+  const kept = new Set(
+    [about.doctorImage, about.coverImage, ...about.gallery].filter(Boolean)
+  );
+  const removed = [
+    previous.clinic.about?.doctorImage,
+    previous.clinic.about?.coverImage,
+    ...(previous.clinic.about?.gallery ?? []),
+  ].filter((url): url is string => Boolean(url) && !kept.has(url));
+  for (const url of removed) {
+    await releaseStoredUpload(url);
+  }
   return NextResponse.json({ clinic });
 }

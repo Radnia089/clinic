@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["exceljs", "better-sqlite3"],
+  serverExternalPackages: ["exceljs", "better-sqlite3", "sharp"],
   outputFileTracingIncludes: {
     "/*": ["./prisma/migrations/**/*.sql"],
   },

@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { getCurrentPatient } from "@/lib/patient-auth";
 import { toPublicPatient } from "@/lib/patient-public";
+import { shrinkToJpeg } from "@/lib/stored-upload";
 import { updatePatient } from "@/lib/store";
 
 const ALLOWED = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -32,17 +33,23 @@ export async function POST(request: Request) {
     );
   }
 
-  const ext =
-    file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
   const dir = path.join(process.cwd(), ".data", "avatars");
   await fs.mkdir(dir, { recursive: true });
+  let jpeg: Buffer;
+  try {
+    jpeg = await shrinkToJpeg(Buffer.from(await file.arrayBuffer()), 512, 70);
+  } catch {
+    return NextResponse.json(
+      { error: "invalid_image", message: "این تصویر قابل ذخیره نیست" },
+      { status: 400 }
+    );
+  }
   for (const old of ["jpg", "png", "webp"]) {
     await fs.unlink(path.join(dir, `${patient.id}.${old}`)).catch(() => undefined);
   }
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(dir, `${patient.id}.${ext}`), buffer);
+  await fs.writeFile(path.join(dir, `${patient.id}.jpg`), jpeg);
 
-  const avatarUrl = `/api/patient-auth/avatar/${patient.id}.${ext}`;
+  const avatarUrl = `/api/patient-auth/avatar/${patient.id}.jpg`;
   const updated = await updatePatient(patient.id, {
     avatarUrl,
     appReviewedAt: undefined,

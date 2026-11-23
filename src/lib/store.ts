@@ -31,6 +31,11 @@ import {
 } from "@/lib/promo-banners";
 import { mergeMessengerSettings } from "@/lib/messenger";
 import { mergeReminderSettings } from "@/lib/sms";
+import {
+  recompressStoredPhotos,
+  removeStoredUpload,
+  sweepUnreferencedUploads,
+} from "@/lib/stored-upload";
 
 const DATA_DIR = path.join(process.cwd(), ".data");
 const LEGACY_JSON = path.join(DATA_DIR, "clinic-app.json");
@@ -722,7 +727,7 @@ async function importLegacyJsonIfPresent() {
     }
 
     if ((await prisma.smsLog.count()) === 0 && parsed.smsLogs?.length) {
-      for (const s of parsed.smsLogs.slice(0, 500)) {
+      for (const s of parsed.smsLogs.slice(0, 120)) {
         const visitOk =
           s.visitId &&
           !s.visitId.startsWith("test") &&
@@ -737,7 +742,7 @@ async function importLegacyJsonIfPresent() {
             patientName: s.patientName,
             phone: s.phone,
             kind: s.kind,
-            body: s.body,
+            body: s.body.slice(0, 140),
             status: s.status,
             provider: s.provider,
             error: s.error ?? null,
@@ -897,6 +902,7 @@ async function importLegacyJsonIfPresent() {
         });
       }
     }
+    await fs.unlink(LEGACY_JSON).catch(() => undefined);
   } catch {
     // فایل قدیمی نیست یا خراب است — نادیده بگیر
   }
@@ -1031,6 +1037,67 @@ async function seedDefaults() {
   }
 }
 
+async function referencedUploadText() {
+  const [champions, promos, articles, settings, patients] = await Promise.all([
+    prisma.champion.findMany({ select: { beforeImage: true, afterImage: true } }),
+    prisma.promoBanner.findMany({ select: { image: true } }),
+    prisma.article.findMany({ select: { coverImage: true } }),
+    prisma.clinicSettings.findUnique({
+      where: { id: "default" },
+      select: { dataJson: true },
+    }),
+    prisma.patient.findMany({ select: { avatarUrl: true } }),
+  ]);
+  return [
+    ...champions.flatMap((row) => [row.beforeImage, row.afterImage]),
+    ...promos.map((row) => row.image),
+    ...articles.map((row) => row.coverImage),
+    settings?.dataJson ?? "",
+    ...patients.map((row) => row.avatarUrl ?? ""),
+  ].join("\n");
+}
+
+export async function releaseStoredUpload(url: string | null | undefined) {
+  if (!url?.startsWith("/uploads/")) return;
+  if ((await referencedUploadText()).includes(url)) return;
+  await removeStoredUpload(url);
+}
+
+let compactPromise: Promise<void> | null = null;
+
+async function compactStoredDisk() {
+  if (!compactPromise) {
+    compactPromise = (async () => {
+      try {
+        await prisma.$executeRawUnsafe(
+          `UPDATE "SmsLog" SET "body" = substr("body", 1, 140) WHERE length("body") > 140`
+        );
+        const smsCount = await prisma.smsLog.count();
+        if (smsCount > 120) {
+          const old = await prisma.smsLog.findMany({
+            orderBy: { createdAt: "asc" },
+            take: smsCount - 120,
+            select: { id: true },
+          });
+          if (old.length) {
+            await prisma.smsLog.deleteMany({
+              where: { id: { in: old.map((row) => row.id) } },
+            });
+          }
+        }
+      } catch (error) {
+        console.error("[disk] sms trim failed", error);
+      }
+      await sweepUnreferencedUploads(await referencedUploadText());
+      await recompressStoredPhotos();
+    })().catch((error) => {
+      compactPromise = null;
+      console.error("[disk] compact failed", error);
+    });
+  }
+  await compactPromise;
+}
+
 export async function ensureDbReady() {
   if (!seedPromise) {
     seedPromise = (async () => {
@@ -1042,6 +1109,7 @@ export async function ensureDbReady() {
     });
   }
   await seedPromise;
+  await compactStoredDisk();
 }
 
 function sanitizeSmsFk(id?: string | null) {
@@ -1182,7 +1250,7 @@ export async function createSmsLog(
       patientName: input.patientName,
       phone: input.phone,
       kind: input.kind,
-      body: input.body,
+      body: input.body.slice(0, 140),
       status: input.status,
       provider: input.provider,
       error: input.error ?? null,
@@ -1190,10 +1258,10 @@ export async function createSmsLog(
     },
   });
   const count = await prisma.smsLog.count();
-  if (count > 500) {
+  if (count > 120) {
     const old = await prisma.smsLog.findMany({
       orderBy: { createdAt: "asc" },
-      take: count - 500,
+      take: count - 120,
       select: { id: true },
     });
     if (old.length) {
@@ -1867,17 +1935,27 @@ export async function updateChampion(id: string, patch: Partial<Champion>) {
       ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
     },
   });
+  if (patch.beforeImage !== undefined && patch.beforeImage !== current.beforeImage) {
+    await releaseStoredUpload(current.beforeImage);
+  }
+  if (patch.afterImage !== undefined && patch.afterImage !== current.afterImage) {
+    await releaseStoredUpload(current.afterImage);
+  }
   return mapChampion(row);
 }
 
 export async function deleteChampion(id: string) {
   await ensureDbReady();
+  const current = await prisma.champion.findUnique({ where: { id } });
+  if (!current) return false;
   try {
     await prisma.champion.delete({ where: { id } });
-    return true;
   } catch {
     return false;
   }
+  await releaseStoredUpload(current.beforeImage);
+  await releaseStoredUpload(current.afterImage);
+  return true;
 }
 
 export async function listPromoBanners(options?: { publishedOnly?: boolean }) {
@@ -1925,17 +2003,23 @@ export async function updatePromoBanner(
       ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
     },
   });
+  if (patch.image !== undefined && patch.image !== current.image) {
+    await releaseStoredUpload(current.image);
+  }
   return mapPromo(row);
 }
 
 export async function deletePromoBanner(id: string) {
   await ensureDbReady();
+  const current = await prisma.promoBanner.findUnique({ where: { id } });
+  if (!current) return false;
   try {
     await prisma.promoBanner.delete({ where: { id } });
-    return true;
   } catch {
     return false;
   }
+  await releaseStoredUpload(current.image);
+  return true;
 }
 
 export async function listArticles(options?: { publishedOnly?: boolean }) {
@@ -2007,17 +2091,23 @@ export async function updateArticle(
       ...(patch.sortOrder !== undefined ? { sortOrder: patch.sortOrder } : {}),
     },
   });
+  if (patch.coverImage !== undefined && patch.coverImage !== current.coverImage) {
+    await releaseStoredUpload(current.coverImage);
+  }
   return mapArticle(row);
 }
 
 export async function deleteArticle(id: string) {
   await ensureDbReady();
+  const current = await prisma.article.findUnique({ where: { id } });
+  if (!current) return false;
   try {
     await prisma.article.delete({ where: { id } });
-    return true;
   } catch {
     return false;
   }
+  await releaseStoredUpload(current.coverImage);
+  return true;
 }
 
 export async function incrementArticleViews(slug: string) {

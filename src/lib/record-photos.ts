@@ -3,6 +3,7 @@ import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { prisma } from "@/lib/db";
 import { RECORD_PHOTO_LIMIT } from "@/lib/record-photo-limit";
+import { shrinkToJpeg } from "@/lib/stored-upload";
 
 const PHOTO_ID = /^[a-f0-9]{24}$/;
 const PATIENT_ID = /^[a-z0-9]{20,32}$/;
@@ -38,9 +39,15 @@ export async function addRecordPhotos(patientId: string, pages: Buffer[]) {
   await mkdir(dir, { recursive: true });
   const saved: string[] = [];
   for (let index = 0; index < accepted.length; index += 1) {
+    let jpeg: Buffer;
+    try {
+      jpeg = await shrinkToJpeg(accepted[index], 1400, 68);
+    } catch {
+      continue;
+    }
     const id = randomBytes(12).toString("hex");
     const file = path.join(dir, `${id}.jpg`);
-    await writeFile(file, accepted[index]);
+    await writeFile(file, jpeg);
     try {
       await prisma.patientPhoto.create({
         data: { id, patientId, sortOrder: current + index },
