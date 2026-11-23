@@ -1,14 +1,10 @@
-/** عنوان جلسه‌های پرونده، به ترتیب مراجعه. */
-export const VISIT_SESSION_TITLES = [
-  "اول",
-  "دوم",
-  "سوم",
-  "چهارم",
-  "پنجم",
-  "ششم",
-  "هفتم",
-  "هشتم",
-  "نهم",
+/** هر بلوک فهرست جلسه. با گذشتن از این تعداد، ده جلسهٔ بعد اضافه می‌شود. */
+export const VISIT_SESSION_BLOCK = 10;
+/** سقف جلسه‌هایی که عنوان فارسی دارند. */
+export const VISIT_SESSION_LIMIT = 100;
+
+const FIRST = ["", "اول", "دوم", "سوم", "چهارم", "پنجم", "ششم", "هفتم", "هشتم", "نهم"];
+const TEENS = [
   "دهم",
   "یازدهم",
   "دوازدهم",
@@ -19,23 +15,30 @@ export const VISIT_SESSION_TITLES = [
   "هفدهم",
   "هجدهم",
   "نوزدهم",
-  "بیستم",
-  "بیست و یکم",
-  "بیست و دوم",
-  "بیست و سوم",
-  "بیست و چهارم",
-  "بیست و پنجم",
-  "بیست و ششم",
-  "بیست و هفتم",
-  "بیست و هشتم",
-  "بیست و نهم",
-  "سی‌ام",
-] as const;
+];
+const TENS_CARDINAL = ["", "", "بیست", "سی", "چهل", "پنجاه", "شصت", "هفتاد", "هشتاد", "نود"];
+const TENS_ORDINAL = ["", "", "بیستم", "سی‌ام", "چهلم", "پنجاهم", "شصتم", "هفتادم", "هشتادم", "نودم"];
+const COMPOUND_ONES = ["", "یکم", "دوم", "سوم", "چهارم", "پنجم", "ششم", "هفتم", "هشتم", "نهم"];
+
+export function visitSessionTitle(number: number): string {
+  if (number === 100) return "صدم";
+  if (number < 1 || number > VISIT_SESSION_LIMIT) return "";
+  if (number < 10) return FIRST[number];
+  if (number < 20) return TEENS[number - 10];
+  const tens = Math.floor(number / 10);
+  const ones = number % 10;
+  if (ones === 0) return TENS_ORDINAL[tens];
+  return `${TENS_CARDINAL[tens]} و ${COMPOUND_ONES[ones]}`;
+}
+
+export const VISIT_SESSION_TITLES = Array.from({ length: VISIT_SESSION_LIMIT }, (_, index) =>
+  visitSessionTitle(index + 1)
+);
 
 export function visitSessionNumber(label?: string | null): number | undefined {
   const text = label?.trim();
   if (!text) return undefined;
-  const index = VISIT_SESSION_TITLES.indexOf(text as (typeof VISIT_SESSION_TITLES)[number]);
+  const index = VISIT_SESSION_TITLES.indexOf(text);
   return index === -1 ? undefined : index + 1;
 }
 
@@ -49,13 +52,21 @@ export function nextVisitSession(labels: Array<string | null | undefined>): numb
   return Math.max(highest, labels.length) + 1;
 }
 
-export function visitSessionChoices(next: number): string[] {
-  if (next < 1) return [...VISIT_SESSION_TITLES];
-  return VISIT_SESSION_TITLES.slice(next - 1);
+/** آخر فهرست باز: ده جلسه، و با هر ده مراجعهٔ بعدی ده تا دیگر. */
+export function sessionListCeiling(next: number): number {
+  const start = Math.max(1, next);
+  const block = Math.ceil(start / VISIT_SESSION_BLOCK) * VISIT_SESSION_BLOCK;
+  return Math.min(block, VISIT_SESSION_LIMIT);
 }
 
-export function visitSessionTitle(number: number): string {
-  return VISIT_SESSION_TITLES[number - 1] ?? "";
+export function visitSessionChoices(next: number): string[] {
+  if (next < 1 || next > VISIT_SESSION_LIMIT) return [];
+  const ceiling = sessionListCeiling(next);
+  const titles: string[] = [];
+  for (let number = next; number <= ceiling; number += 1) {
+    titles.push(visitSessionTitle(number));
+  }
+  return titles;
 }
 
 export function isVisitSessionAllowed(
@@ -64,5 +75,6 @@ export function isVisitSessionAllowed(
 ): boolean {
   const number = visitSessionNumber(label);
   if (!number) return false;
-  return number >= nextVisitSession(existingLabels) && number <= VISIT_SESSION_TITLES.length;
+  const next = nextVisitSession(existingLabels);
+  return number >= next && number <= sessionListCeiling(next);
 }
