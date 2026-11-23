@@ -13,6 +13,7 @@ import { LandingPromoSlider } from "@/components/landing/landing-promo-slider";
 import { SampleBmi } from "@/components/landing/sample-bmi";
 import { LandingLoginMenu } from "@/components/landing/landing-login-menu";
 import { lostKg, lostSizeCm } from "@/lib/champions";
+import { clinicFaqs } from "@/lib/site-seo";
 import { TANDIS_INSTAGRAM_HANDLE, TANDIS_INSTAGRAM_URL } from "@/lib/social-links";
 import type { Champion, ClinicProfile, PromoBanner } from "@/lib/types";
 
@@ -142,8 +143,11 @@ export function NutrishaLanding({
 
       <section id="start" className="mx-auto max-w-5xl px-5 pb-6 pt-8 text-center sm:px-8">
         <LandingPromoSlider items={banners} />
-        <h1 className="mt-8 text-3xl font-extrabold text-[#2E9B32] sm:text-5xl">کلینیک تخصصی تغذیه تندیس</h1>
+        <h1 className="mt-8 text-3xl font-extrabold text-[#2E9B32] sm:text-5xl">کلینیک لاغری و رژیم درمانی در یزد</h1>
         <p className="mt-3 text-xl font-bold text-[#3caf2d] sm:text-3xl">تندیس، دوست سلامتی تو</p>
+        <p className="mx-auto mt-4 max-w-2xl text-sm leading-8 text-[#444]">
+          کلینیک لاغری تندیس در یزد رژیم غذایی شخصی می‌نویسد و با دستگاه‌های لاغری، کاهش وزن را جلو می‌برد.
+        </p>
         <Link
           href="/patient/book"
           className="mt-7 inline-flex h-14 items-center rounded-full bg-[#3caf2d] px-10 text-base font-extrabold text-white shadow-[0_12px_28px_rgba(60,175,45,0.35)]"
@@ -170,9 +174,9 @@ export function NutrishaLanding({
 
       <section id="devices" className="bg-[#F7FBF7]">
         <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
-          <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">دستگاه‌های کمک لاغری</h2>
+          <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">دستگاه‌های لاغری در یزد</h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-[#555]">
-            جایی که رژیم دیرتر جواب می‌دهد، دستگاه وارد می‌شود. شکم، پهلو، ران یا پوستی که شل شده؛ یک وقت بگیرید تا همان ناحیه را شروع کنیم.
+            جایی که رژیم دیرتر جواب می‌دهد، دستگاه‌های لاغری وارد می‌شوند. شکم، پهلو، ران یا پوستی که شل شده؛ یک وقت بگیرید تا همان ناحیه را شروع کنیم.
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
             {devices.map((device) => (
@@ -274,6 +278,20 @@ export function NutrishaLanding({
             </div>
           </div>
         </div>
+      </section>
+
+      <section id="topics" className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
+        <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">
+          سؤال‌های رژیم و لاغری
+        </h2>
+        <dl className="mt-6 space-y-3">
+          {clinicFaqs(clinic).map((item) => (
+            <div key={item.question} className="rounded-2xl bg-[#F7FBF7] px-5 py-4 text-right">
+              <dt className="font-extrabold text-[#14352A]">{item.question}</dt>
+              <dd className="mt-2 text-sm leading-7 text-[#444]">{item.answer}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
 
       <footer className="bg-[#0E241C] text-white">
