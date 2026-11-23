@@ -10,6 +10,7 @@ import {
   Salad,
   UtensilsCrossed,
 } from "lucide-react";
+import { LandingMagazineRow } from "@/components/landing/landing-magazine-row";
 import { LandingPromoSlider } from "@/components/landing/landing-promo-slider";
 import { PhoneLink } from "@/components/landing/phone-link";
 import { SampleBmi } from "@/components/landing/sample-bmi";
@@ -300,30 +301,7 @@ export function NutrishaLanding({
               همهٔ مقاله‌ها
             </Link>
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {articles.map((article) => (
-              <Link
-                key={article.slug}
-                href={`/magazine/${article.slug}`}
-                className="overflow-hidden rounded-[1.6rem] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] ring-1 ring-black/5"
-              >
-                <div className="relative aspect-[16/10]">
-                  <Image
-                    src={article.coverImage}
-                    alt={article.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, 360px"
-                  />
-                </div>
-                <div className="space-y-2 p-4 text-right">
-                  <p className="text-xs font-bold text-[#2E9B32]">{article.category}</p>
-                  <h3 className="text-base font-extrabold leading-7">{article.title}</h3>
-                  <p className="line-clamp-2 text-sm leading-7 text-[#555]">{article.excerpt}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          <LandingMagazineRow articles={articles} />
         </section>
       ) : null}
 
