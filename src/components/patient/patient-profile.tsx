@@ -170,7 +170,7 @@ export function PatientProfile({
               fill
               className="object-cover"
               sizes="112px"
-              unoptimized={previewSrc.endsWith(".svg")}
+              unoptimized={previewSrc.endsWith(".svg") || previewSrc.includes("/api/patient-auth/avatar")}
             />
             <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-[#14352A]/72 py-1.5 text-[10px] font-bold text-white opacity-100 transition group-hover:bg-[#14352A]/85">
               <Camera className="size-3" />

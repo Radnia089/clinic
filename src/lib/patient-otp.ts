@@ -1,3 +1,4 @@
+import { randomInt, timingSafeEqual } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -27,7 +28,14 @@ async function writeAll(data: Record<string, OtpRecord>) {
 }
 
 function generateCode() {
-  return String(Math.floor(10000 + Math.random() * 90000));
+  return String(randomInt(10000, 100000));
+}
+
+function sameCode(left: string, right: string) {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
 
 export async function issuePatientOtp(phone: string) {
@@ -57,7 +65,7 @@ export async function verifyPatientOtp(phone: string, code: string) {
     await writeAll(data);
     return { ok: false as const, error: "too_many" };
   }
-  if (record.code !== code.trim()) {
+  if (!sameCode(record.code, code.trim())) {
     record.attempts += 1;
     data[phone] = record;
     await writeAll(data);
@@ -66,4 +74,11 @@ export async function verifyPatientOtp(phone: string, code: string) {
   delete data[phone];
   await writeAll(data);
   return { ok: true as const };
+}
+
+export async function clearPatientOtp(phone: string) {
+  const data = await readAll();
+  if (!data[phone]) return;
+  delete data[phone];
+  await writeAll(data);
 }

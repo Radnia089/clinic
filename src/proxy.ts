@@ -8,6 +8,7 @@ function isPublicApi(method: string, pathname: string) {
   if (method === "POST" && pathname === "/api/auth/login") return true;
   if (method === "POST" && pathname === "/api/auth/logout") return true;
   if (method === "GET" && pathname === "/api/auth/me") return true;
+  if (method === "GET" && pathname === "/api/app-download") return true;
   if (method === "POST" && pathname === "/api/appointments") return true;
   if (method === "POST" && pathname === "/api/online-consults") return true;
   if (method === "GET" && pathname === "/api/clinic/about") return true;
@@ -24,6 +25,10 @@ function isPublicApi(method: string, pathname: string) {
 
 export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/uploads/avatars/")) {
+    return new NextResponse(null, { status: 404 });
+  }
 
   if (pathname.startsWith("/api/")) {
     if (isPublicApi(request.method, pathname)) return NextResponse.next();
@@ -47,5 +52,5 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/clinic/:path*", "/api/:path*"],
+  matcher: ["/clinic/:path*", "/api/:path*", "/uploads/avatars/:path*"],
 };

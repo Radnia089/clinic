@@ -129,8 +129,7 @@ export function ClinicLanding({
             </ol>
           </div>
           <a
-            href="/downloads/tandis-patient.apk"
-            download="tandis-patient.apk"
+            href="/api/app-download"
             className="inline-flex h-12 items-center justify-center rounded-2xl bg-[#F0B429] px-6 text-sm font-extrabold text-[#14352A] shadow-sm"
           >
             دانلود نسخه اندروید

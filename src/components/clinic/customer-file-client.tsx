@@ -24,6 +24,7 @@ import Image from "next/image";
 import {
   formatDateFa,
   formatMoney,
+  avatarImageUnoptimized,
   patientAvatarSrc,
   patientFullName,
   visitChannelLabel,
@@ -337,7 +338,7 @@ export function CustomerFileClient({
               fill
               className="object-cover"
               sizes="56px"
-              unoptimized={patientAvatarSrc(patient).endsWith(".svg")}
+              unoptimized={avatarImageUnoptimized(patientAvatarSrc(patient))}
             />
           </div>
           <div className="min-w-0">

@@ -6,7 +6,7 @@
 - پکیج: `ir.tandisclinicyazd.patient`
 - آدرس پیش‌فرض: `https://tandisclinicyazd.ir/patient`
 
-نسخه‌ای که از لندینگ دانلود می‌شود این فایل است: `public/downloads/tandis-patient.apk`.
+نسخهٔ نصب از مسیر `/api/app-download` خوانده می‌شود. فایل را روی سرور در `.data/tandis-patient.apk` بگذارید؛ داخل مخزن یا ایمیج قرار نمی‌گیرد.
 
 ## ساخت APK
 

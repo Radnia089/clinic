@@ -20,6 +20,7 @@ export function PatientPasswordLogin() {
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
   const [nationalId, setNationalId] = useState("");
+  const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [rememberPassword, setRememberPassword] = useState(true);
@@ -69,7 +70,8 @@ export function PatientPasswordLogin() {
       setPassword("");
       setConfirm("");
       setNationalId("");
-      setStep(data.hasPassword ? "login" : "setup");
+      setOtp("");
+      setStep("login");
     } catch (err) {
       setError(err instanceof Error ? err.message : "خطا");
     } finally {
@@ -92,13 +94,20 @@ export function PatientPasswordLogin() {
           phone,
           password,
           nationalId,
+          otp,
           remember: rememberPassword,
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (data.error === "invalid_length") {
-          throw new Error("رمز باید ۴ تا ۸ کاراکتر باشد.");
+          throw new Error("رمز باید حداقل ۸ کاراکتر باشد.");
+        }
+        if (data.error === "otp_invalid") {
+          throw new Error("کد پیامک درست نیست یا منقضی شده.");
+        }
+        if (data.error === "rate_limited") {
+          throw new Error("چند دقیقه بعد دوباره تلاش کنید.");
         }
         if (data.error === "invalid_national_id") {
           throw new Error("کد ملی معتبر نیست.");
@@ -136,13 +145,8 @@ export function PatientPasswordLogin() {
         if (data.error === "invalid_credentials") {
           throw new Error("رمز نادرست است.");
         }
-        if (data.error === "no_password") {
-          setStep("setup");
-          throw new Error("هنوز رمزی ندارید؛ یک رمز کوتاه بسازید.");
-        }
-        if (data.error === "not_found") {
-          setStep("setup");
-          throw new Error("حساب پیدا نشد؛ رمز جدید بسازید.");
+        if (data.error === "rate_limited") {
+          throw new Error("چند دقیقه بعد دوباره تلاش کنید.");
         }
         throw new Error("ورود انجام نشد.");
       }
@@ -170,6 +174,7 @@ export function PatientPasswordLogin() {
           phone,
           nationalId,
           password,
+          otp,
           remember: rememberPassword,
         }),
       });
@@ -185,7 +190,13 @@ export function PatientPasswordLogin() {
           throw new Error("کد ملی معتبر نیست.");
         }
         if (data.error === "invalid_length") {
-          throw new Error("رمز باید ۴ تا ۸ کاراکتر باشد.");
+          throw new Error("رمز باید حداقل ۸ کاراکتر باشد.");
+        }
+        if (data.error === "otp_invalid") {
+          throw new Error("کد پیامک درست نیست یا منقضی شده.");
+        }
+        if (data.error === "rate_limited") {
+          throw new Error("چند دقیقه بعد دوباره تلاش کنید.");
         }
         throw new Error("بازنشانی رمز انجام نشد.");
       }
@@ -203,7 +214,35 @@ export function PatientPasswordLogin() {
     setPassword("");
     setConfirm("");
     setNationalId("");
+    setOtp("");
     setError("");
+  }
+
+  async function openWithCode(next: "setup" | "forgot") {
+    setError("");
+    setPassword("");
+    setConfirm("");
+    setOtp("");
+    setLoading(true);
+    try {
+      const res = await fetch("/api/patient-auth/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.error === "rate_limited") {
+          throw new Error("چند دقیقه بعد دوباره تلاش کنید.");
+        }
+        throw new Error("ارسال کد پیامک ممکن نیست. از پذیرش کلینیک بخواهید.");
+      }
+      setStep(next);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "خطا");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -296,19 +335,32 @@ export function PatientPasswordLogin() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  رمز کوتاه
+                  کد پیامک
+                </label>
+                <DigitsInput
+                  mode="integer"
+                  value={otp}
+                  onValueChange={(v) => setOtp(v.slice(0, 5))}
+                  placeholder="۵ رقم"
+                  className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  رمز
                 </label>
                 <Input
                   type="password"
                   name="new-password"
                   autoComplete="new-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value.slice(0, 8))}
-                  placeholder="مثلاً ۱۲۳۴"
+                  onChange={(e) => setPassword(e.target.value.slice(0, 64))}
+                  placeholder="حداقل ۸ کاراکتر"
                   className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
                   required
-                  minLength={4}
-                  maxLength={8}
+                  minLength={8}
+                  maxLength={64}
                 />
               </div>
               <div className="space-y-2">
@@ -319,12 +371,12 @@ export function PatientPasswordLogin() {
                   type="password"
                   autoComplete="new-password"
                   value={confirm}
-                  onChange={(e) => setConfirm(e.target.value.slice(0, 8))}
+                  onChange={(e) => setConfirm(e.target.value.slice(0, 64))}
                   placeholder="تکرار رمز"
                   className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
                   required
-                  minLength={4}
-                  maxLength={8}
+                  minLength={8}
+                  maxLength={64}
                 />
               </div>
               <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#14352A]">
@@ -339,7 +391,7 @@ export function PatientPasswordLogin() {
               {error ? <p className="text-sm text-destructive">{error}</p> : null}
               <Button
                 type="submit"
-                disabled={loading || password.length < 4 || nationalId.length < 10}
+                disabled={loading || password.length < 8 || nationalId.length < 10 || otp.length < 5}
                 className="h-12 w-full rounded-full bg-[#F0B429] text-sm font-extrabold text-[#14352A] hover:bg-[#e0a61f]"
               >
                 {loading ? "در حال ذخیره..." : "ذخیره رمز و ورود"}
@@ -368,12 +420,12 @@ export function PatientPasswordLogin() {
                   name="password"
                   autoComplete="current-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value.slice(0, 8))}
-                  placeholder="رمز کوتاه"
+                  onChange={(e) => setPassword(e.target.value.slice(0, 64))}
+                  placeholder="رمز"
                   className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
                   required
                   minLength={4}
-                  maxLength={8}
+                  maxLength={64}
                 />
               </div>
               <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#14352A]">
@@ -397,15 +449,17 @@ export function PatientPasswordLogin() {
                 type="button"
                 disabled={loading}
                 className="w-full text-center text-sm font-bold text-[#C48A12]"
-                onClick={() => {
-                  setError("");
-                  setPassword("");
-                  setConfirm("");
-                  setNationalId("");
-                  setStep("forgot");
-                }}
+                onClick={() => openWithCode("forgot")}
               >
                 فراموشی رمز
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                className="w-full text-center text-sm font-bold text-[#14352A]"
+                onClick={() => openWithCode("setup")}
+              >
+                رمز ندارم
               </button>
               <button
                 type="button"
@@ -441,6 +495,19 @@ export function PatientPasswordLogin() {
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
+                  کد پیامک
+                </label>
+                <DigitsInput
+                  mode="integer"
+                  value={otp}
+                  onValueChange={(v) => setOtp(v.slice(0, 5))}
+                  placeholder="۵ رقم"
+                  className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground">
                   رمز جدید
                 </label>
                 <Input
@@ -448,11 +515,11 @@ export function PatientPasswordLogin() {
                   name="new-password"
                   autoComplete="new-password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value.slice(0, 8))}
+                  onChange={(e) => setPassword(e.target.value.slice(0, 64))}
                   className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
                   required
-                  minLength={4}
-                  maxLength={8}
+                  minLength={8}
+                  maxLength={64}
                 />
               </div>
               <div className="space-y-2">
@@ -463,11 +530,11 @@ export function PatientPasswordLogin() {
                   type="password"
                   autoComplete="new-password"
                   value={confirm}
-                  onChange={(e) => setConfirm(e.target.value.slice(0, 8))}
+                  onChange={(e) => setConfirm(e.target.value.slice(0, 64))}
                   className="h-12 rounded-2xl border-[#D7E2D9] bg-[#F7F8F6]"
                   required
-                  minLength={4}
-                  maxLength={8}
+                  minLength={8}
+                  maxLength={64}
                 />
               </div>
               <label className="flex cursor-pointer items-center gap-2.5 text-sm text-[#14352A]">
@@ -483,7 +550,7 @@ export function PatientPasswordLogin() {
               <Button
                 type="submit"
                 disabled={
-                  loading || password.length < 4 || nationalId.length < 10
+                  loading || password.length < 8 || nationalId.length < 10 || otp.length < 5
                 }
                 className="h-12 w-full rounded-full bg-[#F0B429] text-sm font-extrabold text-[#14352A] hover:bg-[#e0a61f]"
               >

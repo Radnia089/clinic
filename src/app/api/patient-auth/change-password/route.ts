@@ -6,6 +6,7 @@ import {
 } from "@/lib/national-id";
 import {
   hashPatientPassword,
+  readLoginPassword,
   validatePatientPassword,
   verifyPatientPassword,
 } from "@/lib/patient-password";
@@ -21,23 +22,23 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const current = validatePatientPassword(String(body.currentPassword ?? ""));
+  const currentPassword = readLoginPassword(String(body.currentPassword ?? ""));
   const next = validatePatientPassword(String(body.newPassword ?? ""));
   const nationalIdRaw = String(body.nationalId ?? "").trim();
   const nationalId = nationalIdRaw
     ? normalizeNationalId(nationalIdRaw)
     : undefined;
 
-  if (!current.ok || !next.ok) {
+  if (!currentPassword || !next.ok) {
     return NextResponse.json({ error: "invalid_length" }, { status: 400 });
   }
   if (!patient.passwordHash) {
     return NextResponse.json({ error: "no_password" }, { status: 409 });
   }
-  if (!verifyPatientPassword(current.password, patient.passwordHash)) {
+  if (!verifyPatientPassword(currentPassword, patient.passwordHash)) {
     return NextResponse.json({ error: "invalid_current" }, { status: 401 });
   }
-  if (current.password === next.password) {
+  if (currentPassword === next.password) {
     return NextResponse.json({ error: "same_password" }, { status: 400 });
   }
 

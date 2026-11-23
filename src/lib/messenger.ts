@@ -78,24 +78,17 @@ export function appointmentNotice(clinicName: string, item: AppointmentRequest) 
     line("تاریخ", item.preferredDate ? formatJalaliDate(item.preferredDate) : ""),
     line("ساعت", item.preferredTime),
     line("از", item.channel === "phone" ? "تلفن" : "سایت"),
-    line("توضیح", item.note),
   ]
     .filter(Boolean)
     .join("\n");
 }
 
 export function consultNotice(clinicName: string, item: OnlineConsultRequest) {
-  const gender = item.gender === "male" ? "مرد" : item.gender === "female" ? "زن" : "";
   return [
     `درخواست مشاوره آنلاین در ${clinicName}`,
     line("نام", item.name),
     line("موبایل", item.phone),
-    line("سن", item.age),
-    line("جنسیت", gender),
-    line("قد", item.heightCm ? `${item.heightCm} سانتی` : ""),
-    line("وزن", item.weightKg ? `${item.weightKg} کیلو` : ""),
     line("تاریخ پیشنهادی", item.preferredDate ? formatJalaliDate(item.preferredDate) : ""),
-    line("توضیح", item.note),
   ]
     .filter(Boolean)
     .join("\n");

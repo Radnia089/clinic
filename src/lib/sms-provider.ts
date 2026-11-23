@@ -67,10 +67,10 @@ export async function sendSms(
 }
 
 async function sendViaMock(
-  phone: string,
-  message: string
+  _phone: string,
+  _message: string
 ): Promise<SendSmsResult> {
-  console.info(`[sms:mock] → ${phone}: ${message}`);
+  console.info("[sms:mock] پیام ارسال نشد؛ سرویس پیامک واقعی تنظیم نشده است.");
   return { ok: true, provider: "mock", status: "mock" };
 }
 

@@ -70,7 +70,7 @@ export function PatientUserMenu({ patient }: { patient: Patient | null }) {
             fill
             className="object-cover"
             sizes="40px"
-            unoptimized={avatarSrc.endsWith(".svg")}
+            unoptimized={avatarSrc.endsWith(".svg") || avatarSrc.includes("/api/patient-auth/avatar")}
             priority
           />
         </span>
@@ -93,7 +93,7 @@ export function PatientUserMenu({ patient }: { patient: Patient | null }) {
                   fill
                   className="object-cover"
                   sizes="64px"
-                  unoptimized={avatarSrc.endsWith(".svg")}
+                  unoptimized={avatarSrc.endsWith(".svg") || avatarSrc.includes("/api/patient-auth/avatar")}
                 />
               </div>
               {fullName ? (

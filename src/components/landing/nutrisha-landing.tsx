@@ -55,7 +55,7 @@ export function NutrishaLanding({
       <header className="px-5 pt-6 text-center sm:px-8">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <LandingLoginMenu variant="fresh" />
-          <a href="/downloads/tandis-patient.apk" download="tandis-patient.apk" className="text-sm font-extrabold text-[#2E9B32]">
+          <a href="/api/app-download" className="text-sm font-extrabold text-[#2E9B32]">
             دانلود اپ
           </a>
         </div>

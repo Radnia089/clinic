@@ -9,27 +9,39 @@ import {
   hashPatientPassword,
   validatePatientPassword,
 } from "@/lib/patient-password";
+import { verifyPatientOtp } from "@/lib/patient-otp";
 import { establishPatientSession } from "@/lib/patient-session";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { findPatientByPhone, updatePatient } from "@/lib/store";
 
 /**
- * بازیابی رمز فقط وقتی کد ملی از قبل در پرونده ثبت شده و با ورودی یکی باشد.
- * کد ملی جدید در این مسیر ذخیره نمی‌شود.
+ * بازیابی رمز فقط با کد پیامک همان شماره.
+ * کد ملی به‌تنهایی کافی نیست.
  */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const phone = normalizeIntegerInput(String(body.phone ?? ""));
   const nationalId = normalizeNationalId(String(body.nationalId ?? ""));
   const validated = validatePatientPassword(String(body.password ?? ""));
+  const otp = String(body.otp ?? "");
 
   if (!/^09\d{9}$/.test(phone)) {
     return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
+  }
+  const limited = rateLimit(`reset:${phone}:${clientIp(request)}`, 8, 15 * 60 * 1000);
+  if (!limited.ok) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
   if (!isValidNationalId(nationalId)) {
     return NextResponse.json({ error: "invalid_national_id" }, { status: 400 });
   }
   if (!validated.ok) {
     return NextResponse.json({ error: validated.error }, { status: 400 });
+  }
+
+  const otpResult = await verifyPatientOtp(phone, otp);
+  if (!otpResult.ok) {
+    return NextResponse.json({ error: "otp_invalid" }, { status: 401 });
   }
 
   const patient = await findPatientByPhone(phone);

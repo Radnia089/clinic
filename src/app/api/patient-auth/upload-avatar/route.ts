@@ -34,13 +34,15 @@ export async function POST(request: Request) {
 
   const ext =
     file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const name = `${patient.id.slice(0, 8)}-${Date.now()}.${ext}`;
-  const dir = path.join(process.cwd(), "public", "uploads", "avatars");
+  const dir = path.join(process.cwd(), ".data", "avatars");
   await fs.mkdir(dir, { recursive: true });
+  for (const old of ["jpg", "png", "webp"]) {
+    await fs.unlink(path.join(dir, `${patient.id}.${old}`)).catch(() => undefined);
+  }
   const buffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(path.join(dir, name), buffer);
+  await fs.writeFile(path.join(dir, `${patient.id}.${ext}`), buffer);
 
-  const avatarUrl = `/uploads/avatars/${name}`;
+  const avatarUrl = `/api/patient-auth/avatar/${patient.id}.${ext}`;
   const updated = await updatePatient(patient.id, {
     avatarUrl,
     appReviewedAt: undefined,

@@ -60,7 +60,7 @@ export function PatientChangePassword({
           throw new Error("رمز فعلی نادرست است.");
         }
         if (data.error === "invalid_length") {
-          throw new Error("رمز باید ۴ تا ۸ کاراکتر باشد.");
+          throw new Error("رمز جدید باید حداقل ۸ کاراکتر باشد.");
         }
         if (data.error === "same_password") {
           throw new Error("رمز جدید باید با رمز فعلی فرق داشته باشد.");
@@ -141,11 +141,11 @@ export function PatientChangePassword({
               type="password"
               autoComplete="current-password"
               value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value.slice(0, 8))}
+              onChange={(e) => setCurrentPassword(e.target.value.slice(0, 64))}
               className={fieldClass}
               required
               minLength={4}
-              maxLength={8}
+              maxLength={64}
             />
           </div>
           <div className="space-y-1.5">
@@ -154,11 +154,11 @@ export function PatientChangePassword({
               type="password"
               autoComplete="new-password"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value.slice(0, 8))}
+              onChange={(e) => setNewPassword(e.target.value.slice(0, 64))}
               className={fieldClass}
               required
-              minLength={4}
-              maxLength={8}
+              minLength={8}
+              maxLength={64}
             />
           </div>
           <div className="space-y-1.5">
@@ -167,11 +167,11 @@ export function PatientChangePassword({
               type="password"
               autoComplete="new-password"
               value={confirm}
-              onChange={(e) => setConfirm(e.target.value.slice(0, 8))}
+              onChange={(e) => setConfirm(e.target.value.slice(0, 64))}
               className={fieldClass}
               required
-              minLength={4}
-              maxLength={8}
+              minLength={8}
+              maxLength={64}
             />
           </div>
           {error ? <p className="text-sm text-rose-700">{error}</p> : null}
@@ -181,7 +181,7 @@ export function PatientChangePassword({
             disabled={
               loading ||
               currentPassword.length < 4 ||
-              newPassword.length < 4 ||
+              newPassword.length < 8 ||
               (needsNationalId && nationalId.length < 10)
             }
             className="h-12 w-full rounded-full bg-[#14352A] text-white hover:bg-[#1f4a3a]"

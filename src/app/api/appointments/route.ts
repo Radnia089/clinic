@@ -8,6 +8,7 @@ import {
 } from "@/lib/store";
 import { isValidIranMobile, normalizeIntegerInput } from "@/lib/digits";
 import { notifyNewAppointment } from "@/lib/messenger";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 async function requireStaff() {
   const user = await getCurrentUser();
@@ -34,6 +35,10 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const limited = rateLimit(`appointment:${clientIp(request)}`, 5, 60 * 60 * 1000);
+  if (!limited.ok) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
   const body = await request.json();
   const name = String(body.name ?? "").trim();
   const phone = normalizeIntegerInput(String(body.phone ?? ""));

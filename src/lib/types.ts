@@ -23,7 +23,7 @@ export interface Patient {
   age?: number;
   gender: Gender;
   phone: string;
-  /** کد ملی ۱۰ رقمی — برای بازیابی رمز بدون OTP */
+  /** کد ملی ۱۰ رقمی */
   nationalId?: string;
   address: string;
   /** استان محل سکونت */
@@ -527,6 +527,11 @@ export function patientAvatarSrc(
 ) {
   if (patient.avatarUrl) return patient.avatarUrl;
   return patient.gender === "male" ? "/avatars/male.svg" : "/avatars/female.svg";
+}
+
+/** بهینه‌ساز تصویر Next کوکی جلسه را نمی‌فرستد؛ عکس خصوصی را مستقیم بارگذاری کن. */
+export function avatarImageUnoptimized(src: string) {
+  return src.endsWith(".svg") || src.includes("/api/patient-auth/avatar");
 }
 
 export function genderLabel(gender: Gender) {

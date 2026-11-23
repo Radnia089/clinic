@@ -1,11 +1,20 @@
 import { hashPassword, verifyPassword } from "@/lib/password-hash";
 
-/** رمز کوتاه ۴ تا ۸ کاراکتر */
-export const PATIENT_PASSWORD_MIN = 4;
-export const PATIENT_PASSWORD_MAX = 8;
+/** رمز جدید حداقل ۸ کاراکتر است. رمزهای کوتاه قبلی هنوز برای ورود قبول می‌شوند. */
+export const PATIENT_PASSWORD_MIN = 8;
+export const PATIENT_PASSWORD_MAX = 64;
 
 export function normalizePatientPassword(raw: string) {
   return String(raw ?? "").trim();
+}
+
+/** برای ورود: طول رمز قبلی را رد نمی‌کند. */
+export function readLoginPassword(raw: string) {
+  const password = normalizePatientPassword(raw);
+  if (!password || password.length > PATIENT_PASSWORD_MAX || /\s/.test(password)) {
+    return "";
+  }
+  return password;
 }
 
 export function validatePatientPassword(raw: string) {

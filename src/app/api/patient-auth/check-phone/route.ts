@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { normalizeIntegerInput } from "@/lib/digits";
-import { patientHasPassword } from "@/lib/patient-password";
-import { patientHasRegisteredInfo } from "@/lib/patient-profile";
-import { findPatientByPhone } from "@/lib/store";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
+/** فقط شکل شماره را چک می‌کند و نمی‌گوید این شماره پرونده دارد یا نه. */
 export async function POST(request: Request) {
   const body = await request.json().catch(() => ({}));
   const phone = normalizeIntegerInput(String(body.phone ?? ""));
@@ -11,12 +10,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid_phone" }, { status: 400 });
   }
 
-  const existing = await findPatientByPhone(phone);
-  return NextResponse.json({
-    ok: true,
-    phone,
-    exists: Boolean(existing),
-    hasPassword: patientHasPassword(existing),
-    alreadyRegistered: patientHasRegisteredInfo(existing),
-  });
+  const limited = rateLimit(`check-phone:${clientIp(request)}`, 30, 15 * 60 * 1000);
+  if (!limited.ok) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
+  return NextResponse.json({ ok: true });
 }
