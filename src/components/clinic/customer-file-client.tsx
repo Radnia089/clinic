@@ -66,10 +66,16 @@ function SizeField({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className={english ? "flex-col items-stretch gap-0.5" : undefined}>
+      <Label
+        className={
+          english
+            ? "flex-row items-center justify-between gap-3 sm:flex-col sm:items-stretch sm:justify-start sm:gap-0.5"
+            : undefined
+        }
+      >
         <span>{label}</span>
         {english ? (
-          <span dir="ltr" className="text-right text-[11px] font-medium text-muted-foreground">
+          <span dir="ltr" className="text-[11px] font-medium text-muted-foreground sm:text-right">
             {english}
           </span>
         ) : null}
