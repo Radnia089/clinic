@@ -7,7 +7,6 @@ import { ClinicLogo } from "@/components/brand/clinic-logo";
 import {
   LayoutDashboard,
   Users,
-  UserPlus,
   Wallet,
   CalendarCheck,
   Stethoscope,
@@ -29,7 +28,6 @@ import {
 
 const receptionLinks = [
   { href: "/clinic/reception", label: "میز پذیرش", icon: Stethoscope, short: "پذیرش" },
-  { href: "/clinic/reception/new", label: "ثبت جدید", icon: UserPlus, short: "ثبت" },
   { href: "/clinic/reception/customers", label: "لیست مشتریان", icon: Users, short: "مشتریان" },
   {
     href: "/clinic/app-signups",
@@ -37,6 +35,8 @@ const receptionLinks = [
     icon: Smartphone,
     short: "اپ",
   },
+  { href: "/clinic/finance", label: "مالی کلینیک", icon: Wallet, short: "مالی" },
+  { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },
 ];
 
 const managementLinks = [
@@ -56,7 +56,6 @@ const managementLinks = [
     short: "پیام اپ",
     managerOnly: true,
   },
-  { href: "/clinic/finance", label: "مالی کلینیک", icon: Wallet, short: "مالی" },
   {
     href: "/clinic/personal-accounting",
     label: "حسابداری شخصی",
@@ -106,7 +105,6 @@ const managementLinks = [
     short: "ورود",
     managerOnly: true,
   },
-  { href: "/clinic/appointments", label: "نوبت‌ها", icon: CalendarCheck, short: "نوبت" },
   {
     href: "/clinic/online-consults",
     label: "مشاوره آنلاین",
@@ -145,7 +143,10 @@ export function ClinicShell({
   const pathname = usePathname();
   const router = useRouter();
   const isReceptionArea =
-    pathname.startsWith("/clinic/reception") || pathname.startsWith("/clinic/progress");
+    pathname.startsWith("/clinic/reception") ||
+    pathname.startsWith("/clinic/progress") ||
+    pathname.startsWith("/clinic/finance") ||
+    pathname.startsWith("/clinic/appointments");
   const isReceptionCalendar =
     pathname === "/clinic/reception" || pathname === "/clinic/reception/";
   const isManager = userRole === "management";
