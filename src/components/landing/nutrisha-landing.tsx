@@ -8,7 +8,6 @@ import {
   MapPin,
   Phone,
   Salad,
-  UserRound,
   UtensilsCrossed,
 } from "lucide-react";
 import { LandingPromoSlider } from "@/components/landing/landing-promo-slider";
@@ -18,7 +17,7 @@ import { LandingLoginMenu } from "@/components/landing/landing-login-menu";
 import { lostKg, lostSizeCm } from "@/lib/champions";
 import { clinicFaqs } from "@/lib/site-seo";
 import { TANDIS_INSTAGRAM_HANDLE, TANDIS_INSTAGRAM_URL } from "@/lib/social-links";
-import type { Champion, ClinicProfile, PromoBanner } from "@/lib/types";
+import type { Champion, ClinicProfile, MagazineArticle, PromoBanner } from "@/lib/types";
 
 const navLinks = [
   { href: "#start", label: "خانه" },
@@ -26,7 +25,8 @@ const navLinks = [
   { href: "#devices", label: "دستگاه‌ها" },
   { href: "#champions", label: "قهرمانان" },
   { href: "#about", label: "درباره ما" },
-  { href: "#visit", label: "نوبت" },
+  { href: "#magazine", label: "مجله" },
+  { href: "/patient/book", label: "نوبت" },
 ];
 
 const features = [
@@ -75,10 +75,12 @@ export function NutrishaLanding({
   clinic,
   champions,
   banners,
+  articles = [],
 }: {
   clinic: ClinicProfile;
   champions: Champion[];
   banners: PromoBanner[];
+  articles?: Pick<MagazineArticle, "slug" | "title" | "excerpt" | "category" | "coverImage">[];
 }) {
   return (
     <div className="min-h-screen bg-white text-[#1A1A1A]">
@@ -261,7 +263,7 @@ export function NutrishaLanding({
         )}
       </section>
 
-      <section id="about" className="bg-[#F7FBF7]">
+      <section id="about" className="scroll-mt-24 bg-[#F7FBF7]">
         <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
           <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">درباره ما</h2>
           {clinic.about.coverImage ? (
@@ -276,42 +278,6 @@ export function NutrishaLanding({
             </div>
           ) : null}
           <p className="mt-6 max-w-3xl text-sm leading-8 text-[#444]">{clinic.about.aboutText}</p>
-          <div id="visit" className="mt-8 grid items-center gap-6 md:grid-cols-[160px_1fr]">
-            <div className="relative mx-auto size-36 overflow-hidden rounded-full bg-[#E8F6E8]">
-              {clinic.about.doctorImage ? (
-                <Image
-                  src={clinic.about.doctorImage}
-                  alt={clinic.about.doctorName}
-                  fill
-                  className="object-cover object-[center_20%]"
-                  sizes="144px"
-                />
-              ) : (
-                <span className="flex size-full items-center justify-center text-[#2E9B32]">
-                  <UserRound className="size-10" />
-                </span>
-              )}
-            </div>
-            <div className="text-center md:text-right">
-              <p className="text-sm text-[#2E9B32]">مسئول علمی</p>
-              <h3 className="mt-1 text-2xl font-extrabold">{clinic.about.doctorName}</h3>
-              <p className="mt-1 text-sm text-[#666]">{clinic.about.doctorTitle}</p>
-              {clinic.about.doctorBio ? (
-                <p className="mt-3 text-sm leading-7 text-[#444]">{clinic.about.doctorBio}</p>
-              ) : null}
-              <div className="mt-4 flex flex-wrap justify-center gap-3 md:justify-start">
-                <PhoneLink
-                  phone={clinic.phone}
-                  className="inline-flex h-11 items-center rounded-full bg-[#3caf2d] px-5 text-sm font-extrabold text-white"
-                >
-                  <span dir="ltr">{clinic.phone}</span>
-                </PhoneLink>
-                <Link href="/patient/consult" className="inline-flex h-11 items-center rounded-full border border-[#3caf2d] px-5 text-sm font-extrabold text-[#2E9B32]">
-                  مشاوره آنلاین
-                </Link>
-              </div>
-            </div>
-          </div>
           {clinic.about.gallery.length > 0 ? (
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {clinic.about.gallery.map((src) => (
@@ -323,6 +289,43 @@ export function NutrishaLanding({
           ) : null}
         </div>
       </section>
+
+      {articles.length > 0 ? (
+        <section id="magazine" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-12 sm:px-8">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">
+              مجله لاغری و رژیم
+            </h2>
+            <Link href="/magazine" className="text-sm font-extrabold text-[#2E9B32]">
+              همهٔ مقاله‌ها
+            </Link>
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {articles.map((article) => (
+              <Link
+                key={article.slug}
+                href={`/magazine/${article.slug}`}
+                className="overflow-hidden rounded-[1.6rem] bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] ring-1 ring-black/5"
+              >
+                <div className="relative aspect-[16/10]">
+                  <Image
+                    src={article.coverImage}
+                    alt={article.title}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, 360px"
+                  />
+                </div>
+                <div className="space-y-2 p-4 text-right">
+                  <p className="text-xs font-bold text-[#2E9B32]">{article.category}</p>
+                  <h3 className="text-base font-extrabold leading-7">{article.title}</h3>
+                  <p className="line-clamp-2 text-sm leading-7 text-[#555]">{article.excerpt}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section id="topics" className="mx-auto max-w-3xl px-5 py-12 sm:px-8">
         <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">
@@ -358,11 +361,6 @@ export function NutrishaLanding({
                   </a>
                 </li>
               ))}
-              <li>
-                <Link href="/magazine" className="text-white/75 transition hover:text-white">
-                  مجله
-                </Link>
-              </li>
               <li>
                 <Link href="/patient/book" className="text-white/75 transition hover:text-white">
                   دریافت رژیم
