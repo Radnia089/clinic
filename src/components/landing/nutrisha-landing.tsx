@@ -8,6 +8,7 @@ import {
   MapPin,
   Phone,
   Salad,
+  UserRound,
   UtensilsCrossed,
 } from "lucide-react";
 import { LandingPromoSlider } from "@/components/landing/landing-promo-slider";
@@ -24,6 +25,7 @@ const navLinks = [
   { href: "#bmi", label: "ماشین حساب" },
   { href: "#devices", label: "دستگاه‌ها" },
   { href: "#champions", label: "قهرمانان" },
+  { href: "#about", label: "درباره ما" },
   { href: "#visit", label: "نوبت" },
 ];
 
@@ -259,28 +261,66 @@ export function NutrishaLanding({
         )}
       </section>
 
-      <section id="visit" className="bg-[#F7FBF7]">
-        <div className="mx-auto grid max-w-5xl items-center gap-6 px-5 py-12 sm:px-8 md:grid-cols-[160px_1fr]">
-          <div className="relative mx-auto size-36 overflow-hidden rounded-full">
-            <Image src="/images/about/doctor-pourhosseini.jpg" alt={clinic.about.doctorName} fill className="object-cover object-[center_20%]" sizes="144px" />
-          </div>
-          <div className="text-center md:text-right">
-            <p className="text-sm text-[#2E9B32]">مسئول علمی</p>
-            <h2 className="mt-1 text-2xl font-extrabold">{clinic.about.doctorName}</h2>
-            <p className="mt-1 text-sm text-[#666]">{clinic.about.doctorTitle}</p>
-            <p className="mt-3 text-sm leading-7 text-[#444]">{clinic.hours}</p>
-            <div className="mt-4 flex flex-wrap justify-center gap-3 md:justify-start">
-              <PhoneLink
-                phone={clinic.phone}
-                className="inline-flex h-11 items-center rounded-full bg-[#3caf2d] px-5 text-sm font-extrabold text-white"
-              >
-                <span dir="ltr">{clinic.phone}</span>
-              </PhoneLink>
-              <Link href="/patient/consult" className="inline-flex h-11 items-center rounded-full border border-[#3caf2d] px-5 text-sm font-extrabold text-[#2E9B32]">
-                مشاوره آنلاین
-              </Link>
+      <section id="about" className="bg-[#F7FBF7]">
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+          <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">درباره ما</h2>
+          {clinic.about.coverImage ? (
+            <div className="relative mt-6 aspect-[16/7] overflow-hidden rounded-[1.8rem]">
+              <Image
+                src={clinic.about.coverImage}
+                alt={clinic.fullName}
+                fill
+                className="object-cover"
+                sizes="(max-width: 1152px) 100vw, 1152px"
+              />
+            </div>
+          ) : null}
+          <p className="mt-6 max-w-3xl text-sm leading-8 text-[#444]">{clinic.about.aboutText}</p>
+          <div id="visit" className="mt-8 grid items-center gap-6 md:grid-cols-[160px_1fr]">
+            <div className="relative mx-auto size-36 overflow-hidden rounded-full bg-[#E8F6E8]">
+              {clinic.about.doctorImage ? (
+                <Image
+                  src={clinic.about.doctorImage}
+                  alt={clinic.about.doctorName}
+                  fill
+                  className="object-cover object-[center_20%]"
+                  sizes="144px"
+                />
+              ) : (
+                <span className="flex size-full items-center justify-center text-[#2E9B32]">
+                  <UserRound className="size-10" />
+                </span>
+              )}
+            </div>
+            <div className="text-center md:text-right">
+              <p className="text-sm text-[#2E9B32]">مسئول علمی</p>
+              <h3 className="mt-1 text-2xl font-extrabold">{clinic.about.doctorName}</h3>
+              <p className="mt-1 text-sm text-[#666]">{clinic.about.doctorTitle}</p>
+              {clinic.about.doctorBio ? (
+                <p className="mt-3 text-sm leading-7 text-[#444]">{clinic.about.doctorBio}</p>
+              ) : null}
+              <div className="mt-4 flex flex-wrap justify-center gap-3 md:justify-start">
+                <PhoneLink
+                  phone={clinic.phone}
+                  className="inline-flex h-11 items-center rounded-full bg-[#3caf2d] px-5 text-sm font-extrabold text-white"
+                >
+                  <span dir="ltr">{clinic.phone}</span>
+                </PhoneLink>
+                <Link href="/patient/consult" className="inline-flex h-11 items-center rounded-full border border-[#3caf2d] px-5 text-sm font-extrabold text-[#2E9B32]">
+                  مشاوره آنلاین
+                </Link>
+              </div>
             </div>
           </div>
+          {clinic.about.gallery.length > 0 ? (
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {clinic.about.gallery.map((src) => (
+                <div key={src} className="relative aspect-square overflow-hidden rounded-2xl bg-white">
+                  <Image src={src} alt="تصویر کلینیک تندیس" fill className="object-cover" sizes="240px" />
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
 
