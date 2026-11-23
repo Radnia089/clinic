@@ -199,9 +199,9 @@ export function ProgressRecorder() {
           </select>
         </div>
         <div className="space-y-2">
-          <Label className="flex-row items-center justify-between gap-3 sm:flex-col sm:items-stretch sm:justify-start sm:gap-0.5">
-            <span>وزن (kg)</span>
-            <span dir="ltr" className="text-[11px] font-medium text-muted-foreground sm:text-right">
+          <Label className="w-full flex-row items-baseline justify-start gap-x-2 text-right sm:flex-col sm:items-stretch sm:gap-0.5">
+            <span className="text-right">وزن (kg)</span>
+            <span dir="ltr" className="text-right text-[11px] font-medium text-muted-foreground sm:block sm:w-full">
               Weight
             </span>
           </Label>
@@ -218,13 +218,13 @@ export function ProgressRecorder() {
             <Label
               className={
                 english
-                  ? "flex-row items-center justify-between gap-3 sm:flex-col sm:items-stretch sm:justify-start sm:gap-0.5"
+                  ? "w-full flex-row items-baseline justify-start gap-x-2 text-right sm:flex-col sm:items-stretch sm:gap-0.5"
                   : undefined
               }
             >
-              <span>{label}</span>
+              <span className="text-right">{label}</span>
               {english ? (
-                <span dir="ltr" className="text-[11px] font-medium text-muted-foreground sm:text-right">
+                <span dir="ltr" className="text-right text-[11px] font-medium text-muted-foreground sm:block sm:w-full">
                   {english}
                 </span>
               ) : null}
