@@ -1,34 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import {
-  CalendarCheck2,
-  ChevronDown,
-  Clock3,
-  Headset,
-  MapPin,
-  Phone,
-  Salad,
-  UtensilsCrossed,
-} from "lucide-react";
+import { CalendarCheck2, ChevronDown, Headset, Salad, UtensilsCrossed } from "lucide-react";
+import { LandingFrame } from "@/components/landing/landing-frame";
 import { LandingMagazineRow } from "@/components/landing/landing-magazine-row";
 import { LandingPromoSlider } from "@/components/landing/landing-promo-slider";
-import { PhoneLink } from "@/components/landing/phone-link";
 import { SampleBmi } from "@/components/landing/sample-bmi";
-import { LandingLoginMenu } from "@/components/landing/landing-login-menu";
 import { lostKg, lostSizeCm } from "@/lib/champions";
 import { clinicFaqs } from "@/lib/site-seo";
-import { TANDIS_INSTAGRAM_HANDLE, TANDIS_INSTAGRAM_URL } from "@/lib/social-links";
 import type { Champion, ClinicProfile, MagazineArticle, PromoBanner } from "@/lib/types";
-
-const navLinks = [
-  { href: "#start", label: "خانه" },
-  { href: "#bmi", label: "ماشین حساب" },
-  { href: "#devices", label: "دستگاه‌ها" },
-  { href: "#champions", label: "قهرمانان" },
-  { href: "#about", label: "درباره ما" },
-  { href: "#magazine", label: "مجله" },
-  { href: "/patient/book", label: "نوبت" },
-];
 
 const features = [
   { icon: UtensilsCrossed, title: "رژیم غذایی اختصاصی", text: "بر اساس ویژگی‌ها و شرایط خاص شما" },
@@ -58,16 +37,6 @@ const devices = [
   },
 ];
 
-function InstagramMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-      <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
 function faNum(value: number) {
   return new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 1 }).format(value);
 }
@@ -84,69 +53,7 @@ export function NutrishaLanding({
   articles?: Pick<MagazineArticle, "slug" | "title" | "excerpt" | "category" | "coverImage">[];
 }) {
   return (
-    <div className="min-h-screen bg-white text-[#1A1A1A]">
-      <header className="sticky top-0 z-40 border-b border-[#E5F0E6] bg-white/92 shadow-[0_8px_24px_rgba(20,53,42,0.04)] backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-8">
-          <Link href="/" className="flex min-w-0 items-center gap-3">
-            <Image
-              src="/tandis-logo.png"
-              alt="تندیس"
-              width={132}
-              height={52}
-              className="h-11 w-auto"
-              priority
-            />
-            <span className="hidden min-w-0 sm:block">
-              <span className="block truncate text-sm font-extrabold text-[#14352A]">کلینیک تندیس</span>
-              <span className="block text-[11px] text-[#66756c]">رژیم درمانی · یزد</span>
-            </span>
-          </Link>
-          <nav className="hidden items-center gap-1 lg:flex">
-            {navLinks.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="rounded-full px-3 py-2 text-sm font-bold text-[#3d4f45] transition hover:bg-[#F3FAF3] hover:text-[#2E9B32]"
-              >
-                {item.label}
-              </a>
-            ))}
-            <a
-              href="#contact"
-              className="rounded-full px-3 py-2 text-sm font-bold text-[#3d4f45] transition hover:bg-[#F3FAF3] hover:text-[#2E9B32]"
-            >
-              تماس
-            </a>
-          </nav>
-          <div className="flex shrink-0 items-center gap-2">
-            <a
-              href="/api/app-download"
-              className="hidden h-10 items-center rounded-full border border-[#3caf2d]/35 px-4 text-sm font-extrabold text-[#2E9B32] transition hover:bg-[#F3FAF3] sm:inline-flex"
-            >
-              دانلود اپ
-            </a>
-            <LandingLoginMenu variant="fresh" />
-          </div>
-        </div>
-        <nav className="flex flex-wrap gap-2 px-4 pb-3 lg:hidden">
-          {navLinks.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="shrink-0 rounded-full bg-[#F4F8F4] px-3.5 py-1.5 text-xs font-bold text-[#244033]"
-            >
-              {item.label}
-            </a>
-          ))}
-          <a href="#contact" className="shrink-0 rounded-full bg-[#F4F8F4] px-3.5 py-1.5 text-xs font-bold text-[#244033]">
-            تماس
-          </a>
-          <a href="/api/app-download" className="shrink-0 rounded-full bg-[#E8F6E8] px-3.5 py-1.5 text-xs font-extrabold text-[#2E9B32]">
-            دانلود اپ
-          </a>
-        </nav>
-      </header>
-
+    <LandingFrame clinic={clinic}>
       <section id="start" className="mx-auto max-w-5xl px-5 pb-6 pt-8 text-center sm:px-8">
         <LandingPromoSlider items={banners} />
         <h1 className="mt-8 text-3xl font-extrabold text-[#2E9B32] sm:text-5xl">کلینیک لاغری و رژیم درمانی در یزد</h1>
@@ -264,33 +171,6 @@ export function NutrishaLanding({
         )}
       </section>
 
-      <section id="about" className="scroll-mt-24 bg-[#F7FBF7]">
-        <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
-          <h2 className="border-r-4 border-[#3caf2d] pr-3 text-sm font-extrabold text-[#2E9B32]">درباره ما</h2>
-          {clinic.about.coverImage ? (
-            <div className="relative mt-6 aspect-[16/7] overflow-hidden rounded-[1.8rem]">
-              <Image
-                src={clinic.about.coverImage}
-                alt={clinic.fullName}
-                fill
-                className="object-cover"
-                sizes="(max-width: 1152px) 100vw, 1152px"
-              />
-            </div>
-          ) : null}
-          <p className="mt-6 max-w-3xl text-sm leading-8 text-[#444]">{clinic.about.aboutText}</p>
-          {clinic.about.gallery.length > 0 ? (
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {clinic.about.gallery.map((src) => (
-                <div key={src} className="relative aspect-square overflow-hidden rounded-2xl bg-white">
-                  <Image src={src} alt="تصویر کلینیک تندیس" fill className="object-cover" sizes="240px" />
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
-      </section>
-
       {articles.length > 0 ? (
         <section id="magazine" className="mx-auto max-w-6xl scroll-mt-24 px-5 py-12 sm:px-8">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -322,70 +202,6 @@ export function NutrishaLanding({
         </div>
       </section>
 
-      <footer id="contact" className="scroll-mt-24 bg-[#0E241C] text-white">
-        <div className="h-1 bg-gradient-to-l from-[#F0B429] via-[#3caf2d] to-[#0E241C]" />
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.3fr_0.8fr_1.15fr]">
-          <div>
-            <p className="text-lg font-extrabold">تندیس، دوست سلامتی تو</p>
-            <p className="mt-2 max-w-sm text-sm leading-7 text-white/70">{clinic.tagline}</p>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-[#F0B429]">دسترسی</p>
-            <ul className="mt-4 space-y-2.5 text-sm">
-              {navLinks.map((item) => (
-                <li key={item.href}>
-                  <a href={item.href} className="text-white/75 transition hover:text-white">
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-              <li>
-                <Link href="/patient/book" className="text-white/75 transition hover:text-white">
-                  دریافت رژیم
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-[#F0B429]">تماس با ما</p>
-            <ul className="mt-4 space-y-3 text-sm leading-7 text-white/80">
-              <li className="flex items-start gap-2.5">
-                <MapPin className="mt-1 size-4 shrink-0 text-[#F0B429]" />
-                <span>{clinic.address}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Phone className="size-4 shrink-0 text-[#F0B429]" />
-                <PhoneLink phone={clinic.phone} className="font-bold text-white">
-                  <span dir="ltr">{clinic.phone}</span>
-                </PhoneLink>
-              </li>
-              <li className="flex items-start gap-2.5">
-                <Clock3 className="mt-1 size-4 shrink-0 text-[#F0B429]" />
-                <span>{clinic.hours}</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <InstagramMark className="size-4 shrink-0 text-[#F0B429]" />
-                <a href={TANDIS_INSTAGRAM_URL} className="hover:text-white" dir="ltr">
-                  @{TANDIS_INSTAGRAM_HANDLE}
-                </a>
-              </li>
-            </ul>
-            {clinic.about.mapUrl ? (
-              <a
-                href={clinic.about.mapUrl}
-                className="mt-4 inline-flex text-sm font-bold text-[#F0B429] hover:text-[#ffd36a]"
-              >
-                مسیر روی نقشه
-              </a>
-            ) : null}
-          </div>
-        </div>
-        <div className="border-t border-white/10">
-          <p className="px-5 py-4 text-center text-xs leading-6 text-white/55 sm:px-8">
-            کلیه حقوق این وب‌سایت متعلق به کلینیک تندیس می‌باشد.
-          </p>
-        </div>
-      </footer>
-    </div>
+    </LandingFrame>
   );
 }
