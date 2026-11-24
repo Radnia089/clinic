@@ -147,3 +147,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
 
 ENTRYPOINT ["/usr/bin/tini", "--", "docker-entrypoint"]
 CMD ["node", "server.mjs"]
+
+# Published to registry.hamdocker.ir as tandis-clinic:prod.
